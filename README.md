@@ -1,6 +1,14 @@
 # 下一枝 NEXT BRANCH
 
-农科村枝条邮局的交互式前端原型。仅供本地预览，未发布。建议在项目目录运行 `python -m http.server 4173 --directory dist`，然后访问 `http://localhost:4173/`。
+农科村枝条邮局的交互式前端原型。建议在项目目录运行 `python -m http.server 4173 --directory dist`，然后访问 `http://localhost:4173/`。
+
+## Vercel 配置
+
+这是一个原生 HTML、CSS、JavaScript 静态网站，首页位于 `dist/index.html`，不使用 Vite，也没有第三方 npm 依赖。`dist` 是网站源文件目录，需要保留在 Git 中。
+
+在仓库根目录执行 `npm ci`，再执行 `npm run build`。构建脚本检查首页引用、JavaScript 语法、相对模块引用及静态文件完整性，直接使用现有 `dist` 文件，不打包或重写页面。
+
+仓库根目录的 `vercel.json` 明确设置 Framework 为 Other（`null`）、Install Command 为 `npm ci`、Build Command 为 `npm run build`、Output Directory 为 `dist`，覆盖控制台中错误的 `vite build`。Vercel 项目的 Root Directory 应保持仓库根目录（留空），不能设为 `dist`。`package.json`、`package-lock.json`、`vercel.json` 和 `scripts/` 位于同一根目录，配置推送到 GitHub 后由关联的 Vercel 项目自动重新部署。
 
 ## 演示流程
 

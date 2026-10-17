@@ -1,0 +1,10 @@
+{
+  "name": "next-branch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Next Branch static botanical stamp website",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}
