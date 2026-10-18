@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+  - main "枝条放映室" [ref=e3]:
+    - region "植物放映内容" [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - tablist "放映节目" [ref=e8]:
+            - tab "养护" [selected] [ref=e9] [cursor=pointer]
+            - tab "近况" [ref=e11] [cursor=pointer]
+            - tab "档案" [ref=e13] [cursor=pointer]
+          - generic [ref=e15]:
+            - generic [ref=e16]: CH 04
+            - text: CH 04
+        - tabpanel "紫薇 · 养护放映" [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - generic [ref=e21]:
+                - heading "紫薇" [level=1] [ref=e22]
+                - generic [ref=e24]:
+                  - generic [ref=e25]: Lagerstroemia indica
+                  - text: Lagerstroemia indica
+              - generic [ref=e26]:
+                - strong [ref=e27]: 养护难度
+                - generic [ref=e28]:
+                  - generic [ref=e29]: 入门友好
+                  - text: 入门友好
+            - img "紫薇 · 把夏日的光留给紫薇，养护动作示意" [ref=e31]:
+              - generic [ref=e32]:
+                - generic:
+                  - generic:
+                    - generic "新枝先遮光"
+                  - generic:
+                    - generic "长稳再见日照"
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - generic [ref=e161]: 光照
+                  - text: 光照
+                - heading "把夏日的光留给紫薇" [level=2] [ref=e162]
+                - paragraph [ref=e164]:
+                  - generic [ref=e165]: 生根稳定后适合充足日照；扦插初期先避开强烈直晒，让枝条少一点失水。
+                  - text: 生根稳定后适合充足日照；扦插初期先避开强烈直晒，让枝条少一点失水。
+              - group "选择养护场景" [ref=e166]:
+                - button "光照" [pressed] [ref=e167] [cursor=pointer]
+                - button "浇水" [ref=e169] [cursor=pointer]
+                - button "扦插" [ref=e171] [cursor=pointer]
+        - generic "循环植物刻度" [ref=e173]:
+          - tablist "植物调台刻度" [ref=e174]:
+            - generic [ref=e175]:
+              - tab [aria-hidden] [ref=e176] [cursor=pointer]:
+                - generic [ref=e177]: "07"
+                - generic [ref=e178]: 桂花
+              - tab "放映贴梗海棠" [ref=e179] [cursor=pointer]:
+                - generic [ref=e180]: "08"
+                - generic [ref=e181]: 贴梗海棠
+              - tab "放映金叶女贞" [ref=e182] [cursor=pointer]:
+                - generic [ref=e183]: "01"
+                - generic [ref=e184]: 金叶女贞
+              - tab "放映木槿" [ref=e185] [cursor=pointer]:
+                - generic [ref=e186]: "02"
+                - generic [ref=e187]: 木槿
+              - tab "放映小叶女贞" [ref=e188] [cursor=pointer]:
+                - generic [ref=e189]: "03"
+                - generic [ref=e190]: 小叶女贞
+              - tab "放映紫薇" [selected] [ref=e191] [cursor=pointer]:
+                - generic [ref=e192]: "04"
+                - generic [ref=e193]: 紫薇
+              - tab "放映六月雪" [ref=e194] [cursor=pointer]:
+                - generic [ref=e195]: "05"
+                - generic [ref=e196]: 六月雪
+              - tab "放映木芙蓉" [ref=e197] [cursor=pointer]:
+                - generic [ref=e198]: "06"
+                - generic [ref=e199]: 木芙蓉
+              - tab "放映桂花" [ref=e200] [cursor=pointer]:
+                - generic [ref=e201]: "07"
+                - generic [ref=e202]: 桂花
+              - tab "放映贴梗海棠" [ref=e203] [cursor=pointer]:
+                - generic [ref=e204]: "08"
+                - generic [ref=e205]: 贴梗海棠
+              - tab [aria-hidden] [ref=e206] [cursor=pointer]:
+                - generic [ref=e207]: "01"
+                - generic [ref=e208]: 金叶女贞
+    - status [ref=e209]: 紫薇，养护放映，光照
+  - navigation "主要导航" [ref=e210]:
+    - button "邮票馆" [ref=e211] [cursor=pointer]:
+      - generic "邮票馆" [ref=e212]:
+        - generic [ref=e214]:
+          - generic [ref=e215]: 邮
+          - generic [ref=e216]: 邮
+        - generic [ref=e218]:
+          - generic [ref=e219]: 票
+          - generic [ref=e220]: 票
+        - generic [ref=e222]:
+          - generic [ref=e223]: 馆
+          - generic [ref=e224]: 馆
+    - button "枝条放映室" [ref=e225] [cursor=pointer]:
+      - generic "枝条放映室" [ref=e226]:
+        - generic [ref=e228]:
+          - generic [ref=e229]: 枝
+          - generic [ref=e230]: 枝
+        - generic [ref=e232]:
+          - generic [ref=e233]: 条
+          - generic [ref=e234]: 条
+        - generic [ref=e236]:
+          - generic [ref=e237]: 放
+          - generic [ref=e238]: 放
+        - generic [ref=e240]:
+          - generic [ref=e241]: 映
+          - generic [ref=e242]: 映
+        - generic [ref=e244]:
+          - generic [ref=e245]: 室
+          - generic [ref=e246]: 室
+    - button "枝友来信" [ref=e247] [cursor=pointer]:
+      - generic "枝友来信" [ref=e248]:
+        - generic [ref=e250]:
+          - generic [ref=e251]: 枝
+          - generic [ref=e252]: 枝
+        - generic [ref=e254]:
+          - generic [ref=e255]: 友
+          - generic [ref=e256]: 友
+        - generic [ref=e258]:
+          - generic [ref=e259]: 来
+          - generic [ref=e260]: 来
+        - generic [ref=e262]:
+          - generic [ref=e263]: 信
+          - generic [ref=e264]: 信

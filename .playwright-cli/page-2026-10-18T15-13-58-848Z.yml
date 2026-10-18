@@ -1,0 +1,598 @@
+- generic [ref=f1e1]:
+  - main "枝友来信" [ref=f1e3]:
+    - heading "枝友来信" [level=1] [ref=f1e4]
+    - region "上下浏览来信，点按抽出信纸":
+      - list:
+        - listitem:
+          - button "抽出查看：金叶女贞新叶卷起来了，正常吗？":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 金叶女贞新叶卷起来了，正常吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 2 封回信
+        - listitem:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？":
+            - generic:
+              - generic:
+                - generic: 紫薇 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：六月雪午后有点耷拉，怎么办？":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 六月雪午后有点耷拉，怎么办？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：给木槿搬了新家，先放窗边好吗？":
+            - generic:
+              - generic:
+                - generic: 木槿 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 给木槿搬了新家，先放窗边好吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：小叶女贞落了几片老叶，有点担心":
+            - generic:
+              - generic:
+                - generic: 小叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 小叶女贞落了几片老叶，有点担心
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：想把院子里的木芙蓉留给下一季":
+            - generic:
+              - generic:
+                - generic: 木芙蓉 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 想把院子里的木芙蓉留给下一季
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：桂花迟迟没动静，我还在等":
+            - generic:
+              - generic:
+                - generic: 桂花 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 桂花迟迟没动静，我还在等
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：贴梗海棠的新位置，光会不会太强？":
+            - generic:
+              - generic:
+                - generic: 贴梗海棠 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 贴梗海棠的新位置，光会不会太强？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：第一片新叶，想寄给大家看看":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：下雨的日子，给六月雪记一页日常":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 浇水
+                - generic: 亲爱的枝友：
+                - strong: 下雨的日子，给六月雪记一页日常
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：金叶女贞新叶卷起来了，正常吗？":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 金叶女贞新叶卷起来了，正常吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 2 封回信
+        - listitem:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？":
+            - generic:
+              - generic:
+                - generic: 紫薇 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：六月雪午后有点耷拉，怎么办？":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 六月雪午后有点耷拉，怎么办？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：给木槿搬了新家，先放窗边好吗？":
+            - generic:
+              - generic:
+                - generic: 木槿 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 给木槿搬了新家，先放窗边好吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：小叶女贞落了几片老叶，有点担心":
+            - generic:
+              - generic:
+                - generic: 小叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 小叶女贞落了几片老叶，有点担心
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：想把院子里的木芙蓉留给下一季":
+            - generic:
+              - generic:
+                - generic: 木芙蓉 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 想把院子里的木芙蓉留给下一季
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：桂花迟迟没动静，我还在等":
+            - generic:
+              - generic:
+                - generic: 桂花 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 桂花迟迟没动静，我还在等
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：贴梗海棠的新位置，光会不会太强？":
+            - generic:
+              - generic:
+                - generic: 贴梗海棠 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 贴梗海棠的新位置，光会不会太强？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：第一片新叶，想寄给大家看看":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：下雨的日子，给六月雪记一页日常":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 浇水
+                - generic: 亲爱的枝友：
+                - strong: 下雨的日子，给六月雪记一页日常
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem
+        - listitem:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？":
+            - generic:
+              - generic:
+                - generic: 紫薇 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：六月雪午后有点耷拉，怎么办？":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 六月雪午后有点耷拉，怎么办？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：给木槿搬了新家，先放窗边好吗？":
+            - generic:
+              - generic:
+                - generic: 木槿 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 给木槿搬了新家，先放窗边好吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：小叶女贞落了几片老叶，有点担心":
+            - generic:
+              - generic:
+                - generic: 小叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 小叶女贞落了几片老叶，有点担心
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：想把院子里的木芙蓉留给下一季":
+            - generic:
+              - generic:
+                - generic: 木芙蓉 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 想把院子里的木芙蓉留给下一季
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：桂花迟迟没动静，我还在等":
+            - generic:
+              - generic:
+                - generic: 桂花 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 桂花迟迟没动静，我还在等
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：贴梗海棠的新位置，光会不会太强？":
+            - generic:
+              - generic:
+                - generic: 贴梗海棠 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 贴梗海棠的新位置，光会不会太强？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：第一片新叶，想寄给大家看看":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：下雨的日子，给六月雪记一页日常":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 浇水
+                - generic: 亲爱的枝友：
+                - strong: 下雨的日子，给六月雪记一页日常
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：金叶女贞新叶卷起来了，正常吗？":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 金叶女贞新叶卷起来了，正常吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 2 封回信
+        - listitem:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？":
+            - generic:
+              - generic:
+                - generic: 紫薇 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：六月雪午后有点耷拉，怎么办？":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 六月雪午后有点耷拉，怎么办？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：给木槿搬了新家，先放窗边好吗？":
+            - generic:
+              - generic:
+                - generic: 木槿 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 给木槿搬了新家，先放窗边好吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：小叶女贞落了几片老叶，有点担心":
+            - generic:
+              - generic:
+                - generic: 小叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 小叶女贞落了几片老叶，有点担心
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：想把院子里的木芙蓉留给下一季":
+            - generic:
+              - generic:
+                - generic: 木芙蓉 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 想把院子里的木芙蓉留给下一季
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：桂花迟迟没动静，我还在等":
+            - generic:
+              - generic:
+                - generic: 桂花 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 桂花迟迟没动静，我还在等
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：贴梗海棠的新位置，光会不会太强？":
+            - generic:
+              - generic:
+                - generic: 贴梗海棠 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 贴梗海棠的新位置，光会不会太强？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：第一片新叶，想寄给大家看看":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：下雨的日子，给六月雪记一页日常":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 浇水
+                - generic: 亲爱的枝友：
+                - strong: 下雨的日子，给六月雪记一页日常
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：金叶女贞新叶卷起来了，正常吗？":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 金叶女贞新叶卷起来了，正常吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 2 封回信
+        - listitem:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？":
+            - generic:
+              - generic:
+                - generic: 紫薇 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：六月雪午后有点耷拉，怎么办？":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 六月雪午后有点耷拉，怎么办？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：给木槿搬了新家，先放窗边好吗？":
+            - generic:
+              - generic:
+                - generic: 木槿 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 给木槿搬了新家，先放窗边好吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：小叶女贞落了几片老叶，有点担心":
+            - generic:
+              - generic:
+                - generic: 小叶女贞 · 叶片
+                - generic: 亲爱的枝友：
+                - strong: 小叶女贞落了几片老叶，有点担心
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：想把院子里的木芙蓉留给下一季":
+            - generic:
+              - generic:
+                - generic: 木芙蓉 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 想把院子里的木芙蓉留给下一季
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：桂花迟迟没动静，我还在等":
+            - generic:
+              - generic:
+                - generic: 桂花 · 扦插
+                - generic: 亲爱的枝友：
+                - strong: 桂花迟迟没动静，我还在等
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：贴梗海棠的新位置，光会不会太强？":
+            - generic:
+              - generic:
+                - generic: 贴梗海棠 · 光照
+                - generic: 亲爱的枝友：
+                - strong: 贴梗海棠的新位置，光会不会太强？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem:
+          - button "抽出查看：第一片新叶，想寄给大家看看":
+            - generic:
+              - generic:
+                - generic: 金叶女贞 · 其他
+                - generic: 亲爱的枝友：
+                - strong: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+        - listitem:
+          - button "抽出查看：下雨的日子，给六月雪记一页日常":
+            - generic:
+              - generic:
+                - generic: 六月雪 · 浇水
+                - generic: 亲爱的枝友：
+                - strong: 下雨的日子，给六月雪记一页日常
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+    - search:
+      - generic:
+        - searchbox "搜索植物或来信"
+      - button "筛选来信"
+      - button "写信"
+    - status [ref=f1e472]: 10 封来信
+  - button "开启背景音乐" [ref=f1e473] [cursor=pointer]
+  - navigation "主要导航" [ref=f1e477]:
+    - button "邮票馆" [ref=f1e478] [cursor=pointer]:
+      - generic "邮票馆" [ref=f1e479]:
+        - generic [ref=f1e481]:
+          - generic [ref=f1e482]: 邮
+          - generic [ref=f1e483]: 邮
+        - generic [ref=f1e485]:
+          - generic [ref=f1e486]: 票
+          - generic [ref=f1e487]: 票
+        - generic [ref=f1e489]:
+          - generic [ref=f1e490]: 馆
+          - generic [ref=f1e491]: 馆
+    - button "枝条放映室" [ref=f1e492] [cursor=pointer]:
+      - generic "枝条放映室" [ref=f1e493]:
+        - generic [ref=f1e495]:
+          - generic [ref=f1e496]: 枝
+          - generic [ref=f1e497]: 枝
+        - generic [ref=f1e499]:
+          - generic [ref=f1e500]: 条
+          - generic [ref=f1e501]: 条
+        - generic [ref=f1e503]:
+          - generic [ref=f1e504]: 放
+          - generic [ref=f1e505]: 放
+        - generic [ref=f1e507]:
+          - generic [ref=f1e508]: 映
+          - generic [ref=f1e509]: 映
+        - generic [ref=f1e511]:
+          - generic [ref=f1e512]: 室
+          - generic [ref=f1e513]: 室
+    - button "枝友来信" [ref=f1e514] [cursor=pointer]:
+      - generic "枝友来信" [ref=f1e515]:
+        - generic [ref=f1e517]:
+          - generic [ref=f1e518]: 枝
+          - generic [ref=f1e519]: 枝
+        - generic [ref=f1e521]:
+          - generic [ref=f1e522]: 友
+          - generic [ref=f1e523]: 友
+        - generic [ref=f1e525]:
+          - generic [ref=f1e526]: 来
+          - generic [ref=f1e527]: 来
+        - generic [ref=f1e529]:
+          - generic [ref=f1e530]: 信
+          - generic [ref=f1e531]: 信
+  - generic [aria-hidden]:
+    - generic:
+      - generic:
+        - text: 致，每一位枝友
+        - generic: 2 封回信
+  - dialog "金叶女贞新叶卷起来了，正常吗？" [ref=f1e533]:
+    - generic [ref=f1e534]:
+      - generic [ref=f1e535]:
+        - text: 金叶女贞 · 叶片
+        - generic [ref=f1e536]: 2026.09.12 / 演示来信
+      - button "收好这封信" [active] [ref=f1e537] [cursor=pointer]: ×
+    - generic [aria-hidden]:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - text: 下一枝
+              - generic: NEXT BRANCH
+            - generic: 枝
+          - generic:
+            - generic:
+              - generic: 金叶女贞
+              - generic: Ligustrum × vicaryi
+            - generic:
+              - text: "01"
+              - generic: 枝—001
+    - heading "金叶女贞新叶卷起来了，正常吗？" [level=2]
+    - group "翻阅信件" [ref=f1e539]:
+      - button "来信正文" [pressed] [ref=f1e540] [cursor=pointer]
+      - button "回信 2" [ref=f1e541] [cursor=pointer]
+    - generic [ref=f1e542]:
+      - paragraph [ref=f1e543]: 亲爱的枝友：见信好。
+      - paragraph [ref=f1e544]: 枝条刚插下两周，最近新叶边缘有点卷。我把它放在南向阳台，每天有半天日照，要不要移到阴凉处？
+      - paragraph [ref=f1e545]:
+        - text: 盼你的回信。
+        - generic [ref=f1e546]: 一位养植物的枝友 · 2026.09.12
+      - paragraph [ref=f1e547]: 演示来信 · 园艺建议为预设内容
+    - generic [ref=f1e548]:
+      - generic [ref=f1e549]: 回一封经验
+      - generic [ref=f1e550]:
+        - textbox "回一封经验" [ref=f1e551]:
+          - /placeholder: 说说你的观察或建议…
+        - button "寄出回复 ↗" [ref=f1e552] [cursor=pointer]
+      - status [ref=f1e553]
+    - generic [aria-hidden]:
+      - generic:
+        - generic: 金叶女贞 · 叶片
+        - generic: 亲爱的枝友：
+        - strong: 金叶女贞新叶卷起来了，正常吗？
+      - generic:
+        - generic: ✦
+        - generic: 下一枝 · 私函

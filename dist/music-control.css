@@ -1,0 +1,41 @@
+.music-toggle{
+  position:fixed;
+  right:calc(var(--nav-edge,32px) - 8px);
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  z-index:82;
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:0;
+  background:none;
+  box-shadow:none;
+  color:#315b45;
+}
+body[data-view="home"] .music-toggle{color:#fff7df}
+.music-toggle-ring{
+  position:relative;
+  display:block;
+  width:27px;
+  height:27px;
+  border:1.5px solid currentColor;
+  border-radius:50%;
+  opacity:.85;
+}
+.music-toggle-ring::before{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+}
+.music-toggle-ring::before{inset:5px;border:1.5px solid currentColor;opacity:.65}
+.music-toggle-wave{position:absolute;inset:-8px;width:43px;height:43px;overflow:visible;opacity:0;transform-origin:center}
+.music-toggle-wave path{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.music-toggle:hover .music-toggle-ring{opacity:1}
+.music-toggle.is-playing .music-toggle-ring::before{animation:music-ring-pulse 1.4s ease-in-out infinite alternate}
+.music-toggle.is-playing .music-toggle-wave{opacity:1;animation:music-ring-spin 8s linear infinite}
+@keyframes music-ring-spin{to{transform:rotate(360deg)}}
+@keyframes music-ring-pulse{to{transform:scale(.72);opacity:.35}}
+@media(max-width:760px){body[data-view="letters"] .music-toggle{bottom:calc(92px + env(safe-area-inset-bottom))}}
+@media(max-height:560px) and (orientation:landscape){.music-toggle{bottom:calc(10px + env(safe-area-inset-bottom))}body[data-view="letters"] .music-toggle{bottom:calc(76px + env(safe-area-inset-bottom))}}
+@media(prefers-reduced-motion:reduce){.music-toggle.is-playing .music-toggle-ring::before,.music-toggle.is-playing .music-toggle-wave{animation:none}}

@@ -1,0 +1,137 @@
+- generic [active] [ref=f1e1]:
+  - main "植物邮票滑动展台" [ref=f1e773]:
+    - generic [ref=f1e774]:
+      - generic [ref=f1e775]:
+        - heading "金叶女贞" [level=1] [ref=f1e776]:
+          - generic [ref=f1e777]:
+            - generic [ref=f1e778]: 金
+            - generic [ref=f1e780]: 叶
+            - generic [ref=f1e782]: 女
+            - generic [ref=f1e784]: 贞
+        - paragraph [ref=f1e786]:
+          - generic [ref=f1e787]: Ligustrum × vicaryi
+      - generic:
+        - button "打开档案：金叶女贞邮票" [ref=f1e788] [cursor=pointer]:
+          - generic [ref=f1e792]:
+            - generic [ref=f1e793]:
+              - generic [ref=f1e794]:
+                - text: 下一枝
+                - generic [ref=f1e795]: NEXT BRANCH
+              - generic [ref=f1e796]: 枝
+            - img "金叶女贞植物插画"
+            - generic [ref=f1e797]:
+              - generic [ref=f1e798]:
+                - generic [ref=f1e799]: 金叶女贞
+                - generic [ref=f1e800]: Ligustrum × vicaryi
+              - generic [ref=f1e801]:
+                - text: "01"
+                - generic [ref=f1e802]: 枝—001
+        - button "切换到木槿邮票" [ref=f1e803] [cursor=pointer]:
+          - generic [ref=f1e807]:
+            - generic [ref=f1e808]:
+              - generic [ref=f1e809]:
+                - text: 下一枝
+                - generic [ref=f1e810]: NEXT BRANCH
+              - generic [ref=f1e811]: 枝
+            - img "木槿植物插画"
+            - generic [ref=f1e812]:
+              - generic [ref=f1e813]:
+                - generic [ref=f1e814]: 木槿
+                - generic [ref=f1e815]: Hibiscus syriacus
+              - generic [ref=f1e816]:
+                - text: "02"
+                - generic [ref=f1e817]: 枝—002
+        - button "切换到小叶女贞邮票" [ref=f1e818] [cursor=pointer]:
+          - generic [ref=f1e822]:
+            - generic [ref=f1e823]:
+              - generic [ref=f1e824]:
+                - text: 下一枝
+                - generic [ref=f1e825]: NEXT BRANCH
+              - generic [ref=f1e826]: 枝
+            - img "小叶女贞植物插画"
+            - generic [ref=f1e827]:
+              - generic [ref=f1e828]:
+                - generic [ref=f1e829]: 小叶女贞
+                - generic [ref=f1e830]: Ligustrum quihoui
+              - generic [ref=f1e831]:
+                - text: "03"
+                - generic [ref=f1e832]: 枝—003
+        - button "切换到桂花邮票" [ref=f1e833] [cursor=pointer]:
+          - generic [ref=f1e837]:
+            - generic [ref=f1e838]:
+              - generic [ref=f1e839]:
+                - text: 下一枝
+                - generic [ref=f1e840]: NEXT BRANCH
+              - generic [ref=f1e841]: 枝
+            - img "桂花植物插画"
+            - generic [ref=f1e842]:
+              - generic [ref=f1e843]:
+                - generic [ref=f1e844]: 桂花
+                - generic [ref=f1e845]: Osmanthus fragrans
+              - generic [ref=f1e846]:
+                - text: "07"
+                - generic [ref=f1e847]: 枝—007
+        - button "切换到贴梗海棠邮票" [ref=f1e848] [cursor=pointer]:
+          - generic [ref=f1e852]:
+            - generic [ref=f1e853]:
+              - generic [ref=f1e854]:
+                - text: 下一枝
+                - generic [ref=f1e855]: NEXT BRANCH
+              - generic [ref=f1e856]: 枝
+            - img "贴梗海棠植物插画"
+            - generic [ref=f1e857]:
+              - generic [ref=f1e858]:
+                - generic [ref=f1e859]: 贴梗海棠
+                - generic [ref=f1e860]: Chaenomeles speciosa
+              - generic [ref=f1e861]:
+                - text: "08"
+                - generic [ref=f1e862]: 枝—008
+      - generic:
+        - generic:
+          - strong:
+            - generic: 再长一次
+          - generic "修剪下来的枝条，也能成为一盆新绿"
+  - button "开启背景音乐" [ref=f1e95] [cursor=pointer]
+  - navigation "主要导航" [ref=f1e99]:
+    - button "邮票馆" [ref=f1e100] [cursor=pointer]:
+      - generic "邮票馆" [ref=f1e101]:
+        - generic [ref=f1e103]:
+          - generic [ref=f1e104]: 邮
+          - generic [ref=f1e105]: 邮
+        - generic [ref=f1e107]:
+          - generic [ref=f1e108]: 票
+          - generic [ref=f1e109]: 票
+        - generic [ref=f1e111]:
+          - generic [ref=f1e112]: 馆
+          - generic [ref=f1e113]: 馆
+    - button "枝条放映室" [ref=f1e114] [cursor=pointer]:
+      - generic "枝条放映室" [ref=f1e115]:
+        - generic [ref=f1e117]:
+          - generic [ref=f1e118]: 枝
+          - generic [ref=f1e119]: 枝
+        - generic [ref=f1e121]:
+          - generic [ref=f1e122]: 条
+          - generic [ref=f1e123]: 条
+        - generic [ref=f1e125]:
+          - generic [ref=f1e126]: 放
+          - generic [ref=f1e127]: 放
+        - generic [ref=f1e129]:
+          - generic [ref=f1e130]: 映
+          - generic [ref=f1e131]: 映
+        - generic [ref=f1e133]:
+          - generic [ref=f1e134]: 室
+          - generic [ref=f1e135]: 室
+    - button "枝友来信" [ref=f1e136] [cursor=pointer]:
+      - generic "枝友来信" [ref=f1e137]:
+        - generic [ref=f1e139]:
+          - generic [ref=f1e140]: 枝
+          - generic [ref=f1e141]: 枝
+        - generic [ref=f1e143]:
+          - generic [ref=f1e144]: 友
+          - generic [ref=f1e145]: 友
+        - generic [ref=f1e147]:
+          - generic [ref=f1e148]: 来
+          - generic [ref=f1e149]: 来
+        - generic [ref=f1e151]:
+          - generic [ref=f1e152]: 信
+          - generic [ref=f1e153]: 信

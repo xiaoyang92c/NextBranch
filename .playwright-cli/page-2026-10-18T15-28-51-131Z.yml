@@ -1,0 +1,64 @@
+- generic [ref=e1]:
+  - main "枝友来信" [ref=e3]:
+    - heading "枝友来信" [level=1] [ref=e4]
+    - region "上下浏览来信，点按抽出信纸" [ref=e5]:
+      - list [ref=e6]:
+        - listitem [ref=e559]:
+          - button "抽出查看：紫薇长了芽，是不是已经生根？" [ref=e560] [cursor=pointer]:
+            - generic [ref=e561]:
+              - generic [ref=e564]:
+                - generic [ref=e565]: 紫薇 · 扦插
+                - generic [ref=e566]: 亲爱的枝友：
+                - strong [ref=e567]: 紫薇长了芽，是不是已经生根？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+    - search [ref=e457]:
+      - searchbox "搜索植物或来信" [ref=e462]
+      - button "筛选来信" [active] [ref=e463] [cursor=pointer]
+      - button "寄出一封信" [ref=e468] [cursor=pointer]
+    - status [ref=e471]: 1 封来信
+  - button "开启背景音乐" [ref=e472] [cursor=pointer]
+  - navigation "主要导航" [ref=e476]:
+    - button "邮票馆" [ref=e477] [cursor=pointer]:
+      - generic "邮票馆" [ref=e478]:
+        - generic [ref=e480]:
+          - generic [ref=e481]: 邮
+          - generic [ref=e482]: 邮
+        - generic [ref=e484]:
+          - generic [ref=e485]: 票
+          - generic [ref=e486]: 票
+        - generic [ref=e488]:
+          - generic [ref=e489]: 馆
+          - generic [ref=e490]: 馆
+    - button "枝条放映室" [ref=e491] [cursor=pointer]:
+      - generic "枝条放映室" [ref=e492]:
+        - generic [ref=e494]:
+          - generic [ref=e495]: 枝
+          - generic [ref=e496]: 枝
+        - generic [ref=e498]:
+          - generic [ref=e499]: 条
+          - generic [ref=e500]: 条
+        - generic [ref=e502]:
+          - generic [ref=e503]: 放
+          - generic [ref=e504]: 放
+        - generic [ref=e506]:
+          - generic [ref=e507]: 映
+          - generic [ref=e508]: 映
+        - generic [ref=e510]:
+          - generic [ref=e511]: 室
+          - generic [ref=e512]: 室
+    - button "枝友来信" [ref=e513] [cursor=pointer]:
+      - generic "枝友来信" [ref=e514]:
+        - generic [ref=e516]:
+          - generic [ref=e517]: 枝
+          - generic [ref=e518]: 枝
+        - generic [ref=e520]:
+          - generic [ref=e521]: 友
+          - generic [ref=e522]: 友
+        - generic [ref=e524]:
+          - generic [ref=e525]: 来
+          - generic [ref=e526]: 来
+        - generic [ref=e528]:
+          - generic [ref=e529]: 信
+          - generic [ref=e530]: 信

@@ -1,0 +1,13 @@
+/* One shared chapter position for every page, including all secondary routes. */
+:root{--nav-edge:clamp(32px,4vw,56px);--nav-font:13px;--nav-height:44px;--nav-line:calc(var(--nav-font)*1.45)}
+body[data-view] .main-nav{position:fixed;top:calc(var(--nav-edge) - (var(--nav-height) - var(--nav-line))/2);bottom:auto;left:calc(var(--nav-edge) - 9px);right:calc(var(--nav-edge) - 9px);width:auto;height:var(--nav-height);max-width:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:0;background:none;border:0;box-shadow:none;backdrop-filter:none;color:#fff7df;mix-blend-mode:normal;z-index:80}
+body[data-view] .main-nav .nav-brand{display:none}
+body[data-view] .main-nav button:not(.nav-brand){height:var(--nav-height);min-width:0;padding:0;font-size:var(--nav-font);line-height:1.2;justify-self:center;flex:none;color:inherit;text-shadow:none}
+body[data-view] .main-nav button[data-nav="home"]{justify-self:start}
+body[data-view] .main-nav button[data-nav="letters"]{justify-self:end}
+body[data-view] .main-nav .nav-label{padding:7px 9px;letter-spacing:.025em}
+body[data-view] .main-nav .letter-window{padding:0;line-height:1.45;height:1.45em}
+body[data-view] .main-nav button.active::before{content:none}
+body[data-view="album"] .album-desk{--tv-gutter:var(--nav-edge)}
+@media(max-width:360px){:root{--nav-font:12px}}
+@media(max-height:560px) and (orientation:landscape){:root{--nav-edge:28px;--nav-font:12px}}

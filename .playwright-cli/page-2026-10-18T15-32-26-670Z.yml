@@ -1,0 +1,104 @@
+- generic [active] [ref=f1e1]:
+  - main "寄一封枝友来信" [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - group [ref=f1e6]:
+        - button "收起信纸，返回来信" [ref=f1e7] [cursor=pointer]: ×
+        - generic [ref=f1e8]:
+          - generic [ref=f1e9]:
+            - generic [ref=f1e10]: 下一枝 · 枝条邮局
+            - strong [ref=f1e11]: 亲爱的枝友：
+            - generic [ref=f1e12]: 见信如晤。
+          - generic [ref=f1e17]:
+            - generic [ref=f1e18]:
+              - generic [ref=f1e19]:
+                - text: 下一枝
+                - generic [ref=f1e20]: NEXT BRANCH
+              - generic [ref=f1e21]: 枝
+            - generic [ref=f1e22]:
+              - generic [ref=f1e23]:
+                - generic [ref=f1e24]: 金叶女贞
+                - generic [ref=f1e25]: Ligustrum × vicaryi
+              - generic [ref=f1e26]:
+                - text: "01"
+                - generic [ref=f1e27]: 枝—001
+        - generic [ref=f1e28]:
+          - generic [ref=f1e29]:
+            - text: 关于这一枝
+            - combobox "关于这一枝" [ref=f1e30]:
+              - option "金叶女贞" [selected]
+              - option "木槿"
+              - option "小叶女贞"
+              - option "紫薇"
+              - option "六月雪"
+              - option "木芙蓉"
+              - option "桂花"
+              - option "贴梗海棠"
+          - generic [ref=f1e31]:
+            - text: 这一页想说
+            - combobox "这一页想说" [ref=f1e32]:
+              - option "扦插" [selected]
+              - option "光照"
+              - option "浇水"
+              - option "叶片"
+              - option "其他"
+        - generic [ref=f1e33]: 信的题目
+        - textbox "信的题目" [ref=f1e34]:
+          - /placeholder: 例如：新叶卷起，是在等水吗？
+        - generic [ref=f1e35]: 写下你的观察
+        - textbox "写下你的观察" [ref=f1e36]:
+          - /placeholder: "这几天，我的枝条有了一点变化……\n\n它现在放在……，我想问……"
+        - generic [ref=f1e37]:
+          - text: 盼复。
+          - generic [ref=f1e38]: 一位照顾枝条的人
+        - generic [ref=f1e39]:
+          - generic [ref=f1e40] [cursor=pointer]:
+            - button "夹进一张植物照片" [ref=f1e41]
+            - generic [ref=f1e42]: ＋ 夹进一张照片
+          - button "折好寄出 ↗" [ref=f1e43] [cursor=pointer]
+      - generic [aria-hidden] [ref=f1e44]:
+        - text: 已寄出
+        - generic [ref=f1e45]: 下一枝 · 枝条邮局
+  - button "开启背景音乐" [ref=f1e46] [cursor=pointer]
+  - navigation "主要导航" [ref=f1e50]:
+    - button "邮票馆" [ref=f1e51] [cursor=pointer]:
+      - generic "邮票馆" [ref=f1e52]:
+        - generic [ref=f1e54]:
+          - generic [ref=f1e55]: 邮
+          - generic [ref=f1e56]: 邮
+        - generic [ref=f1e58]:
+          - generic [ref=f1e59]: 票
+          - generic [ref=f1e60]: 票
+        - generic [ref=f1e62]:
+          - generic [ref=f1e63]: 馆
+          - generic [ref=f1e64]: 馆
+    - button "枝条放映室" [ref=f1e65] [cursor=pointer]:
+      - generic "枝条放映室" [ref=f1e66]:
+        - generic [ref=f1e68]:
+          - generic [ref=f1e69]: 枝
+          - generic [ref=f1e70]: 枝
+        - generic [ref=f1e72]:
+          - generic [ref=f1e73]: 条
+          - generic [ref=f1e74]: 条
+        - generic [ref=f1e76]:
+          - generic [ref=f1e77]: 放
+          - generic [ref=f1e78]: 放
+        - generic [ref=f1e80]:
+          - generic [ref=f1e81]: 映
+          - generic [ref=f1e82]: 映
+        - generic [ref=f1e84]:
+          - generic [ref=f1e85]: 室
+          - generic [ref=f1e86]: 室
+    - button "枝友来信" [ref=f1e87] [cursor=pointer]:
+      - generic "枝友来信" [ref=f1e88]:
+        - generic [ref=f1e90]:
+          - generic [ref=f1e91]: 枝
+          - generic [ref=f1e92]: 枝
+        - generic [ref=f1e94]:
+          - generic [ref=f1e95]: 友
+          - generic [ref=f1e96]: 友
+        - generic [ref=f1e98]:
+          - generic [ref=f1e99]: 来
+          - generic [ref=f1e100]: 来
+        - generic [ref=f1e102]:
+          - generic [ref=f1e103]: 信
+          - generic [ref=f1e104]: 信

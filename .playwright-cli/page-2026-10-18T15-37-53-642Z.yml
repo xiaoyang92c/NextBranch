@@ -1,0 +1,84 @@
+- generic [active] [ref=f2e1]:
+  - main "枝友来信" [ref=f2e148]:
+    - heading "枝友来信" [level=1] [ref=f2e149]
+    - region "上下浏览来信，点按抽出信纸" [ref=f2e150]:
+      - list [ref=f2e151]:
+        - listitem [ref=f2e152]:
+          - button "抽出查看：窗台上的新芽" [ref=f2e153] [cursor=pointer]:
+            - generic [ref=f2e154]:
+              - generic [ref=f2e157]:
+                - generic [ref=f2e158]: 金叶女贞 · 扦插
+                - generic [ref=f2e159]: 亲爱的枝友：
+                - strong [ref=f2e160]: 窗台上的新芽
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 等一封回信
+        - listitem [ref=f2e161]:
+          - button "抽出查看：金叶女贞新叶卷起来了，正常吗？" [ref=f2e162] [cursor=pointer]:
+            - generic [ref=f2e163]:
+              - generic [ref=f2e166]:
+                - generic [ref=f2e167]: 金叶女贞 · 叶片
+                - generic [ref=f2e168]: 亲爱的枝友：
+                - strong [ref=f2e169]: 金叶女贞新叶卷起来了，正常吗？
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 2 封回信
+        - listitem [ref=f2e170]:
+          - button "抽出查看：第一片新叶，想寄给大家看看" [ref=f2e171] [cursor=pointer]:
+            - generic [ref=f2e172]:
+              - generic [ref=f2e175]:
+                - generic [ref=f2e176]: 金叶女贞 · 其他
+                - generic [ref=f2e177]: 亲爱的枝友：
+                - strong [ref=f2e178]: 第一片新叶，想寄给大家看看
+              - generic:
+                - text: 致，每一位枝友
+                - generic: 1 封回信
+    - search [ref=f2e179]:
+      - searchbox "搜索植物或来信" [ref=f2e184]
+      - button "筛选来信" [ref=f2e185] [cursor=pointer]
+      - button "寄出一封信" [ref=f2e191] [cursor=pointer]
+    - status [ref=f2e194]: 3 封来信
+  - button "开启背景音乐" [ref=f2e46] [cursor=pointer]
+  - navigation "主要导航" [ref=f2e50]:
+    - button "邮票馆" [ref=f2e51] [cursor=pointer]:
+      - generic "邮票馆" [ref=f2e52]:
+        - generic [ref=f2e54]:
+          - generic [ref=f2e55]: 邮
+          - generic [ref=f2e56]: 邮
+        - generic [ref=f2e58]:
+          - generic [ref=f2e59]: 票
+          - generic [ref=f2e60]: 票
+        - generic [ref=f2e62]:
+          - generic [ref=f2e63]: 馆
+          - generic [ref=f2e64]: 馆
+    - button "枝条放映室" [ref=f2e65] [cursor=pointer]:
+      - generic "枝条放映室" [ref=f2e66]:
+        - generic [ref=f2e68]:
+          - generic [ref=f2e69]: 枝
+          - generic [ref=f2e70]: 枝
+        - generic [ref=f2e72]:
+          - generic [ref=f2e73]: 条
+          - generic [ref=f2e74]: 条
+        - generic [ref=f2e76]:
+          - generic [ref=f2e77]: 放
+          - generic [ref=f2e78]: 放
+        - generic [ref=f2e80]:
+          - generic [ref=f2e81]: 映
+          - generic [ref=f2e82]: 映
+        - generic [ref=f2e84]:
+          - generic [ref=f2e85]: 室
+          - generic [ref=f2e86]: 室
+    - button "枝友来信" [ref=f2e87] [cursor=pointer]:
+      - generic "枝友来信" [ref=f2e88]:
+        - generic [ref=f2e90]:
+          - generic [ref=f2e91]: 枝
+          - generic [ref=f2e92]: 枝
+        - generic [ref=f2e94]:
+          - generic [ref=f2e95]: 友
+          - generic [ref=f2e96]: 友
+        - generic [ref=f2e98]:
+          - generic [ref=f2e99]: 来
+          - generic [ref=f2e100]: 来
+        - generic [ref=f2e102]:
+          - generic [ref=f2e103]: 信
+          - generic [ref=f2e104]: 信

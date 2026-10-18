@@ -1,0 +1,104 @@
+- generic [active] [ref=e1]:
+  - main "寄一封枝友来信" [ref=e568]:
+    - generic [ref=e569]:
+      - group [ref=e571]:
+        - button "收起信纸，返回来信" [ref=e572] [cursor=pointer]: ×
+        - generic [ref=e573]:
+          - generic [ref=e574]:
+            - generic [ref=e575]: 下一枝 · 枝条邮局
+            - strong [ref=e576]: 亲爱的枝友：
+            - generic [ref=e577]: 见信如晤。
+          - generic [ref=e582]:
+            - generic [ref=e583]:
+              - generic [ref=e584]:
+                - text: 下一枝
+                - generic [ref=e585]: NEXT BRANCH
+              - generic [ref=e586]: 枝
+            - generic [ref=e587]:
+              - generic [ref=e588]:
+                - generic [ref=e589]: 紫薇
+                - generic [ref=e590]: Lagerstroemia indica
+              - generic [ref=e591]:
+                - text: "04"
+                - generic [ref=e592]: 枝—004
+        - generic [ref=e593]:
+          - generic [ref=e594]:
+            - text: 关于这一枝
+            - combobox "关于这一枝" [ref=e595]:
+              - option "金叶女贞"
+              - option "木槿"
+              - option "小叶女贞"
+              - option "紫薇" [selected]
+              - option "六月雪"
+              - option "木芙蓉"
+              - option "桂花"
+              - option "贴梗海棠"
+          - generic [ref=e596]:
+            - text: 这一页想说
+            - combobox "这一页想说" [ref=e597]:
+              - option "扦插" [selected]
+              - option "光照"
+              - option "浇水"
+              - option "叶片"
+              - option "其他"
+        - generic [ref=e598]: 信的题目
+        - textbox "信的题目" [ref=e599]:
+          - /placeholder: 例如：新叶卷起，是在等水吗？
+        - generic [ref=e600]: 写下你的观察
+        - textbox "写下你的观察" [ref=e601]:
+          - /placeholder: "这几天，我的枝条有了一点变化……\n\n它现在放在……，我想问……"
+        - generic [ref=e602]:
+          - text: 盼复。
+          - generic [ref=e603]: 一位照顾枝条的人
+        - generic [ref=e604]:
+          - generic [ref=e605] [cursor=pointer]:
+            - button "夹进一张植物照片" [ref=e606]
+            - generic [ref=e607]: ＋ 夹进一张照片
+          - button "折好寄出 ↗" [ref=e608] [cursor=pointer]
+      - generic [aria-hidden] [ref=e609]:
+        - text: 已寄出
+        - generic [ref=e610]: 下一枝 · 枝条邮局
+  - button "开启背景音乐" [ref=e472] [cursor=pointer]
+  - navigation "主要导航" [ref=e476]:
+    - button "邮票馆" [ref=e477] [cursor=pointer]:
+      - generic "邮票馆" [ref=e478]:
+        - generic [ref=e480]:
+          - generic [ref=e481]: 邮
+          - generic [ref=e482]: 邮
+        - generic [ref=e484]:
+          - generic [ref=e485]: 票
+          - generic [ref=e486]: 票
+        - generic [ref=e488]:
+          - generic [ref=e489]: 馆
+          - generic [ref=e490]: 馆
+    - button "枝条放映室" [ref=e491] [cursor=pointer]:
+      - generic "枝条放映室" [ref=e492]:
+        - generic [ref=e494]:
+          - generic [ref=e495]: 枝
+          - generic [ref=e496]: 枝
+        - generic [ref=e498]:
+          - generic [ref=e499]: 条
+          - generic [ref=e500]: 条
+        - generic [ref=e502]:
+          - generic [ref=e503]: 放
+          - generic [ref=e504]: 放
+        - generic [ref=e506]:
+          - generic [ref=e507]: 映
+          - generic [ref=e508]: 映
+        - generic [ref=e510]:
+          - generic [ref=e511]: 室
+          - generic [ref=e512]: 室
+    - button "枝友来信" [ref=e513] [cursor=pointer]:
+      - generic "枝友来信" [ref=e514]:
+        - generic [ref=e516]:
+          - generic [ref=e517]: 枝
+          - generic [ref=e518]: 枝
+        - generic [ref=e520]:
+          - generic [ref=e521]: 友
+          - generic [ref=e522]: 友
+        - generic [ref=e524]:
+          - generic [ref=e525]: 来
+          - generic [ref=e526]: 来
+        - generic [ref=e528]:
+          - generic [ref=e529]: 信
+          - generic [ref=e530]: 信

@@ -3,15 +3,15 @@ body{background:var(--paper);user-select:none;-webkit-user-select:none}
 input,textarea,select,[contenteditable]{user-select:text;-webkit-user-select:text}
 button{transition:scale .22s ease,filter .28s ease,opacity .28s ease}
 button:active{scale:.96}
-.page:not(.home-scene):not(.gallery-page){padding-top:58px;animation:page-appear .48s cubic-bezier(.2,.7,.2,1) both}
+.page:not(.home-scene){padding-top:58px;animation:page-appear .48s cubic-bezier(.2,.7,.2,1) both}
 @keyframes page-appear{from{opacity:.3;translate:0 16px;scale:.987}to{opacity:1;translate:0 0;scale:1}}
 .main-nav{position:fixed;top:0;bottom:auto;left:0;right:0;width:100%;height:58px;padding:0 14px;display:flex;align-items:center;border:0;border-bottom:1px solid rgba(22,72,57,.14);background:rgba(250,247,232,.92);color:var(--ink);z-index:80;backdrop-filter:blur(13px)}
 .main-nav button{font:800 11px/1 var(--sans);height:58px;letter-spacing:.02em;color:inherit;background:none;flex:1}
 .main-nav button.active::before{top:10px;left:50%;width:5px;height:5px;background:currentColor}
 .main-nav button:hover{opacity:.62}
 .main-nav small{display:none}
-body[data-view="home"] .main-nav,body[data-view="claim-list"] .main-nav{background:transparent;border:0;backdrop-filter:none;color:var(--scene-accent,#fff6df)}
-body[data-view="claim-list"] .main-nav{color:#fff9e5}
+body[data-view="home"] .main-nav{background:transparent;border:0;backdrop-filter:none;color:var(--scene-accent,#fff6df)}
+
 .site-header{display:none}
 
 /* Full-screen postage carousel */
@@ -41,22 +41,7 @@ body[data-view="claim-list"] .main-nav{color:#fff9e5}
 .text-appear{animation:text-pop .5s cubic-bezier(.2,.7,.2,1) both}
 @keyframes text-pop{from{opacity:0;translate:0 14px;scale:.95}to{opacity:1;translate:0 0;scale:1}}
 
-/* Dense, freely pannable botanical stamp hall */
-.gallery-page{height:100dvh;padding:0;overflow:hidden;position:relative;background:#389c70}
-.gallery-viewport{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;perspective:1100px;scrollbar-width:none;cursor:grab}
-.gallery-viewport:active{cursor:grabbing}
-.gallery-viewport::-webkit-scrollbar{display:none}
-.gallery-grid{width:max-content;display:grid;grid-template-columns:repeat(3,235px);gap:21px;padding:76px 16px 105px;transform-style:preserve-3d}
-.gallery-stamp{width:235px;height:299px;border:0;background:none;padding:0;transform:rotateY(-4deg) rotateX(2deg);transform-style:preserve-3d;animation:gallery-enter .55s both;animation-delay:calc(var(--gallery-i) * 55ms)}
-.gallery-stamp:nth-child(2n){transform:rotateY(4deg) rotateX(-2deg)}
-.gallery-stamp:hover{transform:translateZ(25px) rotateY(0) scale(1.04);z-index:5}
-.gallery-stamp .stamp{filter:drop-shadow(8px 12px 0 rgba(23,80,55,.28))}
-@keyframes gallery-enter{from{opacity:0;translate:0 45px;scale:.92}to{opacity:1;translate:0 0;scale:1}}
-.gallery-type-tile{height:299px;background:#e9c86e;display:flex;flex-direction:column;align-items:start;justify-content:center;padding:20px;transform:rotateY(3deg);color:#235a4a;border:10px solid #fff8e7;font-weight:800}
-.gallery-type-tile b{font:900 26px var(--serif)}.gallery-type-tile span{font:900 35px/.95 var(--display);letter-spacing:-.05em;margin-top:10px}.gallery-type-tile small{font-size:8px;letter-spacing:.08em;margin-top:20px}
-.gallery-overlay-top{position:absolute;top:67px;left:20px;right:20px;display:flex;justify-content:space-between;color:#fff8df;font-size:9px;font-weight:800;letter-spacing:.1em;pointer-events:none;z-index:6;text-shadow:0 1px 4px #226c4e}
-.gallery-overlay-bottom{position:absolute;bottom:0;left:0;right:0;min-height:60px;padding:13px 20px 16px;display:flex;justify-content:space-between;align-items:center;gap:15px;background:rgba(29,113,76,.93);color:#fff8e7;z-index:6;pointer-events:none;font-size:10px}
-.gallery-overlay-bottom strong{font:900 14px var(--serif)}
+@keyframes paper-arrive{from{opacity:0;translate:0 45px;scale:.92}to{opacity:1;translate:0 0;scale:1}}
 
 /* Recut the stamp as a bright, collectible print */
 .stamp{--stamp-paper:#fff9e8;filter:drop-shadow(5px 7px 5px rgba(24,65,49,.2))}
@@ -96,8 +81,8 @@ body[data-view="claim-list"] .main-nav{color:#fff9e5}
 .solid-action:hover,.line-action:hover{filter:brightness(1.12);translate:0 -2px}
 .option:hover{background:#e6edcf}
 .branch-item:hover{translate:0 -3px;box-shadow:4px 5px 0 #9fbd9f}
-.postcard{animation:gallery-enter .55s both}
-.envelope{animation:gallery-enter .55s both}
+.postcard{animation:paper-arrive .55s both}
+.envelope{animation:paper-arrive .55s both}
 .letter-sheet{background:#fffaf0}
 .focus-backdrop{background:var(--focus-bg,#ec9aaa);backdrop-filter:blur(7px)}
 .focus-wrap{color:var(--focus-ink,#164839)}
@@ -107,6 +92,97 @@ body[data-view="claim-list"] .main-nav{color:#fff9e5}
 .focus-stamp{animation:focus-breathe 2.8s ease-in-out infinite alternate}
 @keyframes focus-breathe{to{translate:0 -4px}}
 
-@media(min-width:680px){.main-nav{left:auto;right:0;width:600px;background:rgba(250,247,232,.86)}.main-nav button{font-size:12px}.page:not(.home-scene):not(.gallery-page){padding-top:58px}.home-scene{min-height:700px}.scene-identity{left:5%;top:75px}.scene-kicker{right:5%;top:75px;max-width:none}.scene-english{top:13%;font-size:var(--title-size,90px)}.scene-stamp{width:min(22vw,280px);top:49%}.scene-end{bottom:48px}.scene-name strong{font-size:clamp(82px,8vw,116px)}.scene-flourish{left:13%;top:53%;font-size:100px}.scene-controls{right:5%;bottom:10px}.gallery-grid{grid-template-columns:repeat(4,245px);gap:25px;padding:87px 25px 110px}.gallery-stamp,.gallery-type-tile{width:245px;height:312px}.gallery-overlay-top{left:5%;right:5%;top:68px}.gallery-overlay-bottom{padding-left:5%;padding-right:5%}.gallery-type-tile{display:none}}
+@media(min-width:680px){.main-nav{left:auto;right:0;width:600px;background:rgba(250,247,232,.86)}.main-nav button{font-size:12px}.page:not(.home-scene){padding-top:58px}.home-scene{min-height:700px}.scene-identity{left:5%;top:75px}.scene-kicker{right:5%;top:75px;max-width:none}.scene-english{top:13%;font-size:var(--title-size,90px)}.scene-stamp{width:min(22vw,280px);top:49%}.scene-end{bottom:48px}.scene-name strong{font-size:clamp(82px,8vw,116px)}.scene-flourish{left:13%;top:53%;font-size:100px}.scene-controls{right:5%;bottom:10px}}
 @media(max-width:380px){.main-nav{padding:0 5px}.main-nav button{font-size:10px}.scene-identity,.scene-kicker{font-size:7px}.scene-controls{right:8px}.scene-name strong{font-size:65px}}
+
+/* The branch pickup slip: scoped to this chapter. */
+.claim-flow{background:#d9efd8}
+body[data-view="claim"] .page.claim-flow{animation:none}
+.claim-flow .form-paper{background:#fff9e8;box-shadow:7px 7px 0 rgba(36,116,86,.12)}
+.claim-flow .claim-head{padding-bottom:24px}
+.claim-flow .claim-progress{list-style:none;margin:0 0 23px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;font:700 10px/1.4 var(--sans)}
+.claim-progress li{border-top:1px solid #aab9a9;padding-top:8px;color:#6b7d6c}
+.claim-progress li>span{display:block;font:800 12px/1.4 var(--display);margin-bottom:3px;letter-spacing:.1em}
+.claim-progress li.is-current{color:var(--ink);border-top:3px solid var(--green);padding-top:6px}
+.claim-progress li.is-complete{color:var(--green);border-color:var(--green)}
+.claim-flow .form-top .postage{color:var(--green);border-color:var(--green);transform:rotate(0)}
+.claim-plant{display:grid;grid-template-columns:86px minmax(0,1fr);gap:15px;align-items:center;padding:18px 0;border-bottom:1px solid #aab9a9}
+.claim-plant-stamp{width:86px;aspect-ratio:220/280}
+.claim-plant-stamp .stamp.small .stamp-name{font-size:10px}
+.claim-plant-stamp .stamp.small .stamp-top{font-size:3px}
+.claim-plant-stamp .stamp.small .stamp-emblem{font-size:7px;padding:1px 2px;border-width:1px}
+.claim-plant-stamp .stamp.small .stamp-index{font-size:8px}
+.claim-plant-stamp .stamp.small .stamp-latin{font-size:2.5px}
+.claim-plant-stamp .stamp.small .stamp-index small{font-size:2px;margin-top:2px}
+.claim-plant-stamp .stamp.small .stamp-vertical{font-size:2px}
+.claim-plant h2{font:900 25px/1.2 var(--serif);margin:6px 0}
+.claim-plant h2 small{display:block;font:700 9px var(--sans);margin-top:5px;letter-spacing:.1em}
+.claim-plant p{font:600 12px/1.6 var(--serif);margin:5px 0}
+.claim-plant .eyebrow{font-size:8px;letter-spacing:.07em}
+.claim-demo{font:600 9px var(--sans);color:#637967}
+.claim-step-content{animation:claim-paper-unfold .35s cubic-bezier(.2,.7,.2,1) both}
+@keyframes claim-paper-unfold{from{opacity:0;translate:0 12px;scale:.985}to{opacity:1;translate:0 0;scale:1}}
+.claim-step-heading{padding:23px 0 5px}
+.claim-step-heading>span{font:800 8px var(--sans);letter-spacing:.13em;color:var(--green)}
+.claim-step-heading h2{font:800 25px/1.25 var(--serif);letter-spacing:-.06em;margin:8px 0}
+.claim-step-heading h2:focus{outline:none}
+.claim-step-heading p{font:500 12px/1.6 var(--serif);margin:5px 0 10px}
+.claim-flow .claim-field{border:0;min-width:0;margin:21px 0 0;padding:0}
+.claim-field legend{font:800 11px/1.5 var(--sans);letter-spacing:.03em;padding:0}
+.claim-flow .option-row{gap:8px;margin-top:10px}
+.claim-flow .claim-option{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;cursor:pointer}
+.claim-option input,.claim-method input{position:absolute;left:8px;top:8px;width:1px;height:1px;opacity:0}
+.claim-flow .claim-option.selected{transform:none;background:#e0e7d1}
+.claim-flow .claim-option.selected::after{animation:none;top:-8px;right:-5px}
+.claim-flow .claim-option.just-stamped::after{animation:stamp-down .28s ease both}
+.claim-flow .claim-option:focus-within,.claim-flow .claim-method:focus-within{outline:2px solid var(--green);outline-offset:4px}
+.claim-flow .suitability{margin-top:20px;padding:13px 14px}
+.claim-flow .suitability p{margin:3px 0;font:500 12px/1.8 var(--serif)}
+.claim-flow .suitability small{display:block;margin-top:9px;font:500 10px/1.6 var(--sans);color:#536c59}
+.claim-flow .suitability .text-back{display:block;margin:10px 0;font-size:11px}
+.claim-step-actions{display:flex;gap:9px;margin-top:24px}
+.claim-step-actions>.solid-action{flex:1;justify-content:space-between}
+.claim-step-actions>.line-action{flex-shrink:0;padding-left:12px;padding-right:12px}
+.claim-flow .claim-footnote{font:500 10px/1.7 var(--sans);color:#637967;margin:15px 0 0}
+.claim-flow .required-hint{font-size:12px;line-height:1.5}
+.claim-flow input[aria-invalid="true"]{border-bottom:2px solid var(--red)}
+.claim-flow .claim-methods{display:grid;gap:13px;margin-top:15px}
+.claim-method{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;position:relative;border:1px solid #7f9587;padding:18px 14px;background:transparent;cursor:pointer;transition:background .2s,border-color .2s}
+.claim-method-number{font:800 12px var(--display);padding-top:3px;color:#637967}
+.claim-method-copy strong{display:block;font:800 20px/1.25 var(--serif);letter-spacing:-.05em;padding-right:5px}
+.claim-method-copy em{font:700 10px/1.5 var(--sans);display:block;margin-top:7px;font-style:normal}
+.claim-method-copy>span{font:500 12px/1.7 var(--serif);display:block;margin-top:8px}
+.claim-method-copy>small{font:600 9px/1.5 var(--sans);display:block;margin-top:12px;color:#637967}
+.claim-method.selected{background:#e0e7d1;border-color:var(--green)}
+.claim-method-mark{position:absolute;right:8px;bottom:10px;display:none;font:800 10px/1 var(--serif);color:var(--red);border:2px double var(--red);padding:6px 9px;rotate:-12deg;background:#fff9e8}
+.claim-method.selected .claim-method-mark{display:block}
+.claim-method.just-stamped .claim-method-mark{animation:stamp-down .28s ease both}
+.claim-flow .claim-method.is-unavailable{opacity:.47;cursor:not-allowed;background:#e8e9dd;border-style:dashed}
+.claim-method-empty{font:500 12px var(--serif);margin:22px 0}
+.claim-agreement{border-top:1px solid #aab9a9;border-bottom:1px solid #aab9a9;margin-top:12px;padding:8px 0}
+.claim-agreement p{font:500 13px/1.9 var(--serif);margin:12px 0}
+.claim-review{margin:19px 0 0}
+.claim-review>div{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:9px 0;border-bottom:1px dotted #aab9a9}
+.claim-review dt{font:700 10px/1.6 var(--sans);color:#637967}
+.claim-review dd{font:600 12px/1.6 var(--serif);margin:0;overflow-wrap:anywhere}
+.claim-edit-links{display:flex;justify-content:space-between;gap:10px;margin:14px 0 23px}
+.claim-edit-links button{font-size:10px}
+.claim-consent{display:flex;align-items:flex-start;gap:10px;font:600 12px/1.7 var(--serif);cursor:pointer}
+.claim-consent input{accent-color:var(--green);flex-shrink:0;width:17px;height:17px;margin:2px 0 0}
+.claim-keep-ticket{display:block;margin:18px auto 0;font-size:11px}
+.claim-flow .claim-ticket{display:flow-root}
+.claim-flow .ticket-title{font-size:29px;line-height:1.18}
+.claim-flow .ticket-stamp{width:116px;margin-left:12px}
+.claim-ticket-mark{min-height:76px;display:flex;align-items:center;margin:14px 0 17px}
+.claim-reserved-seal{display:inline-block;border:3px double var(--green);padding:6px 15px;font:900 20px/1.3 var(--serif);text-align:center;color:var(--green);rotate:-9deg}
+.claim-reserved-seal small{display:block;font:700 8px/1.5 var(--sans);letter-spacing:.08em}
+.claim-flow .red-postmark{position:static;width:98px;height:98px;animation:none;transform:rotate(-14deg);font-size:20px;line-height:1.4;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.claim-flow .red-postmark small{font:700 9px var(--sans);letter-spacing:.06em}
+.claim-flow.is-new-pickup .red-postmark,.claim-flow.is-new-reservation .claim-reserved-seal{animation:postmark-fall .48s cubic-bezier(.2,.8,.3,1) both}
+.claim-flow .ticket-dl dd{overflow-wrap:anywhere;max-width:70%}
+.claim-flow .ticket-dl dd small{font:500 10px/1.8 var(--sans);color:#637967}
+.claim-flow .ticket-bottom{align-items:center}
+.claim-sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(min-width:680px){.claim-flow .form-paper{padding:28px 32px 30px}.claim-flow .claim-head{padding-left:0;padding-right:0}.claim-flow .claim-plant{grid-template-columns:100px minmax(0,1fr);gap:23px}.claim-flow .claim-plant-stamp{width:100px}.claim-flow .claim-step-heading h2{font-size:30px}.claim-flow .claim-progress{font-size:11px}.claim-flow .ticket-stamp{width:150px}.claim-flow .ticket-title{font-size:38px}.claim-method-copy strong{font-size:23px}.claim-flow .claim-step-actions{margin-top:28px}.claim-flow .form-paper{margin-bottom:80px}}
+@media(max-width:360px){.claim-flow .form-paper{margin-left:10px;margin-right:10px;padding-left:14px;padding-right:14px}.claim-step-heading h2{font-size:23px}.claim-step-actions .solid-action,.claim-step-actions .line-action{font-size:11px;gap:6px;padding-left:10px;padding-right:10px}.claim-flow .ticket-stamp{width:98px}.claim-flow .ticket-title{font-size:25px}.claim-progress li{font-size:9px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

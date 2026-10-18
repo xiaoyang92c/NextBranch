@@ -1,0 +1,268 @@
+import {plants} from './plants.js';
+const active=new Set(),ornaments=new Set(),inkWriters=new Set();
+let inkId=0;
+let retainCompleted=false,generation=0,enteringPage=null,signalCarry=null,foldedPage=null;
+const motionPreference=matchMedia('(prefers-reduced-motion: reduce)');
+const reducedMotion=()=>motionPreference.matches;
+const ease='cubic-bezier(.22,.75,.2,1)';
+const signalBlank='#9eaf9e';
+
+export function stopChapterMotion(){
+ generation++;active.forEach(animation=>animation.cancel());active.clear();retainCompleted=false;
+ inkWriters.forEach(finish=>finish());inkWriters.clear();
+ ornaments.forEach(element=>element.remove());ornaments.clear();
+ if(foldedPage?.page.isConnected)foldedPage.page.style.visibility=foldedPage.visibility;
+ foldedPage=null;
+ enteringPage?.classList.remove('is-chapter-entering','is-screen-ready');enteringPage=null;
+}
+function tween(element,frames,duration,delay=0,easing=ease){
+ if(!element)return;
+ const animation=element.animate(frames,{duration,delay,easing,fill:'both'}),retain=retainCompleted;
+ active.add(animation);
+ animation.finished.finally(()=>{if(!retain){active.delete(animation);animation.cancel();}}).catch(()=>{});
+ return animation;
+}
+function beam(opening){
+ const line=document.createElement('div');line.className='chapter-power-line';line.setAttribute('aria-hidden','true');document.body.append(line);ornaments.add(line);
+ tween(line,opening?[
+  {transform:'scaleX(.015)',opacity:0},
+  {transform:'scaleX(.38)',opacity:.55,offset:.19},
+  {transform:'scaleX(.88)',opacity:.45,offset:.32},
+  {transform:'scaleX(.98)',opacity:0,offset:.57},
+  {transform:'scaleX(1)',opacity:0}
+ ]:[
+  {transform:'scaleX(1)',opacity:0},
+  {transform:'scaleX(.96)',opacity:0,offset:.42},
+  {transform:'scaleX(.88)',opacity:.5,offset:.69},
+  {transform:'scaleX(.15)',opacity:.45,offset:.9},
+  {transform:'scaleX(.015)',opacity:0}
+ ],opening?1140:720,0,'cubic-bezier(.4,0,.3,1)');
+}
+function powerOff(page){
+ // Crop the raster in place: neither its typography nor its paper is squashed.
+ const box=page.getBoundingClientRect(),cy=innerHeight/2-box.top;
+ const aperture=(height,width=0,radius=12)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
+ tween(page,[
+  {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)'},
+  {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)',offset:.2},
+  {clipPath:aperture(6,2),filter:'brightness(.99) saturate(.98)',offset:.7},
+  {clipPath:aperture(2,30),filter:'brightness(.98) saturate(.96)',offset:.89},
+  {clipPath:aperture(0,50),filter:'brightness(.98) saturate(.96)'}
+ ],720,0,'cubic-bezier(.5,0,.3,1)');
+ beam(false);
+}
+function writeHomeGlyph(glyph,duration,delay){
+ const box=glyph.getBoundingClientRect();if(!box.width||!box.height)return;
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),defs=document.createElementNS(ns,'defs'),paper=document.createElementNS(ns,'foreignObject');
+ const id=`home-writing-${++inkId}`,style=getComputedStyle(glyph),content=document.createElement('div');
+ svg.classList.add('scene-writing-ink');svg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);svg.setAttribute('aria-hidden','true');
+ mask.id=id;mask.setAttribute('maskUnits','userSpaceOnUse');mask.setAttribute('x','0');mask.setAttribute('y','0');mask.setAttribute('width',box.width);mask.setAttribute('height',box.height);
+ const left=-box.width*.2,right=box.width*1.2;
+ brush.setAttribute('d',Array.from({length:5},(_,i)=>`${i?'L':'M'}${left} ${box.height*(.08+i*.21)}L${right} ${box.height*(.08+i*.21)}`).join(''));
+ for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':box.height*.25,'stroke-linejoin':'round','stroke-linecap':'butt',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':'1'}))brush.setAttribute(key,value);
+ mask.append(brush);defs.append(mask);svg.append(defs);
+ paper.setAttribute('width','100%');paper.setAttribute('height','100%');paper.setAttribute('mask',`url(#${id})`);
+ Object.assign(content.style,{font:style.font,letterSpacing:style.letterSpacing,color:style.color,whiteSpace:'pre',width:'100%',height:'100%',textAlign:'center'});
+ content.innerHTML=glyph.innerHTML;content.querySelectorAll('*').forEach(el=>el.style.animation='none');paper.append(content);svg.append(paper);
+ const original=[...glyph.childNodes];original.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)node.style.visibility='hidden';});
+ // Plain Chinese subtitle glyphs get a hidden original span with unchanged width.
+ if(!glyph.children.length){const base=document.createElement('span');base.className='scene-writing-original';base.style.visibility='hidden';base.append(...original);glyph.append(base);}
+ glyph.append(svg);
+ const finish=()=>{svg.remove();glyph.querySelectorAll('.scene-writing-original').forEach(el=>el.replaceWith(...el.childNodes));original.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)node.style.visibility='';});inkWriters.delete(finish);};
+ inkWriters.add(finish);
+ tween(brush,[{strokeDashoffset:1},{strokeDashoffset:0}],duration,delay,'linear').finished.then(finish).catch(()=>{});
+}
+function paintHomeStamp(card){
+ if(!card)return;
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),id=`home-paint-${++inkId}`;
+ svg.classList.add('scene-paint-defs');svg.setAttribute('width','0');svg.setAttribute('height','0');svg.setAttribute('aria-hidden','true');
+ for(const [name,value] of Object.entries({id,maskUnits:'objectBoundingBox',maskContentUnits:'objectBoundingBox',x:'-.3',y:'-.2',width:'1.7',height:'1.6'}))mask.setAttribute(name,value);
+ // Overlapping, alternating brush passes reveal the live print and its shadow.
+ // The actual stamp never moves or dissolves, and keeps its paper animation.
+ const rows=Array.from({length:10},(_,i)=>{const y=-.08+i*.15,left=-.25,right=1.4;return `${i?'L':'M'}${i%2?right:left} ${y}L${i%2?left:right} ${y+.012}`;});
+ for(const [name,value] of Object.entries({d:rows.join(''),fill:'none',stroke:'white','stroke-width':'.18','stroke-linecap':'round','stroke-linejoin':'round',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':'1'}))brush.setAttribute(name,value);
+ mask.append(brush);defs.append(mask);svg.append(defs);card.closest('.home-scene').append(svg);
+ const print=card.querySelector(':scope>.stamp'),shadow=card.querySelector(':scope>.stamp-shadow');
+ print.style.maskImage=`url("#${id}")`;
+ // Reveal the filtered shadow independently. Masking its parent can leave a
+ // rectangular filter surface visible in Chromium before the paper is painted.
+ tween(shadow,[{opacity:0,transform:'translate3d(3px,5px,0)'},{opacity:.27,transform:getComputedStyle(shadow).transform}],600,1160);
+ const finish=()=>{print.style.maskImage='';svg.remove();inkWriters.delete(finish);};inkWriters.add(finish);
+ tween(brush,[{strokeDashoffset:1},{strokeDashoffset:0}],1440,80,'linear').finished.then(finish).catch(()=>{});
+}
+function homeLetters(page,initial){
+ page.querySelectorAll('.scene-heading .scene-copy,.scene-end .scene-copy').forEach((line,lineIndex)=>{
+  const large=lineIndex===0||lineIndex===2,text=line.textContent;
+  line.setAttribute('aria-hidden','true');
+  const glyphs=lineIndex===0?[...line.children]:Array.from(text,letter=>{const glyph=document.createElement('span');glyph.textContent=letter===' '?'\u00a0':letter;return glyph;});
+  if(lineIndex!==0)line.replaceChildren(...glyphs);
+  line.classList.add('is-chapter-reveal');
+  glyphs.forEach((glyph,index)=>{
+   glyph.classList.add('scene-ink-letter');
+   const start=(initial?780:740)+(lineIndex===2?110:lineIndex%2?240:0);
+   if(large)writeHomeGlyph(glyph,560,start+index*120);
+   else tween(glyph,[{clipPath:'inset(0% 100% 0% 0%)',opacity:0},{clipPath:'inset(0%)',opacity:1}],200,start+index*17,'cubic-bezier(.3,.15,.35,1)');
+  });
+ });
+}
+const archivePositions=new Map();
+export function archiveReturnPosition(id){
+ if(archivePositions.has(id))return archivePositions.get(id);
+ try{return Math.max(0,Number(sessionStorage.getItem(`next-branch-archive-position:${id}`))||0);}catch{return 0;}
+}
+export function rememberArchivePosition(page){
+ const id=page.dataset.plant,y=window.scrollY;archivePositions.set(id,y);
+ try{sessionStorage.setItem(`next-branch-archive-position:${id}`,String(y));}catch{}
+}
+function newspaperReverse(page,half){
+ const plant=plants.find(plant=>plant.id===page.dataset.plant),reverse=document.createElement('article');reverse.className='news-fold-reverse';reverse.style.setProperty('--reverse-height',`${half}px`);
+ reverse.innerHTML=`<header class="news-reverse-masthead"><strong>栽植手帖</strong><span>农科枝报 · 背页 / ${plant.value}</span></header><div class="news-reverse-specimen"><figure><img src="./assets/${plant.art}" alt=""><figcaption>${plant.name}</figcaption></figure><div><span class="news-reverse-kicker">修剪之后，继续生长</span><h2>给下一枝，<br>一个生长的位置。</h2><p>${plant.latin}</p></div></div><div class="news-reverse-notes"><section><b>光</b><p>${plant.light.split(" · ")[0]}<br>保持通风</p></section><section><b>水</b><p>先摸表土<br>微湿不积水</p></section><section><b>根</b><p>安放后少挪动<br>耐心等根</p></section></div><footer><span>农科村 · 枝条再生驿站</span><span>${plant.no} · 留给下一位枝友</span></footer>`;
+ return reverse;
+}
+function newspaperModel(page){
+ // Fold the complete camera frame, including the paper behind the transparent
+ // navigation. A nav-height crop cut through the visible newspaper on both trips.
+ const top=0,width=innerWidth,height=innerHeight,half=height/2,box=page.getBoundingClientRect(),style=getComputedStyle(page);
+ const root=document.createElement('div');root.className='chapter-news-fold';root.setAttribute('aria-hidden','true');root.inert=true;
+ for(const name of ['--archive-paper','--archive-ink','--archive-muted','--archive-tint','--archive-rule'])root.style.setProperty(name,style.getPropertyValue(name));
+ root.style.backgroundColor=style.backgroundColor;
+ const pack=document.createElement('div');pack.className='news-fold-pack';Object.assign(pack.style,{left:'0',top:`${top}px`,width:`${width}px`,height:`${height}px`});root.append(pack);
+ const original=page.cloneNode(true),sources=[...page.querySelectorAll('.archive-glyph')],copies=[...original.querySelectorAll('.archive-glyph')];
+ copies.forEach((el,i)=>{const state=getComputedStyle(sources[i]);Object.assign(el.style,{opacity:state.opacity,filter:state.filter,transform:state.transform,transition:'none',animation:'none'});});
+ original.querySelectorAll('*').forEach(el=>{el.style.animation='none';el.style.transition='none';});
+ function face(y,back=false){
+  const element=document.createElement('div');element.className=`news-fold-face${back?' is-back':''}`;
+  if(back){element.append(newspaperReverse(page,half));return element;}
+  const print=document.createElement('div');print.className='news-fold-print';Object.assign(print.style,{width:`${width}px`,left:'0',top:`${box.top-top-y}px`});
+  const clone=original.cloneNode(true);Object.assign(clone.style,{width:`${width}px`,maxWidth:'none',margin:'0'});
+  print.append(clone);element.append(print);return element;
+ }
+ function panel(y){const panel=document.createElement('div');panel.className='news-fold-panel';Object.assign(panel.style,{left:'0',top:`${y}px`,width:`${width}px`,height:`${half}px`});panel.append(face(y),face(0,true));return panel;}
+ const upper=panel(0),lower=panel(half);lower.style.transformOrigin='50% 0';lower.style.zIndex='2';pack.append(upper,lower);
+ document.body.append(root);ornaments.add(root);foldedPage={page,visibility:page.style.visibility};page.style.visibility='hidden';page.inert=true;
+ return {root,pack,lower,top,half,background:style.backgroundColor};
+}
+async function foldNewspaper(page,nextBackground){
+ if(!page.querySelector('.archive-paper'))return;rememberArchivePosition(page);
+ const version=generation,{root,pack,lower,top,half,background}=newspaperModel(page);
+ root.dataset.foldStage='fold';
+ try{
+  // One full-width horizontal hinge; no miniature sheet or scale change.
+  await tween(lower,[{transform:'rotateX(0deg)'},{transform:'rotateX(180deg)'}],1120,0,'cubic-bezier(.34,.05,.24,1)').finished;
+  if(version!==generation||!root.isConnected||reducedMotion())return;
+  root.dataset.foldStage='exit';
+  tween(root,[{backgroundColor:background},{backgroundColor:nextBackground||background}],760);
+  await tween(pack,[{transform:'translateY(0)'},{transform:`translateY(${-top-half-32}px)`}],760,0,'cubic-bezier(.4,.05,.3,1)').finished;
+ }catch{}
+}
+export async function unfoldNewspaper(page){
+ if(!page)return;
+ const y=archiveReturnPosition(page.dataset.plant);window.scrollTo({top:y,behavior:'instant'});
+ page.classList.add('is-archive-unfolding','is-archive-awake');
+ // The paper is already printed. Its visible lines must match the snapshot,
+ // rather than restarting the article's ink animation under the opening fold.
+ page.querySelectorAll('[data-archive-reveal]').forEach(el=>{const r=el.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;el.classList.add('is-ink-visible');el.querySelectorAll('.archive-glyph').forEach(g=>Object.assign(g.style,{opacity:'1',filter:'none',transform:'none',transition:'none'}));});
+ page.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>{const r=svg.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)svg.querySelectorAll('[mask]').forEach(g=>g.removeAttribute('mask'));});
+ if(reducedMotion()){page.classList.remove('is-archive-unfolding');page.inert=false;return;}
+ const version=generation,{root,pack,lower,top,half,background}=newspaperModel(page);lower.style.transform='rotateX(180deg)';pack.style.transform=`translateY(${-top-half-32}px)`;root.style.backgroundColor=background;root.dataset.foldStage='return';
+ try{
+  await tween(pack,[{transform:`translateY(${-top-half-32}px)`},{transform:'translateY(0)'}],760,0,'cubic-bezier(.24,.6,.2,1)').finished;
+  if(version!==generation||!root.isConnected)return;pack.style.transform='translateY(0)';root.dataset.foldStage='unfold';
+  await tween(lower,[{transform:'rotateX(180deg)'},{transform:'rotateX(0deg)'}],1160,0,'cubic-bezier(.3,.05,.22,1)').finished;
+ }catch{}finally{
+  if(version===generation){stopChapterMotion();page.classList.remove('is-archive-unfolding');page.inert=false;window.scrollTo({top:y,behavior:'instant'});}
+ }
+}
+
+export function enterChapter(page,view,{initial=false}={}){
+ const carry=signalCarry;signalCarry=null;
+ stopChapterMotion();if(!page)return;
+ const find=selector=>page.querySelector(selector),background=getComputedStyle(page).backgroundColor;
+ if(reducedMotion()){page.inert=false;page.dispatchEvent(new Event('chapter:revealed'));return;}
+ page.inert=true;enteringPage=page;
+ if(view==='home'){
+  paintHomeStamp(find('.scene-stamp.current'));
+  page.querySelectorAll('.scene-stamp:not(.current)').forEach(card=>{
+   const p=Number(card.dataset.position);if(Math.abs(p)!==1)return;
+   const box=card.getBoundingClientRect(),outside=p<0?innerHeight-box.top+40:-box.bottom-40;
+   tween(card,[{translate:`0 ${outside}px`,opacity:1},{translate:'0 0',opacity:1}],1320,180,'cubic-bezier(.25,.15,.24,1)');
+  });
+  homeLetters(page,initial);
+ }else if(view==='album'){
+  page.classList.add('is-chapter-entering');
+  const blank=carry?.bridge||signalBlank;
+  document.body.style.backgroundColor=blank;
+  // The blank stays behind the aperture. Only the complete TV picture opens.
+  tween(page,[{backgroundColor:blank},{backgroundColor:blank}],1140);
+  const screen=find('.album-tv'),box=screen.getBoundingClientRect(),cy=innerHeight/2-box.top;
+  const aperture=(height,width=0,radius=2)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
+  tween(screen,[
+   {clipPath:aperture(3,49.5),filter:'brightness(.96)'},
+   {clipPath:aperture(5,16),filter:'brightness(.98)',offset:.25},
+   {clipPath:aperture(innerHeight*.22,0,8),filter:'brightness(1)',offset:.43},
+   {clipPath:'inset(0px 0% 0px 0% round 0px)',filter:'brightness(1)',offset:.88},
+   {clipPath:'inset(0px 0% 0px 0% round 0px)',filter:'brightness(1)'}
+  ],1140,0,'cubic-bezier(.4,.05,.22,1)');
+  // Install ink and line drawing before exposing the raster, avoiding a flat
+  // screen followed by a second content entrance or a full-copy flash.
+  page.dispatchEvent(new Event('chapter:revealed'));
+  page.classList.add('is-screen-ready');
+  beam(true);
+ }else if(view==='claim'){
+  // The press owns body arrival followed by paper feed. A second chapter
+  // animation would move the rollers after the paper has already started.
+ }else if(view==='letters'){
+  tween(find('.mailbox-stack'),[{translate:`0 ${innerHeight+32}px`,opacity:1},{translate:'0 0',opacity:1}],1080,0,'cubic-bezier(.22,.72,.24,1)');
+  const toolbar=find('.mailbox-toolbar'),outside=innerHeight-toolbar.getBoundingClientRect().top+24;
+  tween(toolbar,[{translate:`0 ${outside}px`,opacity:1},{translate:'0 0',opacity:1}],780,240,'cubic-bezier(.22,.72,.24,1)');
+ }else if(view==='write-letter'){
+  tween(find('.office-writing-paper'),[{translate:`0 ${innerHeight+24}px`},{translate:'0 0'}],920,0,'cubic-bezier(.18,.76,.22,1)');
+  const lines=page.querySelectorAll('.office-writing-kicker,.office-writing-intro strong,.office-writing-heading small,.office-writing-postage,.office-writing-selects,.office-writing-label,#office-letter-title,#office-letter-text,.office-writing-sign,.office-writing-bottom');
+  lines.forEach((line,index)=>tween(line,[{opacity:0,translate:'0 12px',clipPath:'inset(0 0 100% 0)'},{opacity:1,translate:'0 0',clipPath:'inset(0 0 0% 0)'}],440,300+index*76,'cubic-bezier(.2,.7,.24,1)'));
+ }else{
+  tween(page,[{translate:'0 16px',opacity:.3},{translate:'0 0',opacity:1}],360);
+ }
+ const sequence=[...active],version=generation;
+ Promise.allSettled(sequence.map(a=>a.finished)).then(()=>{
+  if(version!==generation||!page.isConnected)return;
+  // The TV prepares its text behind the aperture at the start of opening.
+  if(view!=='album')page.dispatchEvent(new Event('chapter:revealed'));
+  page.classList.remove('is-chapter-entering','is-screen-ready');enteringPage=null;page.inert=false;
+  page.querySelectorAll('.is-chapter-reveal').forEach(line=>line.classList.remove('is-chapter-reveal'));
+  ornaments.forEach(element=>element.remove());ornaments.clear();
+  document.body.style.backgroundColor=background;
+ });
+}
+export async function leaveChapter(page,view,{nextBackground,nextView}={}){
+ stopChapterMotion();signalCarry=null;if(!page||reducedMotion())return;
+ retainCompleted=true;const find=selector=>page.querySelector(selector);
+ if(nextView==='album'||view==='album'){
+  // Enter through a soft standby tone; close directly onto the next chapter.
+  const backing=nextView==='album'?signalBlank:nextBackground||getComputedStyle(page).backgroundColor;
+  if(nextView==='album')signalCarry={bridge:backing};
+  document.body.style.backgroundColor=backing;
+  powerOff(page);
+ }else{
+  if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'?660:340);
+  if(view==='home'){
+   tween(find('.scene-heading'),[{opacity:1,clipPath:'inset(0% 0% 0% 0%)'},{opacity:0,clipPath:'inset(0% 0% 100% 0%)'}],330);
+   tween(find('.scene-end'),[{opacity:1,clipPath:'inset(0% 0% 0% 0%)'},{opacity:0,clipPath:'inset(100% 0% 0% 0%)'}],330);
+   page.querySelectorAll('.scene-stamp').forEach(card=>{
+    const p=Number(card.dataset.position);if(Math.abs(p)>1)return;
+    tween(card,p===0?[
+     {transform:card.style.transform,opacity:1,filter:'blur(0px)'},
+     {transform:`${card.style.transform} perspective(1000px) rotateX(-18deg) translateY(18vh) scale(.9)`,opacity:0,filter:'blur(.8px)'}
+    ]:[{transform:card.style.transform,opacity:1},{transform:`${card.style.transform} translateY(${p<0?1:-1}00vh)`,opacity:0}],620,0,'cubic-bezier(.45,0,.3,1)');
+   });
+  }else if(view==='detail'&&nextView==='claim'){
+   await foldNewspaper(page,nextBackground);
+  }else if(view==='write-letter'&&nextView==='letters'){
+   tween(find('.office-writing-paper'),[{translate:'0 0'},{translate:`0 ${innerHeight+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
+  }else if(view==='letters'){
+   tween(find('.mailbox-stack'),[{translate:'0 0',opacity:1},{translate:'0 70px',opacity:0}],340);
+   tween(find('.mailbox-toolbar'),[{opacity:1},{opacity:0}],220);
+  }else tween(page,[{translate:'0 0',opacity:1},{translate:'0 -12px',opacity:0}],180);
+ }
+ await Promise.allSettled([...active].map(animation=>animation.finished));
+}
+motionPreference.addEventListener('change',()=>{if(reducedMotion())active.forEach(animation=>{try{animation.finish();}catch{animation.cancel();}});});

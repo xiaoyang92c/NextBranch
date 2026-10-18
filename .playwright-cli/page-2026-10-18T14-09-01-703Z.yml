@@ -1,0 +1,418 @@
+- generic [active] [ref=f3e1]:
+  - main "植物邮票滑动展台" [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - heading "金叶女贞" [level=1] [ref=f3e6]:
+          - generic [aria-hidden] [ref=f3e7]:
+            - generic [ref=f3e8]:
+              - img [aria-hidden]:
+                - generic: 金
+            - generic [ref=f3e9]:
+              - img [aria-hidden]:
+                - generic: 叶
+            - generic [ref=f3e10]:
+              - img [aria-hidden]:
+                - generic: 女
+            - generic [ref=f3e11]:
+              - img [aria-hidden]:
+                - generic: 贞
+        - paragraph [ref=f3e12]:
+          - generic [aria-hidden] [ref=f3e13]:
+            - generic [ref=f3e14]: L
+            - generic [ref=f3e15]: i
+            - generic [ref=f3e16]: g
+            - generic [ref=f3e17]: u
+            - generic [ref=f3e18]: s
+            - generic [ref=f3e19]: t
+            - generic [ref=f3e20]: r
+            - generic [ref=f3e21]: u
+            - generic [ref=f3e22]: m
+            - generic [ref=f3e24]: ×
+            - generic [ref=f3e26]: v
+            - generic [ref=f3e27]: i
+            - generic [ref=f3e28]: c
+            - generic [ref=f3e29]: a
+            - generic [ref=f3e30]: r
+            - generic [ref=f3e31]: "y"
+            - generic [ref=f3e32]: i
+      - generic:
+        - button "打开档案：金叶女贞邮票" [ref=f3e33] [cursor=pointer]:
+          - generic [ref=f3e34]:
+            - generic [aria-hidden]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 金叶女贞
+                        - generic: Ligustrum × vicaryi
+                      - generic:
+                        - text: "01"
+                        - generic: 枝—001
+        - button "切换到木槿邮票" [ref=f3e35] [cursor=pointer]:
+          - generic [ref=f3e39]:
+            - generic [ref=f3e40]:
+              - generic [ref=f3e41]:
+                - text: 下一枝
+                - generic [ref=f3e42]: NEXT BRANCH
+              - generic [ref=f3e43]: 枝
+            - img "木槿植物插画"
+            - generic [ref=f3e44]:
+              - generic [ref=f3e45]:
+                - generic [ref=f3e46]: 木槿
+                - generic [ref=f3e47]: Hibiscus syriacus
+              - generic [ref=f3e48]:
+                - text: "02"
+                - generic [ref=f3e49]: 枝—002
+        - button "切换到小叶女贞邮票" [ref=f3e50] [cursor=pointer]:
+          - generic [ref=f3e54]:
+            - generic [ref=f3e55]:
+              - generic [ref=f3e56]:
+                - text: 下一枝
+                - generic [ref=f3e57]: NEXT BRANCH
+              - generic [ref=f3e58]: 枝
+            - img "小叶女贞植物插画"
+            - generic [ref=f3e59]:
+              - generic [ref=f3e60]:
+                - generic [ref=f3e61]: 小叶女贞
+                - generic [ref=f3e62]: Ligustrum quihoui
+              - generic [ref=f3e63]:
+                - text: "03"
+                - generic [ref=f3e64]: 枝—003
+        - button "切换到桂花邮票" [ref=f3e65] [cursor=pointer]:
+          - generic [ref=f3e69]:
+            - generic [ref=f3e70]:
+              - generic [ref=f3e71]:
+                - text: 下一枝
+                - generic [ref=f3e72]: NEXT BRANCH
+              - generic [ref=f3e73]: 枝
+            - img "桂花植物插画"
+            - generic [ref=f3e74]:
+              - generic [ref=f3e75]:
+                - generic [ref=f3e76]: 桂花
+                - generic [ref=f3e77]: Osmanthus fragrans
+              - generic [ref=f3e78]:
+                - text: "07"
+                - generic [ref=f3e79]: 枝—007
+        - button "切换到贴梗海棠邮票" [ref=f3e80] [cursor=pointer]:
+          - generic [ref=f3e84]:
+            - generic [ref=f3e85]:
+              - generic [ref=f3e86]:
+                - text: 下一枝
+                - generic [ref=f3e87]: NEXT BRANCH
+              - generic [ref=f3e88]: 枝
+            - img "贴梗海棠植物插画"
+            - generic [ref=f3e89]:
+              - generic [ref=f3e90]:
+                - generic [ref=f3e91]: 贴梗海棠
+                - generic [ref=f3e92]: Chaenomeles speciosa
+              - generic [ref=f3e93]:
+                - text: "08"
+                - generic [ref=f3e94]: 枝—008
+      - generic:
+        - generic:
+          - strong:
+            - generic [aria-hidden]:
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 再
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 长
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 一
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 次
+          - generic "修剪下来的枝条，也能成为一盆新绿":
+            - generic [aria-hidden]:
+              - generic: 修
+              - generic: 剪
+              - generic: 下
+              - generic: 来
+              - generic: 的
+              - generic: 枝
+              - generic: 条
+              - generic: ，
+              - generic: 也
+              - generic: 能
+              - generic: 成
+              - generic: 为
+              - generic: 一
+              - generic: 盆
+              - generic: 新
+              - generic: 绿
+  - navigation "主要导航" [ref=f3e95]:
+    - button "邮票馆" [ref=f3e96] [cursor=pointer]:
+      - generic "邮票馆" [ref=f3e97]:
+        - generic [ref=f3e99]:
+          - generic [ref=f3e100]: 邮
+          - generic [ref=f3e101]: 邮
+        - generic [ref=f3e103]:
+          - generic [ref=f3e104]: 票
+          - generic [ref=f3e105]: 票
+        - generic [ref=f3e107]:
+          - generic [ref=f3e108]: 馆
+          - generic [ref=f3e109]: 馆
+    - button "枝条放映室" [ref=f3e110] [cursor=pointer]:
+      - generic "枝条放映室" [ref=f3e111]:
+        - generic [ref=f3e113]:
+          - generic [ref=f3e114]: 枝
+          - generic [ref=f3e115]: 枝
+        - generic [ref=f3e117]:
+          - generic [ref=f3e118]: 条
+          - generic [ref=f3e119]: 条
+        - generic [ref=f3e121]:
+          - generic [ref=f3e122]: 放
+          - generic [ref=f3e123]: 放
+        - generic [ref=f3e125]:
+          - generic [ref=f3e126]: 映
+          - generic [ref=f3e127]: 映
+        - generic [ref=f3e129]:
+          - generic [ref=f3e130]: 室
+          - generic [ref=f3e131]: 室
+    - button "枝友来信" [ref=f3e132] [cursor=pointer]:
+      - generic "枝友来信" [ref=f3e133]:
+        - generic [ref=f3e135]:
+          - generic [ref=f3e136]: 枝
+          - generic [ref=f3e137]: 枝
+        - generic [ref=f3e139]:
+          - generic [ref=f3e140]: 友
+          - generic [ref=f3e141]: 友
+        - generic [ref=f3e143]:
+          - generic [ref=f3e144]: 来
+          - generic [ref=f3e145]: 来
+        - generic [ref=f3e147]:
+          - generic [ref=f3e148]: 信
+          - generic [ref=f3e149]: 信
