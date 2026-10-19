@@ -1,9 +1,9 @@
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The press owns the whole paper cycle: feed, sign, retract, tear and collect.
+// The press owns the feed, sign, retract and tear sequence.
 export function mountClaimPress(page,entrance='feed'){
- const controller=new AbortController(),animations=new Set(),pending=new Set(),elements=new Set(),helpers=new Set();
+ const controller=new AbortController(),animations=new Set(),pending=new Set(),elements=new Set();
  const sheet=page.querySelector('.dispatch-paper'),machine=page.querySelector('.claim-machine'),lip=page.querySelector('.claim-output-lip'),status=page.querySelector('.claim-machine-status'),feed=page.querySelector('.claim-paper-feed'),dispenser=page.querySelector('.claim-dispenser');
- let observer,ready=false,detached=false,leaving=false,exitPromise,scrollFrame=0,scrollReject=null,rollFrame=0,rollResolve=null;
+ let observer,ready=false,detached=false,leaving=false,exitPromise,scrollFrame=0,scrollReject=null;
  const setState=value=>page.dataset.pressState=value;
  const animate=(target,frames,duration,easing='cubic-bezier(.28,.08,.24,1)',delay=0)=>{const a=target.animate(frames,{duration,easing,delay,fill:'both'});animations.add(a);a.finished.catch(()=>{});return a;};
  async function move(target,frames,duration,easing,delay=0){
@@ -26,17 +26,21 @@ export function mountClaimPress(page,entrance='feed'){
  if(!reduced())observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting)return;if(ready)reveal(entry.target);else pending.add(entry.target);}),{threshold:.12,rootMargin:'0px 0px -3% 0px'});
  const refresh=(scope=page)=>scope.querySelectorAll('[data-claim-ink]').forEach(prepare);
  const offscreen=()=>-(dispenser.getBoundingClientRect().top+window.scrollY+machine.offsetHeight+35);
- function finish(){if(controller.signal.aborted||leaving)return;ready=true;sheet.inert=false;page.classList.remove('is-printing','is-machine-entering','is-retracting');page.classList.add('is-issued');status.textContent='请取单';pending.forEach(el=>reveal(el));pending.clear();setState(detached?'detached':'ready');page.dispatchEvent(new Event('claim:printed'));}
+ function finish(){if(controller.signal.aborted||leaving)return;ready=true;sheet.inert=false;page.classList.remove('is-printing','is-machine-entering','is-retracting');page.classList.add('is-issued');status.textContent='请取小票';pending.forEach(el=>reveal(el));pending.clear();setState(detached?'detached':'ready');page.dispatchEvent(new Event('claim:printed'));}
  function scrollToMachine(){
   if(reduced()){window.scrollTo({top:0,behavior:'instant'});return Promise.resolve();}
   return new Promise((resolve,reject)=>{scrollReject=reject;const from=window.scrollY,start=performance.now();function tick(now){if(controller.signal.aborted){reject(new Error('Press closed'));return;}const t=Math.min(1,(now-start)/520),p=1-(1-t)**3;window.scrollTo({top:from*(1-p),behavior:'instant'});if(t<1)scrollFrame=requestAnimationFrame(tick);else{scrollFrame=0;scrollReject=null;resolve();}}scrollFrame=requestAnimationFrame(tick);});
  }
  async function detach(){
   setState('tear');page.classList.add('is-tearing');const padding=parseFloat(getComputedStyle(dispenser).paddingTop);sheet.inert=true;
+  // Cut the actual paper edge before it leaves the printer. No scene-coloured
+  // overlay is needed, so the machine remains visible through the teeth.
+  const teeth=Array.from({length:41},(_,i)=>`${i*2.5}% ${i%2?8:0}px`).join(',');
+  sheet.style.clipPath=`polygon(${teeth},100% 100%,0 100%)`;
   await move(sheet,[{translate:'0 0'},{translate:'0 16px'}],520,'cubic-bezier(.3,.1,.22,1)');if(leaving)return;
   const away=offscreen();await Promise.all([move(machine,[{translate:'0 0'},{translate:`0 ${away}px`}],860),move(lip,[{translate:'0 0'},{translate:`0 ${away}px`}],860),move(feed,[{translate:'0 0'},{translate:`0 ${-padding}px`}],860)]);if(leaving)return;
   machine.style.visibility='hidden';lip.style.visibility='hidden';page.classList.add('is-ticket-detached');page.classList.remove('is-tearing');feed.style.translate='0 0';detached=true;
-  const close=page.querySelector('.claim-ticket-close');if(close)await move(close,[{opacity:0},{opacity:1}],240);finish();
+  finish();
  }
  async function redock(){
   if(!detached)return;ready=false;sheet.inert=true;setState('redock');const padding=parseFloat(getComputedStyle(dispenser).getPropertyValue('--feed-start'));
@@ -72,18 +76,13 @@ export function mountClaimPress(page,entrance='feed'){
   await move(seal,[{transform:'translate(-50%,-30px) scale(1.4)',opacity:0},{transform:'translate(-50%,0) scale(1)',opacity:1}],460);
   await scrollToMachine();await redock();await retract();
  }
- async function collect(){
-  setState('collect');await scrollToMachine();const box=sheet.getBoundingClientRect(),height=box.height,initial=Math.min(height,innerHeight-box.top-24),roll=document.createElement('div');roll.className='claim-collected-roll';roll.setAttribute('aria-hidden','true');roll.style.setProperty('--roll-paper',getComputedStyle(sheet).backgroundColor);Object.assign(roll.style,{left:`${box.left}px`,top:`${box.top+height-14}px`,width:`${box.width}px`});
-  const print=page.querySelector('.claim-mailtitle').cloneNode(true);print.querySelectorAll('.claim-readable').forEach(el=>el.remove());roll.append(print);document.body.append(roll);helpers.add(roll);sheet.inert=true;
-  if(!reduced())await new Promise(resolve=>{const start=performance.now();rollResolve=resolve;function frame(now){if(controller.signal.aborted){resolve();return;}const t=Math.min(1,(now-start)/1120),p=t<.15?t/.15*.08:.08+.92*(1-Math.pow(1-(t-.15)/.85,2)),remaining=t<.15?height-(height-initial)*t/.15:initial*(1-(p-.08)/.92);sheet.style.clipPath=`inset(0 0 ${Math.max(0,height-remaining)}px 0)`;roll.style.top=`${box.top+remaining-14}px`;roll.style.setProperty('--roll-radius',`${12+12*p}px`);if(t<1)rollFrame=requestAnimationFrame(frame);else{rollFrame=0;rollResolve=null;resolve();}}rollFrame=requestAnimationFrame(frame);});
-  sheet.style.visibility='hidden';await move(roll,[{translate:'0 0',rotate:'0deg'},{translate:`${innerWidth-box.left+80}px -18px`,rotate:'-5deg'}],820,'cubic-bezier(.42,.04,.45,1)');roll.remove();helpers.delete(roll);
- }
  function leave(){
   if(exitPromise)return exitPromise;leaving=true;ready=false;sheet.inert=true;setState('close');
-  // Keep the current physical pose when closing during feed or tearing.
+  // The route transition carries the complete printer scene straight down.
+  // Freeze the current feed pose so closing during printing stays coherent.
   const poses=[sheet,machine,lip,feed].map(el=>[el,getComputedStyle(el).translate,getComputedStyle(el).clipPath]);animations.forEach(a=>a.cancel());animations.clear();poses.forEach(([el,translate,clip])=>Object.assign(el.style,{translate,clipPath:clip}));
-  exitPromise=(async()=>{if(detached){await collect();return;}await scrollToMachine();await retract();const away=offscreen();await Promise.all([move(machine,[{translate:getComputedStyle(machine).translate},{translate:`0 ${away}px`}],820),move(lip,[{translate:getComputedStyle(lip).translate},{translate:`0 ${away}px`}],820)]);})();return exitPromise;
+  exitPromise=Promise.resolve();return exitPromise;
  }
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',event=>{if(!event.matches)return;observer?.disconnect();elements.forEach(el=>reveal(el,true));animations.forEach(a=>{try{a.finish();}catch{a.cancel();}});},{signal:controller.signal});
- return {refresh,sign,redock,leave,dispose(){controller.abort();observer?.disconnect();animations.forEach(a=>a.cancel());animations.clear();cancelAnimationFrame(scrollFrame);scrollReject?.(new Error('Press closed'));cancelAnimationFrame(rollFrame);rollResolve?.();helpers.forEach(el=>el.remove());pending.clear();elements.clear();}};
+ return {refresh,sign,redock,leave,dispose(){controller.abort();observer?.disconnect();animations.forEach(a=>a.cancel());animations.clear();cancelAnimationFrame(scrollFrame);scrollReject?.(new Error('Press closed'));pending.clear();elements.clear();}};
 }

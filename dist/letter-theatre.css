@@ -1,6 +1,7 @@
 /* An open envelope and a botanical sprig, each given its own space. */
 .page.post-office.letter-mailbox{--mail-sky:#f1f3eb;--mail-ink:#426353;--mail-paper:#fffdf4;--mail-rust:#9a654d;height:100svh;min-height:0;padding:0!important;overflow:clip;isolation:isolate;background:var(--mail-sky);color:var(--mail-ink)}
 .letter-mailbox::before{inset:0;background:radial-gradient(ellipse at 30% 32%,#e6ecdd55,transparent 70%)}
+.letter-mailbox.is-background-bridging::before{opacity:0}
 .letter-mailbox::after{display:none}
 body[data-view='letters'] nav.main-nav{color:#426353}
 .letter-mailbox button{font-family:var(--sans)}
@@ -8,6 +9,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-well::-webkit-scrollbar{display:none}
 .mailbox-stack{position:relative;display:flex;flex-direction:column;align-items:center;gap:clamp(48px,7svh,76px);min-height:100%;padding:126px 22px 150px}
 .mailbox-entry{width:min(84vw,380px);margin:0;flex:none;position:relative}
+.mailbox-ink-frame{position:relative;box-sizing:border-box;width:calc(100% + 80px);margin:-18px 0 0 -40px;padding:18px 40px 0}
 .mailbox-letter{user-select:none;display:block;width:100%;aspect-ratio:.91;border:0;padding:0;background:none;color:inherit;text-align:left;cursor:pointer;outline-offset:9px;-webkit-tap-highlight-color:transparent}
 .mailbox-letter:focus-visible{outline:1px solid #77927d;border-radius:2px}
 .garden-letter{display:block;width:100%;height:100%;position:relative;container-type:inline-size;isolation:isolate;color:#426353}
@@ -45,7 +47,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 @media(prefers-reduced-motion:reduce){.letter-mailbox *,.letter-mailbox *::before,.letter-mailbox *::after{transition:none!important;animation:none!important}}
 
 /* The unfolded page remains attached to its envelope through the opening. */
-.letter-overlay.mailbox-reader{background:#f1f3ebdf;backdrop-filter:none;padding:16px;transition:background .8s ease}
+.letter-overlay.mailbox-reader{background:#f1f3ebdf;backdrop-filter:none;padding:16px}
 .mailbox-reader .letter-sheet.postal-sheet{color:#426e5c;background:#fff6df;box-shadow:0 6px 20px #345c4133;border-color:#c4bf9f;border-radius:0;gap:16px;height:min(820px,calc(100svh - 32px));padding:24px}
 .mailbox-reader .postal-sheet h2{font-family:var(--serif);font-size:28px;line-height:1.45;letter-spacing:0;padding-right:52px;margin:4px 0 8px}.mailbox-reader .postal-sheet-head{font:600 15px/1.5 var(--sans)}.mailbox-reader .postal-sheet-head small{font-size:12px}.mailbox-reader .postal-sheet-postage{rotate:0deg;width:38px;top:89px;right:24px}.mailbox-reader .postal-question{font-size:18px;line-height:2}.mailbox-reader .postal-reader-tabs button{font-size:15px;min-height:44px}.mailbox-reader .postal-reply-form button{font-size:14px;background:#648e76;padding:10px}.mailbox-reader .postal-reply-form label{font-size:15px}.mailbox-reader .postal-response p{font-size:17px;line-height:1.9}.mailbox-reader .postal-response header{font-size:13px}.mailbox-reader .postal-response header i{font-size:12px}.mailbox-reader .postal-demo-note{font-size:12px}.mailbox-reader .postal-sheet-bottom{display:none}.mailbox-reader .postal-reply-status{font-size:12px;min-height:0}.mailbox-reader .letter-close{width:44px;height:44px}.mailbox-reader .postal-question-photo{rotate:0deg}
 .postal-salutation,.postal-signature{font:400 17px/1.9 var(--serif);letter-spacing:.04em}.postal-salutation{margin:8px 0 18px}.postal-signature{text-align:right;margin:22px 0 14px}.postal-signature span{display:block;margin-top:5px;font-size:14px;color:#7a826d}.mailbox-reader .postal-question{text-indent:2em;font-weight:400}.mailbox-reader .letter-sheet.postal-sheet{background:linear-gradient(105deg,#fffdf6,#faf8ee);color:#426353}.mailbox-reader .postal-response{background:#f2f3e9}.mailbox-reader .postal-response.is-gardener{background:#eaf0e4}
@@ -63,9 +65,6 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .garden-letter-topic{max-width:71%;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--letter-rule);font-size:max(12px,3.2cqw);letter-spacing:.03em;color:#766c60}
 .garden-salutation{font-size:max(15px,4.1cqw);margin-bottom:8px;color:var(--letter-ink)}
 .garden-letter-subject{max-width:88%;font-size:max(19px,5.3cqw);line-height:1.6;letter-spacing:.015em;font-weight:500;color:var(--letter-ink)}
-.garden-botanical-pin{position:absolute;right:4%;top:-3%;width:19%;height:32%;display:block;transform:rotate(10deg);pointer-events:none;z-index:2}
-.garden-botanical-pin img{width:100%;height:100%;object-fit:contain;filter:saturate(.7);opacity:.9}
-.garden-botanical-pin i{position:absolute;top:3%;left:49%;width:8px;height:8px;border:1px solid #5d3948;border-radius:50%;background:var(--letter-wine)}
 .garden-envelope-address{font-size:max(12px,3.6cqw);color:#655e51}
 .garden-envelope-address>span{font-family:var(--letter-face)!important;font-size:max(11px,3.3cqw);color:#756a59}
 .mailbox-reader .letter-sheet.postal-sheet{width:min(100%,620px);height:min(790px,calc(100svh - 32px));padding:28px 34px 20px;gap:12px;background:#faf7ed;color:var(--letter-ink);border:1px solid #bfb49e;box-shadow:none!important;border-radius:0}
@@ -101,23 +100,21 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-reader .postal-reply-form button{min-height:42px;padding:10px 13px;border:1px solid #4b6656;background:#4b6656;color:#fff9e8;font-size:13px;font-weight:500;letter-spacing:.04em}
 .mailbox-reader .postal-reply-form button:focus-visible,.mailbox-reader .letter-close:focus-visible,.mailbox-reader .postal-reader-tabs button:focus-visible{outline:1px solid #766654;outline-offset:3px}
 .mailbox-reader .postal-reply-status{font-size:11px;color:#758172;min-height:13px}
-.mailbox-reader .postal-sheet.is-folded> :not(.postal-fold-verso){opacity:0}
-.mailbox-reader .postal-sheet> :not(.postal-fold-verso){transition:opacity .42s ease}
-.postal-fold-verso{position:absolute;inset:0;display:grid;place-items:center;z-index:8;background:linear-gradient(#f8f3e7 0 32.9%,#cec2ad 33%,#f8f3e7 33.15% 66%,#cec2ad 66.1%,#f8f3e7 66.25% 100%);color:#675f54;opacity:0;pointer-events:none;transition:opacity .32s ease}
-.postal-fold-verso::before{content:'';position:absolute;inset:11px;border:1px solid #bdb19b}
-.postal-fold-preview{position:absolute;inset:10% 11%;display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:opacity .12s ease}
-.postal-fold-preview::after{content:'';position:absolute;right:0;top:0;width:27%;height:42%;background:var(--fold-botanical) center/contain no-repeat;transform:rotate(10deg);opacity:.78}
-.postal-fold-preview small{font-size:12px;color:#857c70;border-bottom:1px solid #c6baa4;padding-bottom:7px}
-.postal-fold-preview span{font-size:16px;margin-top:6px}
-.postal-fold-preview strong{font-size:22px;line-height:1.5;font-weight:500}
-.postal-fold-mark{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;transition:opacity .12s ease}
-.postal-fold-mark span{font:400 33px/1 Georgia,serif}.postal-fold-mark small{font-size:11px;letter-spacing:.15em}
-.mailbox-reader .postal-sheet.is-reversed .postal-fold-preview{opacity:0}
-.mailbox-reader .postal-sheet.is-reversed .postal-fold-mark{opacity:1}
-.mailbox-reader .postal-sheet.is-folded .postal-fold-verso{opacity:1}
+/* One sheet opens at two horizontal creases; the envelope preview stays on
+   its top panel until the reading side has unfolded beneath it. */
+.postal-fold-stage{position:fixed;z-index:5;pointer-events:none;transform-origin:top left;perspective:1400px;overflow:visible;will-change:transform;color:var(--letter-ink)}
+.postal-fold-front{position:absolute;inset:0;transform-style:preserve-3d}
+.postal-fold-topface{position:absolute;inset:0;z-index:3;display:block;overflow:hidden;background:linear-gradient(105deg,#fffdf6,#faf8ee);color:#426353;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.postal-fold-stage.is-closed .postal-fold-topface{opacity:1}
+.postal-fold-leaf{position:relative;width:100%;transform-style:preserve-3d;backface-visibility:hidden}
+.postal-fold-leaf[data-panel='1'],.postal-fold-leaf[data-panel='2']{position:absolute;left:0;top:100%;transform-origin:center top;will-change:transform}
+.postal-fold-slice{position:absolute;inset:0;overflow:hidden;background:#faf7ed;backface-visibility:hidden}
+.postal-fold-leaf[data-panel='1']>.postal-fold-slice,.postal-fold-leaf[data-panel='2']>.postal-fold-slice{border-top:1px solid #c5baa7}
+.postal-fold-print{box-shadow:none!important;max-width:none!important;max-height:none!important;min-height:0!important;transform:none!important;pointer-events:none!important}
+.postal-fold-print *{pointer-events:none!important}
+.postal-return-mask{position:fixed;z-index:6;pointer-events:none}
 @media(max-width:799px){.mailbox-reader .letter-sheet.postal-sheet{padding:23px 23px 17px;gap:10px}.mailbox-reader .postal-sheet h2{font-size:27px;padding-right:50px}.mailbox-reader .postal-sheet-postage{right:23px;top:85px}.mailbox-reader .postal-question{font-size:16px}.mailbox-reader .postal-reply-form>div{grid-template-columns:minmax(0,1fr) auto}.mailbox-reader .postal-reply-form button{font-size:12px}}
 @media(max-width:380px){.garden-letter-subject{font-size:18px}.mailbox-reader .letter-sheet.postal-sheet{padding:19px 18px 15px}.mailbox-reader .postal-reply-form>div{grid-template-columns:1fr}.mailbox-reader .postal-reply-form button{justify-self:end}}
-@media(prefers-reduced-motion:reduce){.mailbox-reader .postal-sheet> :not(.postal-fold-verso),.postal-fold-verso{transition:none}}
 
 /* The archive keeps its endless rhythm only while showing every letter. */
 .letter-mailbox.is-filtered .mailbox-stack{min-height:100%;padding-top:126px;padding-bottom:calc(130px + env(safe-area-inset-bottom))}

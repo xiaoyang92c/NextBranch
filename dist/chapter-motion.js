@@ -51,7 +51,7 @@ function powerOff(page){
  ],720,0,'cubic-bezier(.5,0,.3,1)');
  beam(false);
 }
-function writeHomeGlyph(glyph,duration,delay){
+function writeHomeGlyph(glyph,duration,delay,reverse=false){
  const box=glyph.getBoundingClientRect();if(!box.width||!box.height)return;
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),defs=document.createElementNS(ns,'defs'),paper=document.createElementNS(ns,'foreignObject');
  const id=`home-writing-${++inkId}`,style=getComputedStyle(glyph),content=document.createElement('div');
@@ -59,7 +59,7 @@ function writeHomeGlyph(glyph,duration,delay){
  mask.id=id;mask.setAttribute('maskUnits','userSpaceOnUse');mask.setAttribute('x','0');mask.setAttribute('y','0');mask.setAttribute('width',box.width);mask.setAttribute('height',box.height);
  const left=-box.width*.2,right=box.width*1.2;
  brush.setAttribute('d',Array.from({length:5},(_,i)=>`${i?'L':'M'}${left} ${box.height*(.08+i*.21)}L${right} ${box.height*(.08+i*.21)}`).join(''));
- for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':box.height*.25,'stroke-linejoin':'round','stroke-linecap':'butt',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':'1'}))brush.setAttribute(key,value);
+ for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':box.height*.25,'stroke-linejoin':'round','stroke-linecap':'butt',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':reverse?'0':'1'}))brush.setAttribute(key,value);
  mask.append(brush);defs.append(mask);svg.append(defs);
  paper.setAttribute('width','100%');paper.setAttribute('height','100%');paper.setAttribute('mask',`url(#${id})`);
  Object.assign(content.style,{font:style.font,letterSpacing:style.letterSpacing,color:style.color,whiteSpace:'pre',width:'100%',height:'100%',textAlign:'center'});
@@ -70,9 +70,26 @@ function writeHomeGlyph(glyph,duration,delay){
  glyph.append(svg);
  const finish=()=>{svg.remove();glyph.querySelectorAll('.scene-writing-original').forEach(el=>el.replaceWith(...el.childNodes));original.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)node.style.visibility='';});inkWriters.delete(finish);};
  inkWriters.add(finish);
- tween(brush,[{strokeDashoffset:1},{strokeDashoffset:0}],duration,delay,'linear').finished.then(finish).catch(()=>{});
+ tween(brush,[{strokeDashoffset:reverse?0:1},{strokeDashoffset:reverse?1:0}],duration,delay,'linear').finished.then(()=>{if(!reverse)finish();}).catch(()=>{});
 }
-function paintHomeStamp(card){
+function paintStroke(element,{opening=true,delay=0,duration=1200,holder=element.closest('main')}={}){
+ if(!element||!holder)return;
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),id=`chapter-paint-${++inkId}`;
+ svg.classList.add('scene-paint-defs');svg.setAttribute('width','0');svg.setAttribute('height','0');svg.setAttribute('aria-hidden','true');
+ for(const [name,value] of Object.entries({id,maskUnits:'objectBoundingBox',maskContentUnits:'objectBoundingBox',x:'-.3',y:'-.2',width:'1.7',height:'1.6'}))mask.setAttribute(name,value);
+ const rows=Array.from({length:10},(_,i)=>{const y=-.08+i*.15,left=-.25,right=1.4;return `${i?'L':'M'}${i%2?right:left} ${y}L${i%2?left:right} ${y+.012}`;});
+ for(const [name,value] of Object.entries({d:rows.join(''),fill:'none',stroke:'white','stroke-width':'.18','stroke-linecap':'round','stroke-linejoin':'round',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':opening?'1':'0'}))brush.setAttribute(name,value);
+ mask.append(brush);defs.append(mask);svg.append(defs);holder.append(svg);
+ const previousMask=element.style.maskImage,previousVisibility=element.style.visibility;
+ element.style.maskImage=`url("#${id}")`;
+ const cleanup=()=>{element.style.maskImage=previousMask;element.style.visibility=previousVisibility;svg.remove();inkWriters.delete(cleanup);};
+ inkWriters.add(cleanup);
+ tween(brush,[{strokeDashoffset:opening?1:0},{strokeDashoffset:opening?0:1}],duration,delay,'linear').finished.then(()=>{
+  if(opening)cleanup();
+  else{element.style.visibility='hidden';element.style.maskImage=previousMask;svg.remove();}
+ }).catch(()=>{});
+}
+function paintHomeStamp(card,delay=80){
  if(!card)return;
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),id=`home-paint-${++inkId}`;
  svg.classList.add('scene-paint-defs');svg.setAttribute('width','0');svg.setAttribute('height','0');svg.setAttribute('aria-hidden','true');
@@ -86,22 +103,24 @@ function paintHomeStamp(card){
  print.style.maskImage=`url("#${id}")`;
  // Reveal the filtered shadow independently. Masking its parent can leave a
  // rectangular filter surface visible in Chromium before the paper is painted.
- tween(shadow,[{opacity:0,transform:'translate3d(3px,5px,0)'},{opacity:.27,transform:getComputedStyle(shadow).transform}],600,1160);
+ tween(shadow,[{opacity:0,transform:'translate3d(3px,5px,0)'},{opacity:.27,transform:getComputedStyle(shadow).transform}],600,delay+1080);
  const finish=()=>{print.style.maskImage='';svg.remove();inkWriters.delete(finish);};inkWriters.add(finish);
- tween(brush,[{strokeDashoffset:1},{strokeDashoffset:0}],1440,80,'linear').finished.then(finish).catch(()=>{});
+ tween(brush,[{strokeDashoffset:1},{strokeDashoffset:0}],1440,delay,'linear').finished.then(finish).catch(()=>{});
 }
-function homeLetters(page,initial){
+function homeLetters(page,initial,reverse=false){
  page.querySelectorAll('.scene-heading .scene-copy,.scene-end .scene-copy').forEach((line,lineIndex)=>{
   const large=lineIndex===0||lineIndex===2,text=line.textContent;
-  line.setAttribute('aria-hidden','true');
-  const glyphs=lineIndex===0?[...line.children]:Array.from(text,letter=>{const glyph=document.createElement('span');glyph.textContent=letter===' '?'\u00a0':letter;return glyph;});
-  if(lineIndex!==0)line.replaceChildren(...glyphs);
+  if(!reverse)line.setAttribute('aria-hidden','true');
+  const existing=[...line.children],keepExisting=lineIndex===0||reverse&&existing.length>0&&existing.every(glyph=>glyph.classList.contains('scene-ink-letter'));
+  const glyphs=keepExisting?existing:Array.from(text,letter=>{const glyph=document.createElement('span');glyph.textContent=letter===' '?'\u00a0':letter;return glyph;});
+  if(!keepExisting)line.replaceChildren(...glyphs);
   line.classList.add('is-chapter-reveal');
   glyphs.forEach((glyph,index)=>{
    glyph.classList.add('scene-ink-letter');
-   const start=(initial?780:740)+(lineIndex===2?110:lineIndex%2?240:0);
-   if(large)writeHomeGlyph(glyph,560,start+index*120);
-   else tween(glyph,[{clipPath:'inset(0% 100% 0% 0%)',opacity:0},{clipPath:'inset(0%)',opacity:1}],200,start+index*17,'cubic-bezier(.3,.15,.35,1)');
+   const start=reverse?(lineIndex===0?240:lineIndex===2?110:0):(initial?780:740)+(lineIndex===2?110:lineIndex%2?240:0);
+   if(large&&lineIndex===2)paintStroke(glyph,{opening:!reverse,duration:reverse?460:560,delay:start+(reverse?glyphs.length-1-index:index)*(reverse?70:120),holder:page});
+   else if(large)writeHomeGlyph(glyph,reverse?460:560,start+(reverse?glyphs.length-1-index:index)*(reverse?70:120),reverse);
+   else tween(glyph,reverse?[{clipPath:'inset(0%)',opacity:1},{clipPath:'inset(0% 100% 0% 0%)',opacity:0}]:[{clipPath:'inset(0% 100% 0% 0%)',opacity:0},{clipPath:'inset(0%)',opacity:1}],reverse?250:200,start+(reverse?glyphs.length-1-index:index)*17,'cubic-bezier(.3,.15,.35,1)');
   });
  });
 }
@@ -116,7 +135,7 @@ export function rememberArchivePosition(page){
 }
 function newspaperReverse(page,half){
  const plant=plants.find(plant=>plant.id===page.dataset.plant),reverse=document.createElement('article');reverse.className='news-fold-reverse';reverse.style.setProperty('--reverse-height',`${half}px`);
- reverse.innerHTML=`<header class="news-reverse-masthead"><strong>栽植手帖</strong><span>农科枝报 · 背页 / ${plant.value}</span></header><div class="news-reverse-specimen"><figure><img src="./assets/${plant.art}" alt=""><figcaption>${plant.name}</figcaption></figure><div><span class="news-reverse-kicker">修剪之后，继续生长</span><h2>给下一枝，<br>一个生长的位置。</h2><p>${plant.latin}</p></div></div><div class="news-reverse-notes"><section><b>光</b><p>${plant.light.split(" · ")[0]}<br>保持通风</p></section><section><b>水</b><p>先摸表土<br>微湿不积水</p></section><section><b>根</b><p>安放后少挪动<br>耐心等根</p></section></div><footer><span>农科村 · 枝条再生驿站</span><span>${plant.no} · 留给下一位枝友</span></footer>`;
+ reverse.innerHTML=`<div class="news-reverse-vignette"><img src="./assets/${plant.art}" alt=""><span class="news-reverse-divider" aria-hidden="true"></span><p>${plant.name}<span aria-hidden="true"> · </span>给下一枝一个位置</p></div>`;
  return reverse;
 }
 function newspaperModel(page){
@@ -155,23 +174,22 @@ async function foldNewspaper(page,nextBackground){
   await tween(pack,[{transform:'translateY(0)'},{transform:`translateY(${-top-half-32}px)`}],760,0,'cubic-bezier(.4,.05,.3,1)').finished;
  }catch{}
 }
-export async function unfoldNewspaper(page){
- if(!page)return;
+export async function unfoldNewspaper(page,outgoing){
+ if(!page){outgoing?.remove();return;}
  const y=archiveReturnPosition(page.dataset.plant);window.scrollTo({top:y,behavior:'instant'});
- page.classList.add('is-archive-unfolding','is-archive-awake');
- // The paper is already printed. Its visible lines must match the snapshot,
- // rather than restarting the article's ink animation under the opening fold.
- page.querySelectorAll('[data-archive-reveal]').forEach(el=>{const r=el.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)return;el.classList.add('is-ink-visible');el.querySelectorAll('.archive-glyph').forEach(g=>Object.assign(g.style,{opacity:'1',filter:'none',transform:'none',transition:'none'}));});
- page.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>{const r=svg.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)svg.querySelectorAll('[mask]').forEach(g=>g.removeAttribute('mask'));});
- if(reducedMotion()){page.classList.remove('is-archive-unfolding');page.inert=false;return;}
- const version=generation,{root,pack,lower,top,half,background}=newspaperModel(page);lower.style.transform='rotateX(180deg)';pack.style.transform=`translateY(${-top-half-32}px)`;root.style.backgroundColor=background;root.dataset.foldStage='return';
- try{
-  await tween(pack,[{transform:`translateY(${-top-half-32}px)`},{transform:'translateY(0)'}],760,0,'cubic-bezier(.24,.6,.2,1)').finished;
-  if(version!==generation||!root.isConnected)return;pack.style.transform='translateY(0)';root.dataset.foldStage='unfold';
-  await tween(lower,[{transform:'rotateX(180deg)'},{transform:'rotateX(0deg)'}],1160,0,'cubic-bezier(.3,.05,.22,1)').finished;
- }catch{}finally{
-  if(version===generation){stopChapterMotion();page.classList.remove('is-archive-unfolding');page.inert=false;window.scrollTo({top:y,behavior:'instant'});}
- }
+ // This article was read before opening the printer. Settle every layer,
+ // including below-the-fold glyphs, rules and masked line drawings.
+ page.classList.add('is-archive-awake');
+ page.classList.remove('is-archive-staged','is-archive-dispersing','is-branch-arriving');
+ page.querySelectorAll('.archive-ink-ready,.archive-draw-rule,.archive-draw-graphic').forEach(el=>el.classList.add('is-ink-visible'));
+ page.querySelectorAll('.archive-glyph').forEach(g=>Object.assign(g.style,{opacity:'1',filter:'none',transform:'none',transition:'none'}));
+ page.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>svg.querySelectorAll('[mask]').forEach(g=>g.removeAttribute('mask')));
+ page.inert=true;
+ if(reducedMotion()){outgoing?.remove();page.inert=false;return;}
+ const motion={duration:820,easing:'cubic-bezier(.28,.72,.24,1)',fill:'both'};
+ const incoming=page.animate([{transform:`translateY(${-innerHeight}px)`},{transform:'translateY(0)'}],motion);
+ const departing=outgoing?.animate([{transform:'translateY(0)'},{transform:`translateY(${innerHeight}px)`}],motion);
+ try{await Promise.all([incoming.finished,departing?.finished]);}catch{}finally{incoming.cancel();departing?.cancel();outgoing?.remove();page.inert=false;window.scrollTo({top:y,behavior:'instant'});}
 }
 
 export function enterChapter(page,view,{initial=false}={}){
@@ -184,6 +202,7 @@ export function enterChapter(page,view,{initial=false}={}){
   paintHomeStamp(find('.scene-stamp.current'));
   page.querySelectorAll('.scene-stamp:not(.current)').forEach(card=>{
    const p=Number(card.dataset.position);if(Math.abs(p)!==1)return;
+   paintHomeStamp(card,240);
    const box=card.getBoundingClientRect(),outside=p<0?innerHeight-box.top+40:-box.bottom-40;
    tween(card,[{translate:`0 ${outside}px`,opacity:1},{translate:'0 0',opacity:1}],1320,180,'cubic-bezier(.25,.15,.24,1)');
   });
@@ -212,9 +231,13 @@ export function enterChapter(page,view,{initial=false}={}){
   // The press owns body arrival followed by paper feed. A second chapter
   // animation would move the rollers after the paper has already started.
  }else if(view==='letters'){
-  tween(find('.mailbox-stack'),[{translate:`0 ${innerHeight+32}px`,opacity:1},{translate:'0 0',opacity:1}],1080,0,'cubic-bezier(.22,.72,.24,1)');
-  const toolbar=find('.mailbox-toolbar'),outside=innerHeight-toolbar.getBoundingClientRect().top+24;
-  tween(toolbar,[{translate:`0 ${outside}px`,opacity:1},{translate:'0 0',opacity:1}],780,240,'cubic-bezier(.22,.72,.24,1)');
+  const well=find('.mailbox-well'),bounds=well.getBoundingClientRect();
+  [...page.querySelectorAll('.mailbox-entry')].filter(entry=>{const box=entry.getBoundingClientRect();return box.bottom>bounds.top&&box.top<bounds.bottom;})
+   .forEach((entry,index)=>{
+    paintStroke(entry.querySelector('.mailbox-ink-frame'),{delay:index*150,duration:1210,holder:page});
+    tween(entry.querySelector('.garden-botanical'),[{opacity:0},{opacity:1}],630,index*150);
+   });
+  paintStroke(find('.mailbox-toolbar'),{delay:260,duration:1050,holder:page});
  }else if(view==='write-letter'){
   tween(find('.office-writing-paper'),[{translate:`0 ${innerHeight+24}px`},{translate:'0 0'}],920,0,'cubic-bezier(.18,.76,.22,1)');
   const lines=page.querySelectorAll('.office-writing-kicker,.office-writing-intro strong,.office-writing-heading small,.office-writing-postage,.office-writing-selects,.office-writing-label,#office-letter-title,#office-letter-text,.office-writing-sign,.office-writing-bottom');
@@ -236,31 +259,46 @@ export function enterChapter(page,view,{initial=false}={}){
 export async function leaveChapter(page,view,{nextBackground,nextView}={}){
  stopChapterMotion();signalCarry=null;if(!page||reducedMotion())return;
  retainCompleted=true;const find=selector=>page.querySelector(selector);
- if(nextView==='album'||view==='album'){
+ if((nextView==='album'||view==='album')&&view!=='letters'){
   // Enter through a soft standby tone; close directly onto the next chapter.
   const backing=nextView==='album'?signalBlank:nextBackground||getComputedStyle(page).backgroundColor;
   if(nextView==='album')signalCarry={bridge:backing};
   document.body.style.backgroundColor=backing;
   powerOff(page);
  }else{
-  if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'?660:340);
+  if(view==='letters'&&nextView==='home'&&nextBackground){
+   // The mailbox paper and its tint leave on the exact color of the selected
+   // stamp. A generic green intermediate frame made the hand-off flash.
+   page.classList.add('is-background-bridging');page.style.transition='none';page.style.backgroundColor=nextBackground;
+  }else if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?950:340);
   if(view==='home'){
-   tween(find('.scene-heading'),[{opacity:1,clipPath:'inset(0% 0% 0% 0%)'},{opacity:0,clipPath:'inset(0% 0% 100% 0%)'}],330);
-   tween(find('.scene-end'),[{opacity:1,clipPath:'inset(0% 0% 0% 0%)'},{opacity:0,clipPath:'inset(100% 0% 0% 0%)'}],330);
+   homeLetters(page,false,true);
    page.querySelectorAll('.scene-stamp').forEach(card=>{
     const p=Number(card.dataset.position);if(Math.abs(p)>1)return;
-    tween(card,p===0?[
-     {transform:card.style.transform,opacity:1,filter:'blur(0px)'},
-     {transform:`${card.style.transform} perspective(1000px) rotateX(-18deg) translateY(18vh) scale(.9)`,opacity:0,filter:'blur(.8px)'}
-    ]:[{transform:card.style.transform,opacity:1},{transform:`${card.style.transform} translateY(${p<0?1:-1}00vh)`,opacity:0}],620,0,'cubic-bezier(.45,0,.3,1)');
+    paintStroke(card,{opening:false,duration:p===0?1180:1040,holder:page});
+    paintStroke(card.querySelector(':scope>.stamp-shadow'),{opening:false,duration:p===0?520:430,holder:page});
+    if(p!==0){
+     const box=card.getBoundingClientRect(),outside=p<0?innerHeight-box.top+40:-box.bottom-40;
+     tween(card,[{translate:'0 0'},{translate:`0 ${outside}px`}],1240,0,'cubic-bezier(.45,0,.3,1)');
+    }
    });
   }else if(view==='detail'&&nextView==='claim'){
    await foldNewspaper(page,nextBackground);
   }else if(view==='write-letter'&&nextView==='letters'){
    tween(find('.office-writing-paper'),[{translate:'0 0'},{translate:`0 ${innerHeight+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
   }else if(view==='letters'){
-   tween(find('.mailbox-stack'),[{translate:'0 0',opacity:1},{translate:'0 70px',opacity:0}],340);
-   tween(find('.mailbox-toolbar'),[{opacity:1},{opacity:0}],220);
+   const well=find('.mailbox-well'),bounds=well.getBoundingClientRect(),top=Math.max(0,bounds.top),bottom=Math.min(innerHeight,bounds.bottom);
+   let visibleIndex=0;
+   page.querySelectorAll('.mailbox-entry').forEach(entry=>{
+    const box=entry.getBoundingClientRect();
+    if(box.bottom<=top||box.top>=bottom){entry.style.visibility='hidden';return;}
+    const delay=visibleIndex++*100;
+    paintStroke(entry.querySelector('.mailbox-ink-frame'),{opening:false,delay,duration:900,holder:page});
+    tween(entry.querySelector('.garden-botanical'),[{opacity:1},{opacity:0}],300,delay);
+   });
+   paintStroke(find('.mailbox-toolbar'),{opening:false,duration:750,holder:page});
+   const search=find('.mailbox-search');
+   if(search&&!search.hidden)paintStroke(search,{opening:false,duration:750,holder:page});
   }else tween(page,[{translate:'0 0',opacity:1},{translate:'0 -12px',opacity:0}],180);
  }
  await Promise.allSettled([...active].map(animation=>animation.finished));

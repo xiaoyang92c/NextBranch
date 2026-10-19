@@ -1,4 +1,19 @@
-let navigation=null,observer=null;
+let navigation=null,observer=null,lastInk=null,inkTimer=null;
+function paintInk(section){
+ const nextInk=section==='letters'?'rgb(66, 99, 83)':'rgb(255, 247, 223)';
+ if(lastInk&&lastInk!==nextInk&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  clearTimeout(inkTimer);
+  navigation.classList.remove('is-ink-changing');
+  navigation.style.setProperty('--nav-ink-old',lastInk);
+  navigation.style.setProperty('--nav-ink-new',nextInk);
+  navigation.querySelectorAll('.nav-label').forEach((label,index)=>label.style.setProperty('--nav-title-index',index));
+  void navigation.offsetWidth;
+  navigation.classList.add('is-ink-changing');
+  // The painted color stays in place until the destination page is mounted.
+  inkTimer=setTimeout(()=>navigation?.classList.remove('is-ink-changing'),1800);
+ }
+ lastInk=nextInk;
+}
 function positionCursor(){
  if(!navigation?.isConnected)return;
  const label=navigation.querySelector('button.active .nav-label'),cursor=navigation.querySelector('.nav-cursor');if(!label||!cursor)return;
@@ -7,6 +22,7 @@ function positionCursor(){
 }
 export function selectNavigation(section){
  if(!navigation)return;
+ paintInk(section);
  navigation.querySelectorAll('button[data-nav]:not(.nav-brand)').forEach(button=>{const active=button.dataset.nav===section;button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
  positionCursor();
 }

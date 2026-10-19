@@ -30,7 +30,7 @@
 .tv-dial-window{position:absolute;inset:0 0 14px;overflow:hidden;touch-action:none;cursor:ew-resize;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .tv-stations{position:absolute;inset:0;translate:0 0;will-change:translate}
 .tv-stations button{position:absolute;left:50%;top:0;width:var(--dial-step);height:100%;translate:calc(-50% + var(--station-offset)*var(--dial-step)) 0;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:7px;background:none;border:0;color:var(--tv-soft);font:600 12px/1.2 var(--tv-font);padding:22px 2px 5px;white-space:nowrap;scale:1;touch-action:none}
-.tv-stations button::before{content:'';position:absolute;top:4px;left:50%;height:12px;border-left:1px solid currentColor;opacity:.65}.tv-stations button::after{content:'';position:absolute;top:4px;left:0;right:0;height:5px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),#78917066 calc(25% - 1px),#78917066 25%)}
+.tv-stations button::before{content:'';position:absolute;top:4px;left:50%;height:12px;border-left:1px solid currentColor;opacity:.65}.tv-stations button::after{content:'';position:absolute;top:4px;left:calc(50% - .5px);width:1px;height:5px;opacity:.42;box-shadow:calc(var(--dial-step) * -.25) 0 0 currentColor,calc(var(--dial-step) * .25) 0 0 currentColor,calc(var(--dial-step) * .5) 0 0 currentColor}
 .station-number{font:400 9px/1 var(--tv-font);letter-spacing:.1em}.tv-stations button[aria-selected="true"]{color:var(--tv-ink);font-weight:800}.tv-stations button[aria-selected="true"] .station-name{text-shadow:0 0 7px #e6f5c488}.tv-dial-pointer{position:absolute;left:50%;top:-6px;height:23px;translate:-50% 0;width:10px;z-index:3;pointer-events:none}.tv-dial-pointer::before{content:'';position:absolute;top:0;left:1px;border-top:5px solid #ad8f65;border-left:4px solid transparent;border-right:4px solid transparent}.tv-dial-pointer i{position:absolute;left:5px;top:4px;height:18px;border-left:1px solid #ad8f65}.tv-tuner-caption{position:absolute;bottom:-2px;left:0;right:0;text-align:center;font:500 7px/1 var(--tv-font);letter-spacing:.16em;opacity:.5}
 /* Playback is a camera image; the file channel is a broadcast information plate. */
 .growth-program{height:100%;display:grid;grid-template-rows:44px minmax(0,1fr) 28px;gap:17px;min-height:0}.growth-program-head{display:flex;align-items:start;justify-content:space-between;gap:15px;border-bottom:1px solid #81947355;padding-bottom:12px}.growth-program-head h1{font:800 28px/1.1 var(--sans);margin:0}.growth-count{font:400 9px/1.4 var(--tv-font);padding-top:6px;color:var(--tv-soft)}
@@ -471,14 +471,36 @@
 .care-lesson-scene text,.care-lesson-scene .scene-callout text,.care-lesson-scene .care-stage-label,.care-lesson-scene .care-question{fill:var(--tv-ink);stroke:none;font:500 var(--care-svg-type-size,22px)/1.4 var(--sans);letter-spacing:0}
 .care-stage .care-scene-caption{font:500 var(--care-note-size,14px)/1.5 var(--sans);letter-spacing:0;bottom:0}
 .care-lesson-scene .care-leader{stroke-opacity:.38}
-@media(max-width:799px) and (max-height:690px) and (orientation:portrait){.album-page.album-desk[data-channel='care']{height:max(100svh,780px)}}
+@media(max-width:799px) and (max-height:690px) and (orientation:portrait){
+ .album-page.album-desk{height:100svh;max-height:100svh}
+ .tv-screen-content{padding:clamp(58px,10svh,68px) 20px 8px;grid-template-rows:30px minmax(0,1fr) 48px;gap:8px}
+ .care-program{grid-template-rows:44px minmax(0,1fr) auto;gap:6px}
+ .care-heading{padding:0 0 5px}
+ .care-heading h1{font-size:21px;margin-bottom:3px}
+ .care-heading i{font-size:9px}
+ .care-bottom{padding-top:7px;gap:7px}
+ .care-subtitle-index{margin-bottom:4px}
+ .care-copy h2{font-size:clamp(17px,3svh,20px);line-height:1.24;margin-bottom:4px}
+ .care-copy p{font-size:clamp(10.5px,1.8svh,12px);line-height:1.5}
+ .care-topics button{min-height:29px;padding:5px 3px}
+}
 /* Object labels occupy one quiet lane within the picture; no bottom caption. */
 .care-stage>.care-lesson-scene{inset:0;left:0;top:0;translate:none;width:100%;height:100%;max-width:780px;margin-inline:auto;overflow:hidden}
 .care-stage::before,.care-stage::after{display:none}
+/* Reserve one copy lane so every plant keeps the same illustration height. */
+@media(max-width:799px) and (min-height:691px) and (orientation:portrait){.care-bottom{min-height:211px}}
+@media(max-width:799px) and (max-height:690px) and (orientation:portrait){.care-bottom{min-height:129px}}
+@media(max-width:799px) and (min-height:760px) and (orientation:portrait){.care-program{grid-template-rows:76px minmax(0,1fr) 211px;align-content:stretch}}
+@media(max-width:799px) and (min-height:600px) and (max-height:690px) and (orientation:portrait){.care-program{grid-template-rows:44px 235px auto;align-content:center}}
 .care-lesson-scene .care-entry-fill{stroke:none}
 .care-lesson-scene .care-annotations{color:var(--tv-ink);pointer-events:none}
 .care-lesson-scene .care-annotations text{font:500 var(--care-svg-type-size,22px)/1.4 var(--sans);fill:var(--tv-ink);stroke:none;letter-spacing:0}
 .care-lesson-scene .care-annotations .care-leader{stroke:var(--tv-ink);stroke-width:.75;stroke-opacity:.55;stroke-dasharray:2 4;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:none}
 
+/* The selected station has one long index mark, without a short duplicate to its left. */
+.tv-stations button[aria-selected="true"]::after{box-shadow:calc(var(--dial-step) * .25) 0 0 currentColor,calc(var(--dial-step) * .5) 0 0 currentColor}
+
 /* Bark remains a fixed structure inside the inspection lens. */
 .care-lesson-scene .care-wood-detail{stroke:var(--tv-ink);stroke-width:1.3;stroke-dasharray:none;animation:none}
+/* Mobile engines can drop animated SVG artwork when the displacement filter is rasterized. */
+@media(max-width:799px),(pointer:coarse){.album-desk.is-curved .care-stage,.album-desk.is-curved .growth-viewfinder,.album-desk.is-curved .tv-dossier-art{filter:none}}

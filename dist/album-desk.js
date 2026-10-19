@@ -5,7 +5,8 @@ let chosenId=null,channel='care',film=0,dispose=()=>{},lens=null;
 export const albumBackground=()=>({care:'#cbd8b9',growth:'#b8cfc4',archive:'#d8d6b5'}[channel]);
 export function cleanupAlbumDesk(){dispose();dispose=()=>{};}
 const claimFor=(data,id)=>[...data.claims].reverse().find(claim=>claim.plantId===id&&claim.status==='claimed');
-const topics=['光照','浇水','扦插'],modes={care:'养护放映',growth:'生长回放',archive:'植物档案'};
+const topicLabels=plant=>['光照','浇水',['podocarpus','citron','five-lobed-maple','ginkgo'].includes(plant.id)?'安苗':'扦插'];
+const modes={care:'养护放映',growth:'生长回放',archive:'植物档案'};
 function crtLens(){
  if(lens)return lens;const canvas=document.createElement('canvas');canvas.width=canvas.height=96;const ctx=canvas.getContext('2d'),map=ctx.createImageData(96,96);
  for(let y=0;y<96;y++)for(let x=0;x<96;x++){const nx=(x-47.5)/47.5,ny=(y-47.5)/47.5,r=Math.min(1,nx*nx+ny*ny),p=(y*96+x)*4;map.data[p]=128+nx*r*78;map.data[p+1]=128+ny*r*78;map.data[p+2]=128;map.data[p+3]=255;}
@@ -34,21 +35,24 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   const animation=element.animate(frames,{fill:'both',...settings});animations.add(animation);animation.finished.finally(()=>{if(!hold){animations.delete(animation);animation.cancel();}}).catch(()=>{});return animation;
  };
  function fitSceneArt(){
-  const svg=program.querySelector('.care-lesson-scene'),art=svg?.querySelector('.care-scene-art');if(!art)return;
-  const box=art.getBBox();if(!box.width||!box.height)return;
-  const labelY=box.y-40,x=Math.min(30,box.x-24),y=labelY-40,width=Math.max(450,box.x+box.width+24)-x,height=box.y+box.height+24-y;
-  svg.setAttribute('viewBox',`${x} ${y} ${width} ${height}`);
-  // A shared screen size, independent of species, drawing bounds or viewport.
+  const svg=program.querySelector('.care-lesson-scene'),composition=svg?.querySelector('.care-scene-composition');if(!composition)return;
+  const width=480,height=320,art=composition.querySelector('.care-scene-art'),artBox=art.getBBox();
+  const labelY=Math.max(12,Math.min(38,artBox.y-28));
+  svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+  // Keep every plant on the same canvas and the annotation type at one optical size.
   const scale=Math.min(svg.clientWidth/width,svg.clientHeight/height);
-  if(scale>0)svg.style.setProperty('--care-svg-type-size',`${14/scale}px`);
+  if(scale>0)svg.style.setProperty('--care-svg-type-size',`${12.5/scale}px`);
   svg.querySelectorAll('.scene-callout').forEach((callout,index)=>{
-   const leader=callout.querySelector('.care-leader'),text=callout.querySelector('text'),offset=(svg.clientWidth-width*scale)/2,labelX=scale>0?x+(svg.clientWidth*(index===0?.25:.75)-offset)/scale:Number(leader.dataset.labelX),target=leader.dataset.target.split(',').map(Number),via=leader.dataset.via?leader.dataset.via.split(' ').map(pair=>pair.split(',').map(Number)):[];
-   // Keep the two labels apart even when a tall scene is fitted by height.
+   const leader=callout.querySelector('.care-leader'),text=callout.querySelector('text'),labelX=index===0?120:360,target=leader.dataset.target.split(',').map(Number),via=leader.dataset.via?leader.dataset.via.split(' ').map(pair=>pair.split(',').map(Number)):[];
    text.setAttribute('x',labelX);text.setAttribute('y',labelY);
-   const points=[[labelX,labelY+12],[labelX,labelY+24],...via],last=points.at(-1),distance=Math.hypot(target[0]-last[0],target[1]-last[1]),gap=Math.min(8,distance*.4);
-   points.push([target[0]+(last[0]-target[0])*gap/distance,target[1]+(last[1]-target[1])*gap/distance]);
+   const stemY=Math.min(labelY+22,Math.max(labelY+14,target[1]-12));
+   const points=[[labelX,labelY+10],[labelX,stemY],...via],last=points.at(-1),distance=Math.hypot(target[0]-last[0],target[1]-last[1]),gap=Math.min(11,distance*.35);
+   if(distance)points.push([target[0]+(last[0]-target[0])*gap/distance,target[1]+(last[1]-target[1])*gap/distance]);
    leader.setAttribute('d',points.map(([px,py],index)=>`${index?'L':'M'}${px} ${py}`).join(''));
   });
+  composition.removeAttribute('transform');
+  const box=composition.getBBox();
+  if(box.width&&box.height)composition.setAttribute('transform',`translate(${width/2-box.x-box.width/2} ${height/2-box.y-box.height/2})`);
  }
  const sceneSizer=new ResizeObserver(fitSceneArt);sceneSizer.observe(program);
  function typeText(scope){
@@ -63,6 +67,12 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  }
  function drawScene(){
   const svg=program.querySelector('.broadcast-diagram');if(!svg||reduced())return;
+  // On narrow screens, avoid hundreds of animated SVG masks. They can render
+  // the whole illustration transparent in mobile WebKit during a filter pass.
+  if(matchMedia('(max-width:799px), (pointer:coarse)').matches){
+   animate(svg,[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:720,easing:'ease-out'});
+   return;
+  }
   const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');svg.prepend(defs);
   // Draw the contour and wash in its color separately. A stroke-only mask
   // must never be removed to suddenly reveal the whole interior fill.
@@ -103,8 +113,8 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   }
   return [{title:plant.name,text:plant.intro,action:'archive',actionLabel:'打开完整档案'}];
  }
- const copyMarkup=()=>`<span class="care-subtitle-index" data-type>${topics[film]}</span><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p>`;
- function careMarkup(plant){return `<section class="care-program"><header class="care-heading"><div><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></div><div class="care-difficulty"><strong>养护难度</strong><span data-type>${plant.level}</span></div></header><div class="care-stage">${careScene(plant,film)}</div><div class="care-bottom"><div class="care-copy">${copyMarkup()}</div><div class="care-topics" role="group" aria-label="选择养护场景">${topics.map((label,index)=>`<button data-care-frame="${index}" aria-pressed="${film===index}"><span class="tv-key-label">${label}</span></button>`).join('')}</div></div></section>`;}
+ const copyMarkup=()=>`<span class="care-subtitle-index" data-type>${topicLabels(selected())[film]}</span><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p>`;
+ function careMarkup(plant){return `<section class="care-program"><header class="care-heading"><div><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></div><div class="care-difficulty"><strong>养护难度</strong><span data-type>${plant.level}</span></div></header><div class="care-stage">${careScene(plant,film)}</div><div class="care-bottom"><div class="care-copy">${copyMarkup()}</div><div class="care-topics" role="group" aria-label="选择养护场景">${topicLabels(plant).map((label,index)=>`<button data-care-frame="${index}" aria-pressed="${film===index}"><span class="tv-key-label">${label}</span></button>`).join('')}</div></div></section>`;}
  function growthMarkup(plant){
   const photo=content.photo?escape(content.photo):`./assets/${plant.art}`;
   return `<section class="growth-program"><header class="growth-program-head"><h1 data-type>${plant.name}的近况</h1><span class="growth-count">${content.record?`TAPE ${String(content.record).padStart(2,'0')} / ${String(content.total).padStart(2,'0')}`:'NO TAPE'}</span></header><div class="growth-layout"><div class="growth-viewfinder"><span class="growth-rec">${content.photo?'● REC':'▷ PLAY'}</span><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i>${content.empty?`<div class="growth-awaiting"><svg class="growth-test-card" viewBox="0 0 180 126" aria-hidden="true"><rect x="12" y="8" width="156" height="110"/><path d="M12 35H168M12 91H168M38 8V35M64 8V35M90 8V35M116 8V35M142 8V35M12 104H168M12 111H168"/><path class="test-card-band" d="M12 8H38V35H12ZM64 8H90V35H64ZM116 8H142V35H116Z"/><circle cx="90" cy="63" r="24"/><path d="M54 63H126M90 37V89"/></svg><span>等待第一段生长影像</span></div>`:`<img class="growth-picture ${content.photo?'is-photo':''}" src="${photo}" alt="${content.photo?'植物近况照片':plant.name+'的图鉴画面'}"><span class="growth-image-caption">${content.photo?'生长照片':'图鉴画面'}</span>`}<span class="growth-viewfinder-date">${escape(content.date||plant.no)}</span></div><article class="growth-observation"><span class="growth-date">${escape(content.date||'尚未录入')}</span><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p><button class="tv-story-action" data-tv-action="${content.action}">${content.actionLabel}<span>↗</span></button></article></div>${content.total>1?'<nav class="growth-record-strip growth-pages" aria-label="翻阅近况"><button data-tv-action="previous" aria-label="上一张近况">上一张</button><button data-tv-action="next" aria-label="下一张近况">下一张</button></nav>':''}</section>`;
@@ -116,7 +126,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   const code=root.querySelector('.tv-channel-code'),value=`CH ${String(selectedIndex()+1).padStart(2,'0')}`;
   if(code.dataset.value!==value){code.dataset.value=value;delete code.dataset.typed;code.textContent=value;}
   root.querySelectorAll('[data-care-frame]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.careFrame)===film)));
-  root.querySelector('.album-live').textContent=`${selected().name}，${modes[channel]}${channel==='care'?'，'+topics[film]:''}`;
+  root.querySelector('.album-live').textContent=`${selected().name}，${modes[channel]}${channel==='care'?'，'+topicLabels(selected())[film]:''}`;
  }
  function paint(textOnly=false){
   const items=frames();film=((film%items.length)+items.length)%items.length;content=items[film];const plant=selected();
@@ -148,7 +158,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  const dialStep=()=>track.querySelector('button')?.getBoundingClientRect().width||90;
  function selectPlant(id,focus=false,fromShift=0,steps=null){
   const next=plants.findIndex(plant=>plant.id===id);if(next<0)return;
-  const previous=selectedIndex();let delta=steps??next-previous;if(steps===null){if(delta>4)delta-=8;if(delta<-4)delta+=8;}
+  const previous=selectedIndex();let delta=steps??next-previous;if(steps===null){const half=plants.length/2;if(delta>half)delta-=plants.length;if(delta<-half)delta+=plants.length;}
   chosenId=id;film=0;tunerAnimation?.cancel();drawDial();
   if(!reduced()&&delta!==0)tunerAnimation=track.animate([{translate:`${fromShift+delta*dialStep()}px 0`},{translate:'0px 0'}],{duration:460,easing:'cubic-bezier(.16,.8,.2,1)'});
   if(focus)track.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});switchProgram();
@@ -167,7 +177,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   const keys=[...root.querySelectorAll('[data-tv-mode]')],at=keys.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?2:(at+(event.key==='ArrowRight'?1:2))%3;
   keys[next].focus();keys[next].click();
  },{signal});
- dial.addEventListener('keydown',event=>{let next;const index=selectedIndex();if(event.key==='ArrowRight')next=wrap(index+1);if(event.key==='ArrowLeft')next=wrap(index-1);if(event.key==='Home')next=0;if(event.key==='End')next=7;if(next===undefined)return;event.preventDefault();selectPlant(plants[next].id,true);},{signal});
+ dial.addEventListener('keydown',event=>{let next;const index=selectedIndex();if(event.key==='ArrowRight')next=wrap(index+1);if(event.key==='ArrowLeft')next=wrap(index-1);if(event.key==='Home')next=0;if(event.key==='End')next=plants.length-1;if(next===undefined)return;event.preventDefault();selectPlant(plants[next].id,true);},{signal});
  dial.addEventListener('pointerdown',event=>{if(event.button!==0)return;tunerAnimation?.cancel();const button=event.target.closest('[data-plant]');dialDrag={id:event.pointerId,x:event.clientX,last:event.clientX,time:performance.now(),velocity:0,dx:0,base:selectedIndex(),clickedId:button?.dataset.plant,clickedOffset:Number(button?.dataset.offset||0)};dial.setPointerCapture(event.pointerId);},{signal});
  dial.addEventListener('pointermove',event=>{if(!dialDrag||event.pointerId!==dialDrag.id)return;const now=performance.now(),dt=now-dialDrag.time;dialDrag.velocity=dt>0?(event.clientX-dialDrag.last)/dt:0;dialDrag.last=event.clientX;dialDrag.time=now;dialDrag.dx=event.clientX-dialDrag.x;const offset=Math.round(-dialDrag.dx/dialStep());drawDial(wrap(dialDrag.base+offset),dialDrag.dx+offset*dialStep());},{signal});
  const endDial=event=>{if(!dialDrag||event.pointerId!==dialDrag.id)return;const drag=dialDrag;dialDrag=null;ignoreClick=Date.now()+400;if(Math.abs(drag.dx)<6){if(drag.clickedId&&drag.clickedId!==chosenId)selectPlant(drag.clickedId,false,0,drag.clickedOffset);else drawDial();return;}const velocity=performance.now()-drag.time<100?drag.velocity:0,steps=Math.round(-(drag.dx+Math.max(-2*dialStep(),Math.min(2*dialStep(),velocity*120)))/dialStep());selectPlant(plants[wrap(drag.base+steps)].id,false,drag.dx,steps);};
@@ -177,7 +187,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  window.addEventListener('pointerup',event=>{if(!swipe||event.pointerId!==swipe.id)return;const dx=event.clientX-swipe.x,dy=event.clientY-swipe.y;swipe=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)selectPlant(plants[wrap(selectedIndex()+(dx<0?1:-1))].id);},{signal});
  window.addEventListener('pointercancel',()=>swipe=null,{signal});
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{operation++;stopWarp();clearMotion();tunerAnimation?.cancel();paint();drawDial();root.classList.remove('is-tuning');},{signal});
- crtLens().ready.then(()=>{if(!signal.aborted)root.classList.add('is-curved');}).catch(()=>{});
+ if(!matchMedia('(max-width:799px), (pointer:coarse)').matches)crtLens().ready.then(()=>{if(!signal.aborted)root.classList.add('is-curved');}).catch(()=>{});
  paint();drawDial();
  root.addEventListener('chapter:revealed',()=>{typeText(root);drawScene();},{signal,once:true});
  dispose=()=>{controller.abort();sceneSizer.disconnect();operation++;stopWarp();clearMotion();tunerAnimation?.cancel();};

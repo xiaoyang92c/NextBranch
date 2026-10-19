@@ -21,7 +21,7 @@ function getLensMap(){
 }
 export function renderHome(plants,stamp){
   const plant=plants[homeIndex];
-  return `<main class="home-scene page" style="--scene-bg:${plant.sceneBg};--scene-accent:${plant.sceneInk||plant.ink};--scene-fine:${plant.sceneFine||plant.ink}" aria-label="植物邮票滑动展台"><svg class="scene-optical-defs" width="0" height="0" aria-hidden="true"><defs><filter id="home-fisheye" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="scene-lens-map" href="${getLensMap().url}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lens-map"/><feDisplacementMap class="scene-lens-displacement" in="SourceGraphic" in2="lens-map" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><div class="scene-optics"><div class="scene-heading"><h1 class="scene-title" aria-label="${plant.name}">${copy(titleMarkup(plant.name))}</h1><p class="scene-english" aria-label="${plant.latin}">${copy(plant.latin)}</p></div><div class="scene-rail">${plants.map((p,i)=>`<button class="scene-stamp" data-scene-index="${i}" aria-label="${i===homeIndex?'打开档案：':'切换到'}${p.name}邮票">${stamp(p.id)}</button>`).join('')}</div><div class="scene-end"><div class="scene-name"><strong class="scene-chinese" aria-label="${plant.heading}">${copy(plant.heading)}</strong><span class="scene-latin" aria-label="${plant.homeNote}">${copy(plant.homeNote)}</span></div></div></div></main>`;
+  return `<main class="home-scene page" style="--scene-bg:${plant.sceneBg};--scene-accent:${plant.sceneInk||plant.ink};--scene-fine:${plant.sceneFine||plant.ink}" aria-label="植物邮票滑动展台"><svg class="scene-optical-defs" width="0" height="0" aria-hidden="true"><defs><filter id="home-fisheye" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="scene-lens-map" href="${getLensMap().url}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lens-map"/><feDisplacementMap class="scene-lens-displacement" in="SourceGraphic" in2="lens-map" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><div class="scene-optics"><div class="scene-heading"><h1 class="scene-title" aria-label="${plant.name}">${copy(titleMarkup(plant.name))}</h1><p class="scene-english" aria-label="${plant.english}">${copy(plant.english)}</p></div><div class="scene-rail">${plants.map((p,i)=>`<button class="scene-stamp" data-scene-index="${i}" aria-label="${i===homeIndex?'打开档案：':'切换到'}${p.name}邮票">${stamp(p.id)}</button>`).join('')}</div><div class="scene-end"><div class="scene-name"><strong class="scene-chinese" aria-label="${plant.heading}">${copy(plant.heading)}</strong><span class="scene-latin" aria-label="${plant.homeNote}">${copy(plant.homeNote)}</span></div></div></div></main>`;
 }
 export function mountHome(plants,onOpen){
   const scene=document.querySelector('.home-scene');if(!scene)return;
@@ -31,7 +31,7 @@ export function mountHome(plants,onOpen){
   const play=(element,frames,options)=>{const animation=element.animate(frames,options);animations.add(animation);animation.finished.finally(()=>animations.delete(animation)).catch(()=>{});return animation;};
   const offsets=index=>cards.map((_,i)=>{let p=i-index;if(p>plants.length/2)p-=plants.length;if(p<-plants.length/2)p+=plants.length;return p;});
   const step=()=>innerWidth/2+cards[0].offsetWidth*.38;
-  const transform=(p,gap,depth=1)=>`translate(calc(-50% + ${p*gap}px),calc(-50% + ${p*Math.min(gap*.62,scene.clientHeight*.24)}px)) scale(${(1-Math.min(Math.abs(p),2)*.025)*depth})`;
+  const transform=(p,gap)=>`translate(calc(-50% + ${p*gap}px),calc(-50% + ${p*Math.min(gap*.62,scene.clientHeight*.24)}px))`;
   async function slideCopy(element,markup,direction,label){
     element.setAttribute('aria-label',label);
     if(reducedMotion()){element.innerHTML=copy(markup);return;}
@@ -56,8 +56,7 @@ export function mountHome(plants,onOpen){
   }
   function resetStamp(card){
     const stamp=card.querySelector('.stamp');
-    stamp.dispatchEvent(new Event('stamp:reset'));
-    for(const [name,value] of [['--tilt-x','0deg'],['--tilt-y','0deg'],['--hover-scale','1'],['--stamp-glow','0']])stamp.style.setProperty(name,value);
+    stamp.dispatchEvent(new Event('stamp:park'));
   }
   function layout(animate=false){
     const gap=step(),positions=offsets(homeIndex),movements=[];
@@ -67,15 +66,16 @@ export function mountHome(plants,onOpen){
       card.style.transform=transform(p,gap);card.style.opacity=near>2?'0':'1';card.style.visibility=near>2?'hidden':'visible';card.style.zIndex=String(10-near);card.tabIndex=near<=1?0:-1;card.classList.toggle('current',p===0);card.setAttribute('aria-label',`${p===0?'打开档案：':'切换到'}${plants[i].name}邮票`);card.dataset.position=p;
       card.querySelector('.stamp').dispatchEvent(new Event('stamp:layout'));
       if(animate&&!reducedMotion()&&Math.abs(previous-p)<2&&(Math.abs(previous)<=2||near<=2)){
-        movements.push(play(card,[{transform:start},{transform:transform((previous+p)/2,gap,.955),offset:.48},{transform:transform(p,gap)}],{duration,easing:ease}).finished);
+        movements.push(play(card,[{transform:start},{transform:transform(p,gap)}],{duration,easing:ease}).finished);
       }
     });
+    cards[homeIndex]?.querySelector('.stamp')?.dispatchEvent(new Event('stamp:resume'));
     return Promise.allSettled(movements);
   }
   function update(delta){
     if(busy)return;busy=true;scene.querySelectorAll('.scene-ink-letter').forEach(glyph=>glyph.getAnimations().forEach(animation=>{animation.finish();animation.cancel();}));scene.classList.add('is-switching');homeIndex=(homeIndex+delta+plants.length)%plants.length;
     colors();const movement=layout(true),plant=plants[homeIndex];
-    Promise.allSettled([movement,slideCopy(scene.querySelector('.scene-title'),titleMarkup(plant.name),-delta,plant.name),slideCopy(scene.querySelector('.scene-english'),plant.latin,-delta,plant.latin),slideCopy(scene.querySelector('.scene-chinese'),plant.heading,delta,plant.heading),slideCopy(scene.querySelector('.scene-latin'),plant.homeNote,-delta,plant.homeNote)]).then(()=>{if(!signal.aborted){busy=false;scene.classList.remove('is-switching');}});
+    Promise.allSettled([movement,slideCopy(scene.querySelector('.scene-title'),titleMarkup(plant.name),-delta,plant.name),slideCopy(scene.querySelector('.scene-english'),plant.english,-delta,plant.english),slideCopy(scene.querySelector('.scene-chinese'),plant.heading,delta,plant.heading),slideCopy(scene.querySelector('.scene-latin'),plant.homeNote,-delta,plant.homeNote)]).then(()=>{if(!signal.aborted){busy=false;scene.classList.remove('is-switching');}});
   }
   getLensMap().ready.then(()=>{if(!signal.aborted)scene.classList.add('has-lens');}).catch(()=>{});
   const resizeLens=()=>scene.querySelector('.scene-lens-displacement').setAttribute('scale',String(Math.min(34,innerWidth*.055)));

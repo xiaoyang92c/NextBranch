@@ -4,10 +4,9 @@ const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let dispose=()=>{},refresh=()=>{},freshId=null,readerOrigin=null,returnEnvelope=null;
 export function cleanupPostOffice(){dispose();dispose=()=>{};refresh=()=>{};readerOrigin=null;returnEnvelope=null;}
 export function refreshPostOffice(){refresh();}
-const isDemo=letter=>letter.id.startsWith('s');
 
 function envelope(letter,plant){
-  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" draggable="false"><span class="garden-envelope-back"></span><span class="garden-envelope-flap"></span><span class="garden-letter-paper"><span class="garden-botanical-pin"><img src="./assets/${plant.art}" alt="" draggable="false"><i></i></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}</span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong></span><span class="garden-envelope-pocket"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>待寄</span></span></span>`;
+  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" draggable="false"><span class="garden-envelope-back"></span><span class="garden-envelope-flap"></span><span class="garden-letter-paper"><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}</span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong></span><span class="garden-envelope-pocket"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>待寄</span></span></span>`;
 }
 export function renderPostOffice(plants,filter){return renderLetterTheatre(plants,filter);}
 export function mountPostOffice(config){
@@ -20,44 +19,84 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
   const letter=getLatest();if(!letter)return;
   const origin=readerOrigin,foldBack=returnEnvelope;readerOrigin=null;returnEnvelope=null;
   const previousFocus=document.activeElement,overlay=document.createElement('div');overlay.id='letter-overlay';overlay.className='letter-overlay postal-reader mail-reader';
-  overlay.innerHTML=`<article class="letter-sheet postal-sheet${origin?.kind==='mailbox'?' is-folded':''}" role="dialog" aria-modal="true" aria-labelledby="postal-letter-title" tabindex="-1"><div class="postal-sheet-head"><span>${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)} / ${isDemo(letter)?'演示来信':'本地来信'}</small></span><button class="round-control letter-close" aria-label="收好这封信">×</button></div><div class="postal-sheet-postage" aria-hidden="true">${stamp(plant.id,true)}</div><h2 id="postal-letter-title">${esc(letter.title)}</h2><div class="postal-reader-tabs" role="group" aria-label="翻阅信件"><button data-letter-tab="question" aria-pressed="true">来信正文</button><button data-letter-tab="replies" aria-pressed="false"></button></div><div class="postal-reader-body"></div><form class="postal-reply-form"><label for="postal-reply">回一封经验</label><div><textarea id="postal-reply" rows="2" maxlength="300" required placeholder="说说你的观察或建议…"></textarea><button type="submit">寄出回复 ↗</button></div><span class="postal-reply-status" role="status" aria-live="polite"></span></form><div class="postal-sheet-bottom">下一枝 · 农科村枝条邮局</div><div class="postal-fold-verso" aria-hidden="true"><div class="postal-fold-preview"><small>${plant.name} · ${esc(letter.category)}</small><span>亲爱的枝友：</span><strong>${esc(letter.title)}</strong></div><div class="postal-fold-mark"><span>✦</span><small>下一枝 · 私函</small></div></div></article>`;
+  overlay.innerHTML=`<article class="letter-sheet postal-sheet" role="dialog" aria-modal="true" aria-labelledby="postal-letter-title" tabindex="-1"><div class="postal-sheet-head"><span>${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><button class="round-control letter-close" aria-label="收好这封信">×</button></div><div class="postal-sheet-postage" aria-hidden="true">${stamp(plant.id,true)}</div><h2 id="postal-letter-title">${esc(letter.title)}</h2><div class="postal-reader-tabs" role="group" aria-label="翻阅信件"><button data-letter-tab="question" aria-pressed="true">来信正文</button><button data-letter-tab="replies" aria-pressed="false"></button></div><div class="postal-reader-body"></div><form class="postal-reply-form"><label for="postal-reply">回一封经验</label><div><textarea id="postal-reply" rows="2" maxlength="300" required placeholder="说说你的观察或建议…"></textarea><button type="submit">寄出回复 ↗</button></div><span class="postal-reply-status" role="status" aria-live="polite"></span></form><div class="postal-sheet-bottom">下一枝 · 农科村枝条邮局</div></article>`;
   if(origin?.kind==='mailbox')overlay.classList.add('mailbox-reader');
-  document.body.append(overlay);const sheet=overlay.querySelector('.postal-sheet'),body=overlay.querySelector('.postal-reader-body');sheet.style.setProperty('--fold-botanical',`url("./assets/${plant.art}")`);let tab='question',closing=false,openingAnimation=Promise.resolve(),onResize=()=>{};
+  document.body.append(overlay);const sheet=overlay.querySelector('.postal-sheet'),body=overlay.querySelector('.postal-reader-body');let tab='question',closing=false,openingAnimation=Promise.resolve(),onResize=()=>{},foldProxy=null;
   let restingBox=sheet.getBoundingClientRect();
   const foldBox=origin?.paper;
-  const creaseBox=()=>({left:foldBox.left,top:foldBox.top+(restingBox.top-foldBox.top)*.62,width:foldBox.width,height:foldBox.height+(restingBox.height-foldBox.height)*.62});
-  const setBox=box=>Object.assign(sheet.style,{position:'fixed',left:`${box.left}px`,top:`${box.top}px`,width:`${box.width}px`,height:`${box.height}px`,margin:'0'});
-  const tweenBox=async(from,to,duration)=>{
-    const animation=sheet.animate([{left:`${from.left}px`,top:`${from.top}px`,width:`${from.width}px`,height:`${from.height}px`},{left:`${to.left}px`,top:`${to.top}px`,width:`${to.width}px`,height:`${to.height}px`}],{duration,easing:'cubic-bezier(.22,.76,.24,1)',fill:'forwards'});
-    await animation.finished;animation.cancel();setBox(to);
+  const panelHeight=restingBox.height/3;
+  const foldedFaceHeight=()=>foldBox.height*restingBox.width/foldBox.width;
+  // Keep the folded sheet anchored to the extracted paper's top edge. The
+  // hinge opens downward while its width grows into the reading position.
+  const proxyTransform=box=>{const scale=box.width/restingBox.width;return `translate3d(${box.left-restingBox.left}px,${box.top-restingBox.top}px,0) scale(${scale})`;};
+  const motion=async(element,from,to,duration,delay=0,easing='cubic-bezier(.25,.65,.24,1)')=>{
+    const animation=element.animate([{transform:from},{transform:to}],{duration,delay,easing,fill:'both'});
+    await animation.finished;element.style.transform=to;animation.cancel();
   };
-  const turn=async(reverse=false)=>{
-    const first=sheet.animate([{transform:'perspective(900px) rotateY(0deg)'},{transform:`perspective(900px) rotateY(${reverse?-88:88}deg)`}],{duration:270,easing:'cubic-bezier(.45,0,.55,1)',fill:'forwards'});
-    await first.finished;first.cancel();sheet.classList.toggle('is-reversed',!reverse);
-    const second=sheet.animate([{transform:`perspective(900px) rotateY(${reverse?88:-88}deg)`},{transform:'perspective(900px) rotateY(0deg)'}],{duration:300,easing:'cubic-bezier(.22,.76,.24,1)',fill:'forwards'});
-    await second.finished;second.cancel();
+  const foldFace=async(element,from,to,duration)=>{
+    const animation=element.animate([{height:`${from}px`},{height:`${to}px`}],{duration,easing:'cubic-bezier(.25,.65,.24,1)',fill:'both'});
+    await animation.finished;element.style.height=`${to}px`;animation.cancel();
   };
+  function makeFoldProxy(folded){
+    const stage=document.createElement('div'),front=document.createElement('div');
+    stage.className='postal-fold-stage';stage.setAttribute('aria-hidden','true');stage.inert=true;
+    front.className='postal-fold-front';
+    const leaves=[];
+    for(let index=0;index<3;index++){
+      const leaf=document.createElement('div'),slice=document.createElement('div'),print=sheet.cloneNode(true);
+      leaf.className='postal-fold-leaf';leaf.dataset.panel=String(index);slice.className='postal-fold-slice';
+      print.classList.add('postal-fold-print');print.removeAttribute('role');print.removeAttribute('aria-modal');print.removeAttribute('tabindex');print.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+      print.querySelectorAll('button,textarea').forEach(node=>{node.tabIndex=-1;node.disabled=true;});
+      Object.assign(print.style,{position:'absolute',left:'0',top:`${-index*panelHeight}px`,width:`${restingBox.width}px`,height:`${restingBox.height}px`,margin:'0',visibility:''});
+      Object.assign(leaf.style,{height:`${panelHeight}px`});slice.append(print);leaf.append(slice);leaves.push(leaf);
+    }
+    leaves[1].append(leaves[2]);leaves[0].append(leaves[1]);front.append(leaves[0]);
+    const topFace=document.createElement('div');topFace.className='postal-fold-topface';
+    if(origin?.paperElement){
+      const source=origin.paperElement,preview=source.cloneNode(true),sourceStyle=getComputedStyle(source);
+      const scale=restingBox.width/source.offsetWidth;
+      Object.assign(preview.style,{position:'absolute',left:'0',right:'auto',top:'0',bottom:'auto',width:`${source.offsetWidth}px`,height:`${source.offsetHeight}px`,padding:sourceStyle.padding,transform:`scale(${scale})`,transformOrigin:'top left',visibility:'visible',transition:'none'});
+      [...source.children].forEach((node,index)=>{const style=getComputedStyle(node),copy=preview.children[index];Object.assign(copy.style,{font:style.font,letterSpacing:style.letterSpacing,color:style.color,margin:style.margin,padding:style.padding,maxWidth:style.maxWidth,borderBottom:style.borderBottom});});
+      topFace.append(preview);
+    }else topFace.innerHTML=origin?.paperMarkup||'';
+    topFace.style.height=`${folded?foldedFaceHeight():panelHeight}px`;
+    front.append(topFace);stage.append(front);
+    Object.assign(stage.style,{left:`${restingBox.left}px`,top:`${restingBox.top}px`,width:`${restingBox.width}px`,height:`${panelHeight}px`,transform:folded?proxyTransform(foldBox):'none'});
+    leaves[1].style.transform=folded?'rotateX(-179deg)':'rotateX(0deg)';leaves[2].style.transform=folded?'rotateX(179deg)':'rotateX(0deg)';
+    stage.classList.toggle('is-closed',folded);overlay.append(stage);return {stage,topFace,middle:leaves[1],bottom:leaves[2]};
+  }
   function paint(){
     const current=getLatest();if(!current)return;
     overlay.querySelector('[data-letter-tab="replies"]').textContent=`回信 ${current.replies?.length||0}`;
     overlay.querySelectorAll('[data-letter-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.letterTab===tab)));
-    body.innerHTML=tab==='question'?`<p class="postal-salutation">亲爱的枝友：<br>见信好。</p><p class="postal-question">${esc(current.text)}</p>${current.photo?`<img class="postal-question-photo" src="${esc(current.photo)}" alt="这封信附上的植物照片">`:''}<p class="postal-signature">盼你的回信。<span>一位养植物的枝友 · ${esc(current.date)}</span></p><p class="postal-demo-note">${isDemo(current)?'演示来信 · 园艺建议为预设内容':'本地来信 · 保存在当前浏览器'}</p>`:(current.replies?.length?current.replies.map(reply=>`<article class="postal-response ${reply.kind==='gardener'?'is-gardener':''}"><header><span>${esc(reply.by)}</span><i>${reply.kind==='gardener'?'园艺建议':'枝友经验'}</i></header><p>${esc(reply.text)}</p></article>`).join(''):'<div class="postal-awaiting"><span>✉</span><h3>回信还在路上</h3><p>你可以先分享一条经验，或留下新的观察。</p></div>');
+    body.innerHTML=tab==='question'?`<p class="postal-salutation">亲爱的枝友：<br>见信好。</p><p class="postal-question">${esc(current.text)}</p>${current.photo?`<img class="postal-question-photo" src="${esc(current.photo)}" alt="这封信附上的植物照片">`:''}<p class="postal-signature">盼你的回信。<span>一位养植物的枝友 · ${esc(current.date)}</span></p>`:(current.replies?.length?current.replies.map(reply=>`<article class="postal-response ${reply.kind==='gardener'?'is-gardener':''}"><header><span>${esc(reply.by.replace(/\s*·\s*(?:本地)?演示/g,''))}</span><i>${reply.kind==='gardener'?'园艺建议':'枝友经验'}</i></header><p>${esc(reply.text)}</p></article>`).join(''):'<div class="postal-awaiting"><span>✉</span><h3>回信还在路上</h3><p>你可以先分享一条经验，或留下新的观察。</p></div>');
     body.scrollTop=0;
   }
   async function close(){
     if(closing)return;closing=true;
     await openingAnimation.catch(()=>{});
     overlay.style.background='transparent';overlay.style.backdropFilter='none';
+    let paperReturned=false;
     if(!reduced()&&foldBox)try{
-      const current=sheet.getBoundingClientRect();
-      const crease=creaseBox();
-      await tweenBox(current,crease,450);
-      sheet.classList.add('is-folded');
-      await tweenBox(crease,foldBox,540);
-      await turn(true);
-    }catch{}
+      restingBox=sheet.getBoundingClientRect();foldProxy=makeFoldProxy(false);sheet.style.visibility='hidden';
+      const proxy=foldProxy;
+      await Promise.all([
+        motion(proxy.bottom,'rotateX(0deg)','rotateX(179deg)',580),
+        motion(proxy.middle,'rotateX(0deg)','rotateX(-179deg)',650,170),
+        foldFace(proxy.topFace,panelHeight,foldedFaceHeight(),820),
+        motion(proxy.stage,'none',proxyTransform(foldBox),820)
+      ]);
+      proxy.stage.classList.add('is-closed');
+      await new Promise(resolve=>setTimeout(resolve,230));
+      const pocket=document.createElement('div');pocket.className='postal-return-mask';
+      Object.assign(pocket.style,{left:`${origin.envelope.left}px`,top:`${origin.envelope.top}px`,width:`${origin.envelope.width}px`,height:`${origin.envelope.height}px`});
+      pocket.innerHTML=origin.pocketMarkup||'';overlay.append(pocket);
+      paperReturned=true;
+      await Promise.all([motion(proxy.stage,proxyTransform(foldBox),proxyTransform(origin.tuckedPaper||foldBox),680),origin.returnPaper?.()]);
+    }catch{if(!paperReturned)try{await origin.returnPaper?.();}catch{}}
     else if(!reduced())try{await sheet.animate([{opacity:1},{opacity:0}],{duration:220,fill:'forwards'}).finished;}catch{}
-    sheet.style.visibility='hidden';try{await origin?.returnPaper?.();}catch{}
+    else if(foldBox)try{await origin.returnPaper?.();}catch{}
+    foldProxy?.stage.remove();foldProxy=null;origin?.revealPaper?.();sheet.style.visibility='hidden';
     removeEventListener('resize',onResize);overlay.remove();if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else document.querySelector('[data-talk-action="open"]')?.focus({preventScroll:true});foldBack?.();onClose?.();
   }
   overlay.addEventListener('click',event=>{if(event.target===overlay||event.target.closest('.letter-close'))close();const button=event.target.closest('[data-letter-tab]');if(button){tab=button.dataset.letterTab;paint();}});
@@ -77,25 +116,31 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
       if(event.shiftKey&&(document.activeElement===first||document.activeElement===sheet)){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
     }
   });
-  paint();sheet.focus({preventScroll:true});
+  paint();
   if(foldBox){
-    setBox(foldBox);overlay.style.background='transparent';origin?.extracted?.();
-    if(reduced()){setBox(restingBox);sheet.classList.remove('is-folded');overlay.style.background='';}
+    overlay.style.background='transparent';
+    if(reduced()){origin?.extracted?.();sheet.focus({preventScroll:true});overlay.style.background='';}
     else openingAnimation=(async()=>{
-      await turn();
-      const crease=creaseBox();
-      await tweenBox(foldBox,crease,540);
-      overlay.style.background='';
-      sheet.classList.remove('is-folded');
-      await tweenBox(crease,restingBox,450);
-    })();
-    onResize=()=>{openingAnimation.then(()=>{
-      if(closing||!overlay.isConnected)return;
-      for(const key of ['position','left','top','width','height','margin'])sheet.style[key]='';
-      restingBox=sheet.getBoundingClientRect();setBox(restingBox);
-    }).catch(()=>{});};
+      sheet.style.visibility='hidden';foldProxy=makeFoldProxy(true);origin?.extracted?.();
+      const proxy=foldProxy;
+      await new Promise(resolve=>setTimeout(resolve,130));
+      overlay.style.transition='background-color .55s ease';overlay.style.background='';
+      const unfolding=Promise.all([
+        motion(proxy.middle,'rotateX(-179deg)','rotateX(0deg)',650),
+        motion(proxy.bottom,'rotateX(179deg)','rotateX(0deg)',650,170),
+        foldFace(proxy.topFace,foldedFaceHeight(),panelHeight,850),
+        motion(proxy.stage,proxyTransform(foldBox),'none',850)
+      ]);
+      // Keep the envelope's printed top fold visible while the lower two
+      // panels open, then reveal the reader typography without a face swap.
+      await new Promise(resolve=>setTimeout(resolve,430));
+      proxy.stage.classList.remove('is-closed');
+      await unfolding;
+      sheet.style.visibility='';proxy.stage.remove();foldProxy=null;if(!closing)sheet.focus({preventScroll:true});
+    })().catch(()=>{sheet.style.visibility='';foldProxy?.stage.remove();foldProxy=null;overlay.style.background='';});
+    onResize=()=>{openingAnimation.then(()=>{if(!closing&&overlay.isConnected)restingBox=sheet.getBoundingClientRect();}).catch(()=>{});};
     addEventListener('resize',onResize);
-  }else if(!reduced())sheet.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});
+  }else{sheet.focus({preventScroll:true});if(!reduced())sheet.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});}
 }
 
 export function renderPostCompose(plants,stamp,draft){

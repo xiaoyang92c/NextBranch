@@ -8,6 +8,9 @@ body[data-view] .main-nav button[data-nav="letters"]{justify-self:end}
 body[data-view] .main-nav .nav-label{padding:7px 9px;letter-spacing:.025em}
 body[data-view] .main-nav .letter-window{padding:0;line-height:1.45;height:1.45em}
 body[data-view] .main-nav button.active::before{content:none}
+.main-nav.is-ink-changing .nav-label .letter-track>span{color:transparent!important;background-image:linear-gradient(100deg,var(--nav-ink-new) 0 42%,color-mix(in srgb,var(--nav-ink-new) 58%,var(--nav-ink-old)) 47%,var(--nav-ink-old) 55% 100%);background-size:220% 100%;background-position:100% 50%;-webkit-background-clip:text;background-clip:text;animation:nav-ink-stroke .7s cubic-bezier(.22,.7,.2,1) both;animation-delay:calc(var(--nav-title-index)*80ms + var(--letter-i)*45ms)}
+@keyframes nav-ink-stroke{from{background-position:100% 50%}to{background-position:0% 50%}}
+@media(prefers-reduced-motion:reduce){.main-nav.is-ink-changing .nav-label .letter-track>span{animation:none;color:inherit!important;background:none}}
 body[data-view="album"] .album-desk{--tv-gutter:var(--nav-edge)}
 @media(max-width:360px){:root{--nav-font:12px}}
 @media(max-height:560px) and (orientation:landscape){:root{--nav-edge:28px;--nav-font:12px}}

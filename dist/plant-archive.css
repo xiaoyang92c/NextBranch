@@ -96,10 +96,9 @@
 .stamp.is-portal-flat-print>.stamp-grain-overlay{opacity:0!important}
 
 /* The opening folio keeps the specimen on the stamp's centre line. */
-.archive-masthead{grid-template-columns:auto 1fr auto;gap:16px;padding:10px 0 12px;border-top:1px solid currentColor;border-bottom:2px double currentColor}
+.archive-masthead{grid-template-columns:1fr auto;gap:16px;padding:10px 0 12px;border-top:1px solid currentColor;border-bottom:2px double currentColor}
 .archive-masthead h2{grid-column:1;grid-row:1;justify-self:start;font:800 clamp(24px,2.8vw,34px)/1.1 var(--serif);letter-spacing:.12em}
-.archive-masthead .archive-local{grid-column:2;grid-row:1;justify-self:center}
-.archive-masthead .archive-edition{grid-column:3;grid-row:1}
+.archive-masthead .archive-local{grid-column:2;grid-row:1;justify-self:end}
 .archive-hero{display:block;min-height:calc(100svh - 190px);padding:0}
 .archive-lead{display:contents}
 .archive-lead h1{position:absolute;top:calc(50svh - 64px);left:var(--nav-edge);width:min(30vw,390px);margin:0;font-size:clamp(54px,6.8vw,92px);z-index:2}
@@ -127,20 +126,52 @@
 .archive-page.is-archive-staged .archive-specimen figcaption,.archive-page.is-archive-staged .archive-plate-seal{transition-delay:.35s}
 .archive-page.is-archive-staged .archive-briefs{transition-delay:.45s}
 .archive-page.is-archive-staged .archive-glyph{transition-duration:.55s,.65s,.75s}
+/* Lettering and rules are drawn separately, including the opening folio. */
+.archive-page.is-archive-staged .archive-topline,.archive-page.is-archive-staged .archive-masthead,.archive-page.is-archive-staged .archive-dateline,.archive-page.is-archive-staged .archive-specimen figcaption,.archive-page.is-archive-staged .archive-plate-seal,.archive-page.is-archive-staged .archive-briefs{opacity:1;filter:none;transform:none;transition-delay:0s}
+.archive-page.is-archive-staged:not(.is-archive-awake) .archive-topline,.archive-page.is-archive-staged:not(.is-archive-awake) .archive-masthead,.archive-page.is-archive-staged:not(.is-archive-awake) .archive-dateline,.archive-page.is-archive-staged:not(.is-archive-awake) .archive-specimen figcaption,.archive-page.is-archive-staged:not(.is-archive-awake) .archive-plate-seal,.archive-page.is-archive-staged:not(.is-archive-awake) .archive-briefs{opacity:1;filter:none;transform:none}
+.archive-page.is-archive-staged .archive-draw-rule{position:relative;border-color:transparent}
+.archive-page.is-archive-staged .archive-draw-rule::before,.archive-page.is-archive-staged .archive-draw-rule::after{content:'';position:absolute;left:0;right:0;height:1px;background:var(--archive-rule);pointer-events:none;transform:scaleX(0);transform-origin:left;transition:transform .75s cubic-bezier(.2,.7,.2,1)}
+.archive-page.is-archive-staged .archive-draw-rule::before{top:0}
+.archive-page.is-archive-staged .archive-draw-rule::after{bottom:0;transition-delay:.12s}
+.archive-page.is-archive-staged .archive-masthead::before{background:var(--archive-ink);height:1px;box-shadow:0 3px 0 var(--archive-ink)}
+.archive-page.is-archive-staged .archive-masthead::after,.archive-page.is-archive-staged .archive-receive::before{background:var(--archive-ink);height:2px}
+.archive-page.is-archive-staged .archive-draw-rule.is-ink-visible::before,.archive-page.is-archive-staged .archive-draw-rule.is-ink-visible::after{transform:scaleX(1)}
+.archive-page.is-archive-staged .archive-briefs>div+div,.archive-page.is-archive-staged .archive-care-note+.archive-care-note{border-color:transparent}
+.archive-page.is-archive-staged .archive-briefs>div+div::before,.archive-page.is-archive-staged .archive-care-note+.archive-care-note::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--archive-rule);transform:scaleY(0);transform-origin:top;transition:transform .7s ease}
+.archive-page.is-archive-staged .archive-briefs.is-ink-visible>div+div::before,.archive-page.is-archive-staged .archive-care-columns.is-ink-visible .archive-care-note+.archive-care-note::before{transform:scaleY(1)}
+.archive-page.is-archive-staged .archive-briefs>div+div,.archive-page.is-archive-staged .archive-care-note+.archive-care-note{position:relative}
+.archive-page.is-archive-staged .archive-journey li+li::before{opacity:0;transition:opacity .5s ease .3s}
+.archive-page.is-archive-staged .archive-journey.is-ink-visible li+li::before{opacity:.5}
+.archive-page.is-archive-staged .archive-draw-graphic:not(.archive-plate-seal){opacity:0;clip-path:inset(100% 0 0);transition:opacity .45s ease,clip-path .9s cubic-bezier(.2,.7,.2,1)}
+.archive-page.is-archive-staged .archive-draw-graphic.is-ink-visible:not(.archive-plate-seal){opacity:1;clip-path:inset(0)}
+.archive-page.is-archive-staged .archive-plate-seal{animation:none;clip-path:inset(100% 0 0);transition:clip-path .9s cubic-bezier(.2,.7,.2,1)}
+.archive-page.is-archive-staged .archive-plate-seal.is-ink-visible{clip-path:inset(0)}
+.archive-page.is-archive-staged .archive-accept{border-color:transparent}
+.archive-page.is-archive-staged .archive-accept::after{content:'';position:absolute;inset:-1px;border:1px solid var(--archive-rule);pointer-events:none;clip-path:inset(0 100% 0 0);transition:clip-path .75s cubic-bezier(.2,.7,.2,1)}
+.archive-page.is-archive-staged .archive-accept::before{clip-path:inset(0 100% 0 0);transition:clip-path .75s cubic-bezier(.2,.7,.2,1) .1s,opacity .65s}
+.archive-page.is-archive-staged .archive-accept.is-ink-visible::before,.archive-page.is-archive-staged .archive-accept.is-ink-visible::after{clip-path:inset(0)}
+.archive-page.is-archive-dispersing .archive-glyph{opacity:0;filter:blur(3px);transform:translateY(.18em);transition-duration:.36s;transition-delay:var(--exit-delay,0ms)}
+.archive-page.is-archive-dispersing.is-archive-staged .archive-draw-rule.is-ink-visible::before,.archive-page.is-archive-dispersing.is-archive-staged .archive-draw-rule.is-ink-visible::after{transform:scaleX(0);transform-origin:right;transition-duration:.48s;transition-delay:0s}
+.archive-page.is-archive-dispersing.is-archive-staged .archive-draw-graphic.is-ink-visible{opacity:0;clip-path:inset(0 0 100%);transition-duration:.45s}
+.archive-page.is-archive-dispersing .archive-briefs>div+div::before,.archive-page.is-archive-dispersing .archive-care-note+.archive-care-note::before{transform:scaleY(0)}
+.archive-page.is-archive-dispersing .archive-journey li+li::before{opacity:0}
+.archive-page.is-archive-dispersing .archive-care-diagram,.archive-page.is-archive-dispersing .archive-journey svg{opacity:0;transition:opacity .45s ease}
+.archive-page.is-archive-dispersing .archive-accept.is-ink-visible::before,.archive-page.is-archive-dispersing .archive-accept.is-ink-visible::after{clip-path:inset(0 0 0 100%);transition-delay:0s}
+@media(max-width:799px){.archive-page.is-archive-staged .archive-care-note+.archive-care-note::before{left:0;right:0;top:0;bottom:auto;width:auto;height:1px;transform:scaleX(0);transform-origin:left}.archive-page.is-archive-staged .archive-care-columns.is-ink-visible .archive-care-note+.archive-care-note::before{transform:scaleX(1)}}
 .archive-dispel-spark{position:fixed;z-index:72;width:3px;height:3px;border-radius:50%;background:var(--spark-ink);pointer-events:none;will-change:transform,opacity}
 .scene-stamp.is-return-target>.stamp{opacity:1!important}
 .scene-stamp.is-return-target .stamp-art{visibility:hidden!important}
 .archive-page.is-archive-unfolding *{transition:none!important}
 @media(max-width:799px){
  .archive-masthead{gap:8px;padding:10px 0 11px}.archive-masthead h2{font-size:24px;letter-spacing:.06em}.archive-local,.archive-edition{font-size:10px}
- .archive-hero{min-height:calc(100svh - 185px);padding:0}
+ .archive-hero{min-height:max(calc(100svh - 185px),650px);padding:0}
  .archive-specimen{width:min(88vw,420px);top:50svh}
  .archive-plate{height:clamp(290px,44svh,390px)}
  .archive-specimen figcaption{position:absolute;left:0;right:0;bottom:-15px;font-size:10px}
  .archive-plate-seal{font-size:12px;right:4%;bottom:5%}
- .archive-lead h1{top:calc(50svh + 188px);left:var(--nav-edge);width:calc(100% - 2*var(--nav-edge));font-size:clamp(48px,13vw,68px)}
- .archive-latin{top:calc(50svh + 258px);left:var(--nav-edge);width:calc(100% - 2*var(--nav-edge));font-size:15px}
- .archive-intro{top:calc(50svh + 296px);left:var(--nav-edge);right:var(--nav-edge);width:auto;font-size:15px;line-height:1.75}
+ .archive-lead h1{top:calc(50svh + 218px);left:var(--nav-edge);width:calc(100% - 2*var(--nav-edge));font-size:clamp(48px,13vw,68px)}
+ .archive-latin{top:calc(50svh + 288px);left:var(--nav-edge);width:calc(100% - 2*var(--nav-edge));font-size:15px}
+ .archive-intro{top:calc(50svh + 326px);left:var(--nav-edge);right:var(--nav-edge);width:auto;font-size:15px;line-height:1.75}
 }
 @media(max-height:620px) and (orientation:landscape){.archive-hero{min-height:540px}.archive-specimen{top:310px}.archive-lead h1{top:245px}.archive-latin{top:355px}.archive-intro{top:290px}}
 @media(prefers-reduced-motion:reduce){.archive-page.is-archive-staged .archive-topline,.archive-page.is-archive-staged .archive-masthead,.archive-page.is-archive-staged .archive-dateline,.archive-page.is-archive-staged .archive-specimen figcaption,.archive-page.is-archive-staged .archive-plate-seal,.archive-page.is-archive-staged .archive-briefs{transition:none}}

@@ -1,0 +1,315 @@
+- generic [active] [ref=e1]:
+  - main "植物邮票滑动展台" [ref=e1614]:
+    - generic [ref=e1615]:
+      - generic [ref=e1616]:
+        - heading "桂花" [level=1] [ref=e1617]:
+          - generic [aria-hidden] [ref=e1618]:
+            - generic [ref=e1619]:
+              - img [aria-hidden]:
+                - generic: 桂
+            - generic [ref=e1620]:
+              - img [aria-hidden]:
+                - generic: 花
+        - paragraph [ref=e1621]:
+          - generic [aria-hidden] [ref=e1622]:
+            - generic [ref=e1623]: S
+            - generic [ref=e1624]: w
+            - generic [ref=e1625]: e
+            - generic [ref=e1626]: e
+            - generic [ref=e1627]: t
+            - generic [ref=e1629]: O
+            - generic [ref=e1630]: s
+            - generic [ref=e1631]: m
+            - generic [ref=e1632]: a
+            - generic [ref=e1633]: "n"
+            - generic [ref=e1634]: t
+            - generic [ref=e1635]: h
+            - generic [ref=e1636]: u
+            - generic [ref=e1637]: s
+      - generic:
+        - button "切换到罗汉松邮票" [ref=e1638] [cursor=pointer]:
+          - generic [ref=e1642]:
+            - generic [ref=e1643]:
+              - generic [ref=e1644]:
+                - text: 下一枝
+                - generic [ref=e1645]: NEXT BRANCH
+              - generic [ref=e1646]: 枝
+            - img "罗汉松植物插画"
+            - generic [ref=e1647]:
+              - generic [ref=e1648]:
+                - generic [ref=e1649]: 罗汉松
+                - generic [ref=e1650]: Buddhist Pine
+              - generic [ref=e1651]:
+                - text: "01"
+                - generic [ref=e1652]: 枝—001
+        - button "打开档案：桂花邮票" [ref=e1653] [cursor=pointer]:
+          - generic [ref=e1654]:
+            - generic [aria-hidden]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - text: 下一枝
+                        - generic: NEXT BRANCH
+                      - generic: 枝
+                    - generic:
+                      - generic:
+                        - generic: 桂花
+                        - generic: Sweet Osmanthus
+                      - generic:
+                        - text: "02"
+                        - generic: 枝—002
+        - button "切换到香泡邮票" [ref=e1655] [cursor=pointer]:
+          - generic [ref=e1659]:
+            - generic [ref=e1660]:
+              - generic [ref=e1661]:
+                - text: 下一枝
+                - generic [ref=e1662]: NEXT BRANCH
+              - generic [ref=e1663]: 枝
+            - img "香泡植物插画"
+            - generic [ref=e1664]:
+              - generic [ref=e1665]:
+                - generic [ref=e1666]: 香泡
+                - generic [ref=e1667]: Citron
+              - generic [ref=e1668]:
+                - text: "03"
+                - generic [ref=e1669]: 枝—003
+        - button "切换到五角枫邮票" [ref=e1670] [cursor=pointer]:
+          - generic [ref=e1674]:
+            - generic [ref=e1675]:
+              - generic [ref=e1676]:
+                - text: 下一枝
+                - generic [ref=e1677]: NEXT BRANCH
+              - generic [ref=e1678]: 枝
+            - img "五角枫植物插画"
+            - generic [ref=e1679]:
+              - generic [ref=e1680]:
+                - generic [ref=e1681]: 五角枫
+                - generic [ref=e1682]: Painted Maple
+              - generic [ref=e1683]:
+                - text: "04"
+                - generic [ref=e1684]: 枝—004
+        - button "切换到石榴邮票" [ref=e1685] [cursor=pointer]:
+          - generic [ref=e1689]:
+            - generic [ref=e1690]:
+              - generic [ref=e1691]:
+                - text: 下一枝
+                - generic [ref=e1692]: NEXT BRANCH
+              - generic [ref=e1693]: 枝
+            - img "石榴植物插画"
+            - generic [ref=e1694]:
+              - generic [ref=e1695]:
+                - generic [ref=e1696]: 石榴
+                - generic [ref=e1697]: Pomegranate
+              - generic [ref=e1698]:
+                - text: "10"
+                - generic [ref=e1699]: 枝—010
+      - generic:
+        - generic:
+          - strong:
+            - generic [aria-hidden]:
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 静
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 候
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 新
+              - generic:
+                - img [aria-hidden]:
+                  - generic: 根
+          - generic "少挪动，让新根慢慢伸展":
+            - generic [aria-hidden]:
+              - generic: 少
+              - generic: 挪
+              - generic: 动
+              - generic: ，
+              - generic: 让
+              - generic: 新
+              - generic: 根
+              - generic: 慢
+              - generic: 慢
+              - generic: 伸
+              - generic: 展
+  - button "开启背景音乐" [ref=e88] [cursor=pointer]
+  - navigation "主要导航" [ref=e92]:
+    - button "邮票馆" [ref=e93] [cursor=pointer]:
+      - generic "邮票馆" [ref=e94]:
+        - generic [ref=e96]:
+          - generic [ref=e97]: 邮
+          - generic [ref=e98]: 邮
+        - generic [ref=e100]:
+          - generic [ref=e101]: 票
+          - generic [ref=e102]: 票
+        - generic [ref=e104]:
+          - generic [ref=e105]: 馆
+          - generic [ref=e106]: 馆
+    - button "枝条放映室" [ref=e107] [cursor=pointer]:
+      - generic "枝条放映室" [ref=e108]:
+        - generic [ref=e110]:
+          - generic [ref=e111]: 枝
+          - generic [ref=e112]: 枝
+        - generic [ref=e114]:
+          - generic [ref=e115]: 条
+          - generic [ref=e116]: 条
+        - generic [ref=e118]:
+          - generic [ref=e119]: 放
+          - generic [ref=e120]: 放
+        - generic [ref=e122]:
+          - generic [ref=e123]: 映
+          - generic [ref=e124]: 映
+        - generic [ref=e126]:
+          - generic [ref=e127]: 室
+          - generic [ref=e128]: 室
+    - button "枝友来信" [ref=e129] [cursor=pointer]:
+      - generic "枝友来信" [ref=e130]:
+        - generic [ref=e132]:
+          - generic [ref=e133]: 枝
+          - generic [ref=e134]: 枝
+        - generic [ref=e136]:
+          - generic [ref=e137]: 友
+          - generic [ref=e138]: 友
+        - generic [ref=e140]:
+          - generic [ref=e141]: 来
+          - generic [ref=e142]: 来
+        - generic [ref=e144]:
+          - generic [ref=e145]: 信
+          - generic [ref=e146]: 信

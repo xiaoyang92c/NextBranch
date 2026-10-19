@@ -183,11 +183,6 @@
 .is-tearing .claim-paper-feed,.is-ticket-detached .claim-paper-feed{overflow:visible}
 .is-tearing .claim-paper-feed::before,.is-ticket-detached .claim-paper-feed::before{display:none}
 .is-ticket-detached .dispatch-paper::before{left:0;right:0;top:-4px;height:5px;border:0;background:var(--claim-paper);clip-path:polygon(0 100%,0 0,2% 80%,4% 0,6% 80%,8% 0,10% 80%,12% 0,14% 80%,16% 0,18% 80%,20% 0,22% 80%,24% 0,26% 80%,28% 0,30% 80%,32% 0,34% 80%,36% 0,38% 80%,40% 0,42% 80%,44% 0,46% 80%,48% 0,50% 80%,52% 0,54% 80%,56% 0,58% 80%,60% 0,62% 80%,64% 0,66% 80%,68% 0,70% 80%,72% 0,74% 80%,76% 0,78% 80%,80% 0,82% 80%,84% 0,86% 80%,88% 0,90% 80%,92% 0,94% 80%,96% 0,98% 80%,100% 0,100% 100%)}
-.claim-collected-roll{--roll-radius:16px;position:fixed;z-index:120;height:calc(var(--roll-radius)*2);pointer-events:none;border-radius:50% / 20%;background:linear-gradient(180deg,#e3d9bc,var(--roll-paper) 16%,#fffbed 38%,#f3ead3 67%,#d6c9aa);box-shadow:0 2px 4px #35533e12;overflow:hidden;transform-origin:50% 50%}
-.claim-collected-roll::before,.claim-collected-roll::after{content:'';position:absolute;top:0;bottom:0;width:12px;border-radius:50%;border:1px solid #c9bea360;background:repeating-radial-gradient(ellipse at center,#fdf7e5 0 2px,#d0c5aa 2px 3px,#f3ead2 3px 5px);z-index:2}
-.claim-collected-roll::before{left:0}.claim-collected-roll::after{right:0}
-.claim-collected-roll>.claim-mailtitle{position:absolute;inset:0 20px;border:0;opacity:.2;transform:perspective(200px) rotateX(63deg);transform-origin:50% 0;white-space:nowrap}
-.claim-collected-roll .claim-post-office{font-size:13px}.claim-collected-roll h1{font-size:21px;margin:0}
 
 /* The press is cast in the current newspaper's paper and ink palette. */
 .page.claim-flow.claim-dispatch{--press-face:color-mix(in srgb,var(--claim-scene) 96%,var(--claim-ink) 4%);--press-base:color-mix(in srgb,var(--claim-scene) 82%,var(--claim-ink) 18%);--press-edge:color-mix(in srgb,var(--claim-scene) 66%,var(--claim-ink) 34%);background:var(--claim-scene)}
@@ -200,3 +195,84 @@
 .claim-dispatch .solid-action{background:var(--claim-ink);border-color:var(--claim-ink)}
 .claim-dispatch .solid-action:hover{background:var(--claim-soft)}
 .claim-dispatch .line-action{border-color:var(--claim-rule)}
+
+/* A single thermal printer and receipt layout across all plants. */
+.page.claim-flow.claim-dispatch{--claim-paper:#fbf8ed;--claim-red:#885647}
+.claim-workspace{max-width:590px}
+.claim-machine{filter:drop-shadow(0 5px 4px #324b4019);box-shadow:none!important}
+.claim-machine-status{left:35px;top:49px;color:#536a5e;font:600 10px/1.2 var(--sans);letter-spacing:.12em}
+.claim-machine-slot{background:#344b43;box-shadow:inset 0 2px 4px #152a2370;border:1px solid #7a9183}
+.claim-output-lip{background:linear-gradient(#4a6358,#a1aea1);box-shadow:0 1px 1px #2e4b3d25}
+.claim-machine-close{top:16px;right:24px;width:33px;height:33px;border:1px solid #92a79a;border-radius:50%;background:#e7e9dc;color:#405c4f;transition:background .2s}
+.claim-machine-close:hover{background:#f5f2e8}.claim-machine-close:focus-visible{outline:2px solid #405c4f;outline-offset:3px}
+.claim-flow .form-paper.dispatch-paper{background:var(--claim-paper);box-shadow:0 2px 5px #213b2b12;padding:30px 31px 25px}
+.claim-mailhead{padding-bottom:0}.claim-mailtitle{text-align:center;border:0;padding:2px 0 14px}
+.claim-post-office{font:600 11px/1.6 var(--sans);letter-spacing:.13em;color:var(--claim-ink)}
+.claim-mailtitle h1{font:700 30px/1.25 var(--serif);letter-spacing:.16em;margin:6px 0 4px}
+.claim-mail-kicker{margin:0;font:500 10px/1.5 var(--sans);letter-spacing:.12em;color:var(--claim-soft)}
+.claim-receipt-rule{border-top:1px dashed var(--claim-rule);height:11px;overflow:hidden;font:500 9px/11px monospace;letter-spacing:.17em;opacity:.6;white-space:nowrap;text-align:center}
+.claim-specimen-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;gap:16px;align-items:center;margin:12px 0 13px}
+.claim-addressee>span{font:600 10px/1.5 var(--sans);letter-spacing:.1em}.claim-addressee h2{font:600 27px/1.3 var(--serif);letter-spacing:.02em;margin:6px 0 4px}
+.claim-addressee>p{font:500 11px/1.5 var(--sans);letter-spacing:0;color:var(--claim-soft)}
+.claim-postage{width:76px;justify-self:end}.claim-flow .claim-plant-stamp{width:100%}
+.claim-origin{border-block:1px dashed var(--claim-rule);font-family:var(--sans)}
+.claim-origin>div{grid-template-columns:74px minmax(0,1fr);padding:7px 0;font-size:12px}.claim-origin>div+div{border-top:1px dotted var(--claim-rule)}
+.claim-origin dt{font-size:11px;color:var(--claim-soft)}
+.claim-flow .claim-progress{padding:13px 0;margin-bottom:17px;border-bottom:1px dashed var(--claim-rule);gap:4px}
+.claim-flow .claim-progress li{flex-direction:row;gap:5px;justify-content:center;font:500 11px/1.3 var(--sans)}
+.claim-flow .claim-progress li>span{width:auto;height:auto;border:0!important;font:600 10px/1 var(--sans);rotate:0!important}
+.claim-flow .claim-progress li.is-current{color:var(--claim-ink);font-weight:700}
+.claim-flow .claim-progress li.is-current::after{content:'';position:absolute;bottom:-14px;left:12%;right:12%;height:2px;background:var(--claim-ink)}
+.claim-flow .claim-progress li>b{font-size:11px;font-weight:inherit}
+.claim-flow .claim-step-heading{margin:0 0 15px}.claim-flow .claim-step-heading h2{font-size:23px;font-weight:600;line-height:1.45;letter-spacing:.01em}
+.claim-flow .claim-field{border-bottom:1px dashed var(--claim-rule);padding:20px 0}.claim-field legend{font:600 12px/1.4 var(--sans);letter-spacing:.06em;margin-bottom:11px}
+.claim-flow .claim-option{font-size:14px;min-height:40px;padding:7px 5px 7px 21px}
+.claim-flow .claim-option::before{top:50%;translate:0 -50%;width:13px;height:13px;border:1px solid var(--claim-soft)}
+.claim-flow .claim-option.selected::before{rotate:0deg;border:1px solid var(--claim-ink);background:linear-gradient(45deg,transparent 43%,var(--claim-ink) 44% 55%,transparent 56%),linear-gradient(-45deg,transparent 43%,var(--claim-ink) 44% 55%,transparent 56%)}
+.claim-flow .claim-option.selected{color:var(--claim-ink);font-weight:600}
+.claim-flow .claim-option:focus-within{outline:none;box-shadow:inset 0 -2px 0 var(--claim-ink)}
+.claim-flow .claim-method{border:1px solid var(--claim-rule);padding:17px 20px;background:transparent}
+.claim-flow .claim-method.selected{border-color:var(--claim-ink);background:color-mix(in srgb,var(--claim-ink) 5%,transparent)}
+.claim-flow .claim-method.is-unavailable{border-style:solid}.claim-flow .claim-method:focus-within{outline:2px solid var(--claim-ink);outline-offset:2px}
+.claim-flow .claim-method-mark{rotate:0deg;border:1px solid var(--claim-ink);color:var(--claim-ink);font:600 11px/1 var(--sans)}
+.claim-paper-foot{display:flex;justify-content:space-between;gap:12px;border-top:1px dashed var(--claim-rule);font:500 10px/1.5 var(--sans);color:var(--claim-soft);letter-spacing:.02em}
+.claim-dispatch .claim-ticket{padding:0}.claim-ticket-heading{grid-template-columns:minmax(0,1fr) auto;margin:0 0 17px;gap:12px;align-items:center}
+.claim-flow .ticket-title{font:600 23px/1.35 var(--serif);letter-spacing:0;margin:5px 0}.claim-flow .ticket-sub{font:500 12px/1.5 var(--sans)}
+.claim-flow .claim-ticket-mark{align-self:start}.claim-flow .claim-reserved-seal,.claim-flow .red-postmark{width:auto;height:auto;border:1px solid var(--claim-ink);border-radius:0;rotate:0deg;color:var(--claim-ink);font:600 11px/1.3 var(--sans);padding:6px 8px;background:transparent}
+.claim-dispatch .ticket-dl{border-top:1px dashed var(--claim-rule)}.claim-dispatch .ticket-dl>div{grid-template-columns:82px minmax(0,1fr);gap:9px;padding:9px 0;border-bottom:1px dotted var(--claim-rule)}
+.claim-dispatch .ticket-dl dt{font:500 11px/1.5 var(--sans)}.claim-dispatch .ticket-dl dd{font:600 13px/1.6 var(--sans)}.claim-dispatch .ticket-dl dd.claim-serial{font-size:11px;word-break:break-all}
+.ticket-total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-block:1px dashed var(--claim-rule);margin-top:10px;padding:15px 0 14px}
+.ticket-total span{font:600 11px/1.4 var(--sans);letter-spacing:.07em}.ticket-total strong{font:600 19px/1.3 var(--serif);text-align:right}
+.claim-dispatch .ticket-bottom{grid-template-columns:80px minmax(0,1fr);gap:15px;margin:19px 0}.claim-dispatch .fake-qr{width:80px;height:80px;border:0;padding:0}.claim-dispatch .ticket-bottom p{font:500 12px/1.6 var(--sans)}
+.claim-flow .claim-ticket .suitability{margin-top:16px;padding:10px 0 10px 12px}.claim-flow .claim-ticket .suitability p{font:500 12px/1.65 var(--sans)}
+.claim-ticket-close{right:11px;top:11px;overflow:hidden;opacity:0;clip-path:inset(0 100% 0 0);font:400 27px/1 var(--sans)}.claim-ticket-close span{display:block;line-height:1;transform:none}
+.claim-receipt .dispatch-paper::before,.is-ticket-detached .dispatch-paper::before{content:'';position:absolute;left:0;right:0;top:0;height:7px;border:0;z-index:3;background:var(--claim-scene);clip-path:polygon(0 0,3% 92%,6% 0,9% 92%,12% 0,15% 92%,18% 0,21% 92%,24% 0,27% 92%,30% 0,33% 92%,36% 0,39% 92%,42% 0,45% 92%,48% 0,51% 92%,54% 0,57% 92%,60% 0,63% 92%,66% 0,69% 92%,72% 0,75% 92%,78% 0,81% 92%,84% 0,87% 92%,90% 0,93% 92%,96% 0,99% 92%,100% 0)}
+@media(max-width:799px){
+ .claim-machine-status{left:25px;top:38px;font-size:9px}.claim-machine-close{top:12px;right:15px;width:30px;height:30px}
+ .claim-flow .form-paper.dispatch-paper{padding:27px 22px 24px}.claim-mailtitle h1{font-size:27px}.claim-post-office{font-size:10px}
+ .claim-specimen-row{grid-template-columns:minmax(0,1fr) 66px;gap:11px}.claim-postage{width:66px}.claim-addressee h2{font-size:24px}.claim-addressee>p{font-size:10px}
+ .claim-origin>div{grid-template-columns:68px minmax(0,1fr);font-size:11px}.claim-flow .claim-progress li{gap:3px}.claim-flow .claim-progress li>b{font-size:10px}
+ .claim-flow .claim-step-heading h2{font-size:22px}.claim-flow .claim-option{font-size:13px;padding-left:20px}.claim-flow .claim-option::before{top:50%}
+ .claim-flow .ticket-title{font-size:22px}.claim-flow .claim-reserved-seal,.claim-flow .red-postmark{width:auto;height:auto;font-size:10px;padding:6px}
+ .claim-dispatch .ticket-dl>div{grid-template-columns:72px minmax(0,1fr);padding:8px 0}.claim-dispatch .ticket-dl dt{font-size:10px}.claim-dispatch .ticket-dl dd{font-size:12px}
+ .claim-dispatch .ticket-bottom{grid-template-columns:74px minmax(0,1fr);gap:12px}.claim-dispatch .fake-qr{width:74px;height:74px}
+}
+
+/* One generated printer illustration; the upper shell masks the paper at the slot. */
+.claim-dispenser{--machine-height:clamp(90px,26.9vw,188px);--feed-start:calc(var(--machine-height)*.65);padding-top:var(--feed-start)}
+.claim-machine{height:var(--machine-height);z-index:1!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important}
+.claim-machine-art{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none}
+.claim-paper-feed{z-index:2;padding:0 var(--paper-inset) 26px}
+.claim-output-lip{position:absolute;inset:0 0 auto;height:var(--machine-height);z-index:7;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important;pointer-events:none}
+.claim-output-lip::before{content:'';position:absolute;inset:0;background:url('./assets/vintage-receipt-printer.webp') center/100% 100% no-repeat;clip-path:inset(0 0 34% 0);pointer-events:none}
+.claim-machine-status{z-index:1;left:6%;top:29%;font:600 clamp(9px,1.3vw,12px)/1.2 var(--sans);letter-spacing:.08em;color:#536a5e}
+.claim-machine-close{z-index:2;right:5%;top:15%;width:clamp(28px,4.6vw,38px);height:clamp(28px,4.6vw,38px);border:1px solid #889786;border-radius:50%;background:#f5f0e5d9;color:#425a4d;pointer-events:auto}
+.claim-machine-close svg path,.claim-ticket-close svg path{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.claim-paper-feed::before,.claim-receipt .dispatch-paper::before,.is-ticket-detached .dispatch-paper::before{content:none!important}
+.claim-ticket-close{opacity:1;clip-path:none;overflow:visible;display:none;width:38px;height:38px;padding:8px;border:1px solid var(--claim-rule);border-radius:50%;background:var(--claim-paper)}
+.claim-ticket-close svg{display:block;width:100%;height:100%}
+.claim-ticket-close svg path{stroke-dasharray:17;stroke-dashoffset:17}
+.is-ticket-detached .claim-ticket-close svg path:first-child{animation:ticket-cross-stroke .26s cubic-bezier(.3,.15,.2,1) .1s forwards}
+.is-ticket-detached .claim-ticket-close svg path:last-child{animation:ticket-cross-stroke .26s cubic-bezier(.3,.15,.2,1) .39s forwards}
+@keyframes ticket-cross-stroke{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.is-ticket-detached .claim-ticket-close svg path{animation:none;stroke-dashoffset:0}}
