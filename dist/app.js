@@ -90,30 +90,93 @@ function openLetter(id){
 }
 let scrollFrame=0;window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;if(hashParts()[0]!=='home')return;document.querySelectorAll('.field-stamp').forEach((el,i)=>{const amount=Math.min(24,window.scrollY*.035)*Math.sin(i*1.9+.6);el.style.setProperty('--drift',`${amount.toFixed(1)}px`)})})},{passive:true});
 let routeVersion=0;
+async function animateClaimExit(frame,mode){
+  const snapshot=frame.querySelector('.claim-page'),sheet=snapshot?.querySelector('.dispatch-paper'),machine=snapshot?.querySelector('.claim-machine'),lip=snapshot?.querySelector('.claim-output-lip'),feed=snapshot?.querySelector('.claim-paper-feed');
+  if(!sheet)return;
+  snapshot.style.background='transparent';
+  if(feed&&mode==='ticket')feed.style.overflow='visible';
+  const shift=(element,distance,duration,{clipPath,delay=0}={})=>{
+    if(!element||getComputedStyle(element).visibility==='hidden')return Promise.resolve();
+    const current=getComputedStyle(element),parts=current.translate==='none'?['0px','0px']:current.translate.split(' '),x=parts[0]||'0px',y=parseFloat(parts[1]||'0')||0;
+    const from={translate:`${x} ${y}px`},to={translate:`${x} ${y+distance}px`};
+    if(clipPath){from.clipPath=current.clipPath==='none'?'inset(0 0 0% 0)':current.clipPath;to.clipPath=clipPath;}
+    return element.animate([from,to],{duration,delay,easing:'cubic-bezier(.35,.05,.25,1)',fill:'forwards'}).finished.catch(()=>{});
+  };
+  const machineUp=()=>{const distance=-(machine.getBoundingClientRect().bottom+55);return Promise.all([shift(machine,distance,700),shift(lip,distance,700)]);};
+  if(mode==='retract'){
+    // Pull the visible stock back through the slot before the press leaves.
+    const visible=Math.max(0,sheet.getBoundingClientRect().bottom-machine.getBoundingClientRect().bottom);
+    await shift(sheet,-Math.min(visible+18,innerHeight*.82),760,{clipPath:'inset(0 0 100% 0)'});
+    await machineUp();
+  }else{
+    const down=innerHeight-sheet.getBoundingClientRect().top+100;
+    await shift(sheet,down,840);
+  }
+}
+async function scrollArchiveToTop(isStale){
+  const start=window.scrollY;
+  if(start<=2)return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo({top:0,behavior:'instant'});return;}
+  const duration=Math.min(1200,Math.max(650,start*.45));
+  await new Promise(resolve=>{
+    let began;
+    const step=now=>{
+      if(isStale()){resolve();return;}
+      began??=now;
+      const progress=Math.min(1,(now-began)/duration);
+      const eased=progress<.5?4*progress**3:1-(-2*progress+2)**3/2;
+      window.scrollTo({top:start*(1-eased),behavior:'instant'});
+      if(progress<1)requestAnimationFrame(step);
+      else{window.scrollTo({top:0,behavior:'instant'});resolve();}
+    };
+    requestAnimationFrame(step);
+  });
+}
 window.addEventListener('hashchange',async()=>{
   const version=++routeVersion,previous=document.body.dataset.view,next=hashParts()[0];stopChapterMotion();selectNavigation(navigationSection(next));cancelArchiveEntry(next==='detail'?hashParts()[1]:null);const viaStamp=Boolean(document.querySelector('.branch-flight'));
   const currentPage=app.querySelector('main');
   if(previous==='detail'&&next==='claim'&&currentPage?.classList.contains('archive-page'))rememberArchivePosition(currentPage);
   if(previous==='claim'&&next==='detail'){
-    try{await claimFlow.leave();}catch{}if(version!==routeVersion)return;
-    // Keep a frozen picture of the current print pose. This also covers a
-    // close during feeding or tearing; the paper and printer leave together.
+    const exitSelectors=['.dispatch-paper','.claim-machine','.claim-output-lip','.claim-paper-feed'];
+    const exitPoses=new Map(exitSelectors.map(selector=>{const source=currentPage?.querySelector(selector),pose=source&&getComputedStyle(source);return [selector,pose&&{translate:pose.translate,clipPath:pose.clipPath,visibility:pose.visibility}]}));
+    let exitMode='split';try{exitMode=await claimFlow.leave()||'split';}catch{}if(version!==routeVersion)return;
+    // Freeze the live feed pose before switching pages so the exit can continue
+    // from the same sheet position, including a close during printing.
     const outgoing=document.createElement('div'),snapshot=currentPage.cloneNode(true);
     outgoing.className='claim-return-frame';
-    Object.assign(outgoing.style,{position:'fixed',inset:'0',zIndex:'90',overflow:'hidden',pointerEvents:'none',background:getComputedStyle(currentPage).backgroundColor});
+    Object.assign(outgoing.style,{position:'fixed',inset:'0',zIndex:'90',overflow:'hidden',pointerEvents:'none',background:'transparent'});
     Object.assign(snapshot.style,{position:'absolute',top:`${-window.scrollY}px`,left:'0',width:'100%',margin:'0'});
-    for(const selector of ['.dispatch-paper','.claim-machine','.claim-output-lip','.claim-paper-feed']){
-      const source=currentPage.querySelector(selector),copy=snapshot.querySelector(selector);if(!source||!copy)continue;
-      const pose=getComputedStyle(source);Object.assign(copy.style,{translate:pose.translate,clipPath:pose.clipPath,visibility:pose.visibility});
+    for(const selector of exitSelectors){
+      const copy=snapshot.querySelector(selector),pose=exitPoses.get(selector);if(!copy||!pose)continue;
+      Object.assign(copy.style,pose);
     }
-    outgoing.append(snapshot);document.body.append(outgoing);
+    outgoing.append(snapshot);
+    currentPage.style.visibility='hidden';
     cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
-    render();document.body.style.backgroundColor=P[hashParts()[1]]?.bg||'#b9d4bf';await unfoldNewspaper(app.querySelector('.archive-page'),outgoing);return;
+    // Keep the current claim canvas underneath the frozen printer until its
+    // last frame. Rendering the article early exposed its picture at the foot.
+    document.body.append(outgoing);
+    try{
+      await animateClaimExit(outgoing,exitMode);
+      if(version!==routeVersion)return;
+      render();document.body.style.backgroundColor=P[hashParts()[1]]?.bg||'#b9d4bf';
+      await unfoldNewspaper(app.querySelector('.archive-page'),outgoing);
+    }finally{outgoing.remove();}
+    return;
   }
-  document.querySelector('#letter-overlay')?.remove();cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
+  document.querySelector('#letter-overlay')?.remove();if(!(previous==='home'&&next==='letters'))cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
   if(previous==='detail'&&next==='home'&&!viaStamp){
     const paper=app.querySelector('.archive-page'),plant=P[paper?.dataset.plant];
-    if(plant){selectHomePlant(plants,plant.id);const revealHome=()=>{if(version!==routeVersion)return;render();window.scrollTo({top:0,behavior:'instant'});};await returnArchive(plant,revealHome);if(version===routeVersion&&document.body.dataset.view!=='home')revealHome();return;}
+    if(plant){
+      paper.inert=true;
+      await scrollArchiveToTop(()=>version!==routeVersion);
+      if(version!==routeVersion)return;
+      selectHomePlant(plants,plant.id);
+      const revealHome=()=>{if(version!==routeVersion)return;render();window.scrollTo({top:0,behavior:'instant'});};
+      await returnArchive(plant,revealHome);
+      if(version===routeVersion&&document.body.dataset.view!=='home')revealHome();
+      return;
+    }
   }
   // Blend the outgoing paper into the destination before replacing its DOM.
   const nextBackground=next==='home'?homeBackground(plants):next==='album'?albumBackground():next==='letters'||next==='write-letter'?'#f1f3eb':next==='claim'?P[hashParts()[1]]?.bg:next==='detail'?P[hashParts()[1]]?.bg:next==='growth'?'#e5b8be':null;
@@ -123,7 +186,7 @@ window.addEventListener('hashchange',async()=>{
   if(version!==routeVersion)return;
   if(next==='claim')window.scrollTo({top:0,behavior:'instant'});
   render();window.scrollTo({top:0,behavior:'instant'});
-  if(previous!==next&&!viaStamp)enterChapter(app.querySelector('main'),next);
+  if(previous!==next&&!viaStamp)enterChapter(app.querySelector('main'),next,{fromView:previous});
 });
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){cancelArchiveEntry();document.querySelector('#letter-overlay')?.remove()}});
 render();enterChapter(app.querySelector('main'),hashParts()[0],{initial:true});

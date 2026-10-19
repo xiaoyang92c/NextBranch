@@ -8,11 +8,15 @@ let shadowId=0;
 
 function mountHomeStamp(stamp){
   const card=stamp.closest('.scene-stamp'),id=`branch-paper-shadow-${++shadowId}`;
+  const compact=matchMedia('(max-width: 799px), (pointer:coarse)');
   const shadow=document.createElementNS('http://www.w3.org/2000/svg','svg');
   shadow.setAttribute('class','stamp-shadow');shadow.setAttribute('viewBox','0 0 220 300');shadow.setAttribute('preserveAspectRatio','none');shadow.setAttribute('aria-hidden','true');
   // One persistent SVG clock: pointer events never stop or restart the water.
   // A single noise octave keeps the continuously repainted shadow inexpensive.
-  shadow.innerHTML=`<defs><filter id="${id}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".015 .022" numOctaves="1" seed="8" result="paper-grain"><animate attributeName="baseFrequency" values=".015 .022;.019 .016;.015 .022" dur="11s" begin="0s" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="paper-grain" scale="12" xChannelSelector="R" yChannelSelector="G"><animate attributeName="scale" values="12;22;16;12" dur="6s" begin="0s" repeatCount="indefinite"/></feDisplacementMap><feGaussianBlur stdDeviation="2.1"/></filter></defs>`;
+  const paintShadowFilter=()=>{shadow.innerHTML=compact.matches
+    ?`<defs><filter id="${id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.1"/></filter></defs>`
+    :`<defs><filter id="${id}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".015 .022" numOctaves="1" seed="8" result="paper-grain"><animate attributeName="baseFrequency" values=".015 .022;.019 .016;.015 .022" dur="11s" begin="0s" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="paper-grain" scale="12" xChannelSelector="R" yChannelSelector="G"><animate attributeName="scale" values="12;22;16;12" dur="6s" begin="0s" repeatCount="indefinite"/></feDisplacementMap><feGaussianBlur stdDeviation="2.1"/></filter></defs>`;};
+  paintShadowFilter();compact.addEventListener('change',paintShadowFilter);
   const silhouette=stamp.querySelector('.stamp-teeth path').cloneNode(true);silhouette.setAttribute('filter',`url(#${id})`);shadow.append(silhouette);card.insertBefore(shadow,stamp);
   const syncMotion=()=>reducedMotion()?shadow.pauseAnimations():shadow.unpauseAnimations();
   syncMotion();stamp.addEventListener('stamp:motion-preference',syncMotion);
@@ -49,7 +53,7 @@ function mountHomeStamp(stamp){
   stamp.addEventListener('stamp:reset',()=>{reset();paper.flatten();});
   stamp.addEventListener('stamp:park',()=>{reset();paper.hold();});
   stamp.addEventListener('stamp:hold',()=>paper.hold());stamp.addEventListener('stamp:resume',()=>paper.resume());
-  stamp.addEventListener('stamp:dispose',()=>{hovering=false;cancelAnimationFrame(frame);frame=0;paper.dispose({preserve:true});shadow.pauseAnimations();stamp.getAnimations().forEach(a=>a.pause());});
+  stamp.addEventListener('stamp:dispose',()=>{hovering=false;cancelAnimationFrame(frame);frame=0;paper.dispose({preserve:true});compact.removeEventListener('change',paintShadowFilter);shadow.pauseAnimations();stamp.getAnimations().forEach(a=>a.pause());});
   stamp.addEventListener('pointerdown',()=>{if(!interactive(stamp))return;reset();card.classList.add('is-stamp-pressed');stamp.style.setProperty('--press-scale','.97');});
   stamp.addEventListener('pointerup',()=>{card.classList.remove('is-stamp-pressed');stamp.style.setProperty('--press-scale','1');});
 }

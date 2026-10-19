@@ -1,6 +1,7 @@
 let navigation=null,observer=null,lastInk=null,inkTimer=null;
 function paintInk(section){
  const nextInk=section==='letters'?'rgb(66, 99, 83)':'rgb(255, 247, 223)';
+ navigation?.querySelector('.nav-cursor')?.style.setProperty('color',nextInk);
  if(lastInk&&lastInk!==nextInk&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
   clearTimeout(inkTimer);
   navigation.classList.remove('is-ink-changing');

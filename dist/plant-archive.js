@@ -52,7 +52,7 @@ export function renderArchive(plant,origin,stories=[]){
  return `<main class="page archive-page" data-plant="${plant.id}" aria-label="${plant.name}枝条档案" style="--archive-tint:${plant.bg};--archive-paper:${plant.bg};--archive-ink:${plant.sceneInk||plant.ink};--archive-muted:${plant.sceneFine||plant.ink}">
  <article class="archive-paper">
   <div class="archive-topline"><button class="archive-back" data-nav="${origin==='album'?'album':'home'}">← 返回${origin==='album'?'枝条放映室':'邮票馆'}</button><span>第 ${serial} 号</span></div>
-  <header class="archive-masthead"><h2>农科枝报</h2><span class="archive-local">农科村</span></header>
+  <header class="archive-masthead"><h2>农科枝报</h2><span class="archive-local">观察录</span></header>
   <div class="archive-dateline"><span>修剪之后，继续生长</span><span>田野植物志</span></div>
   <section class="archive-hero">
    <div class="archive-lead"><h1 data-archive-reveal>${plant.name}</h1><p class="archive-latin" data-archive-reveal>${plant.latin}</p><p class="archive-intro" data-archive-reveal>${plant.intro}</p></div>
@@ -237,7 +237,8 @@ export async function returnArchive(plant,renderDestination){
  state.restore=()=>{
   if(restored)return;restored=true;
   if(image.isConnected)image.style.visibility=originalVisibility;
-  if(page.isConnected){page.style.visibility='';page.inert=false;}
+  if(page.parentElement===document.body)page.remove();
+  else if(page.isConnected){page.style.visibility='';page.inert=false;}
   if(destination?.isConnected){destination.classList.remove('is-return-target');destination.querySelector('.stamp')?.dispatchEvent(new Event('stamp:resume'));}
   floats.forEach(motion=>{if(motion.playState==='paused')motion.play();});
   if(lens?.isConnected)lens.setAttribute('scale',lensScale);
@@ -245,21 +246,29 @@ export async function returnArchive(plant,renderDestination){
  };
  try{
   page.classList.add('is-archive-dispersing');
-  await animate(flight,[{transform:'scale(1)'},{transform:'scale(.78)'}],520,90).finished;if(state.cancelled)return;
-  page.style.visibility='hidden';renderDestination();rendered=true;if(state.cancelled)return;
+  // Keep the folio above the new scene while it dissolves. Its specimen has
+  // already moved to the flight layer, so the plant itself travels only once.
+  Object.assign(page.style,{position:'fixed',top:`${-window.scrollY}px`,left:'0',width:'100%',height:'100svh',boxSizing:'border-box',overflow:'hidden',zIndex:'60',pointerEvents:'none'});
+  document.body.append(page);
+  renderDestination();rendered=true;if(state.cancelled)return;
   home=document.querySelector('.home-scene');destination=home?.querySelector('.scene-stamp.current');
   const stamp=destination?.querySelector('.stamp'),stampImage=stamp?.querySelector('.stamp-art');
   if(!stampImage)throw new Error('Return stamp is missing');
   home.inert=true;destination.classList.add('is-return-target');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
   lens=home.querySelector('.scene-lens-displacement');lensScale=lens?.getAttribute('scale');
   if(!stampImage.complete)await stampImage.decode();if(state.cancelled)return;
-  const to=fittedImage(stampImage,image),base={cx:from.cx,cy:from.cy};
-  const frames=flightFrames({...from,scale:.78},{cx:to.cx,cy:to.cy,scale:to.width/from.width},base);
-  const homeFade=animate(home,[{opacity:0},{opacity:1}],550);
-  await Promise.all([animate(flight,frames,1240).finished,homeFade.finished]);if(state.cancelled)return;
-  destination.classList.remove('is-return-target');
-  await animate(flight,[{opacity:1},{opacity:0}],160).finished;
-  stamp.dispatchEvent(new Event('stamp:resume'));
+  const to=fittedImage(stampImage,image),base={cx:from.cx,cy:from.cy},targetFilter=getComputedStyle(stampImage).filter;
+  const frames=flightFrames({...from,scale:1},{cx:to.cx,cy:to.cy,scale:to.width/from.width},base);
+  frames[0].filter=fromFilter;frames[1].filter=targetFilter;
+  const bounds=stamp.getBoundingClientRect(),zoom=printZoom(stamp,bounds),shell=printLayer(stamp,bounds);
+  overlay.prepend(shell);
+  // The article's lettering clears first. Its stamp typography and perforated
+  // border then return as one enlarged print while the specimen shrinks home.
+  const paperClear=animate(page,[{opacity:1},{opacity:1,offset:.36},{opacity:0}],1460);
+  const printReturn=animate(shell,[{transform:`scale(${zoom})`,opacity:0},{transform:`scale(${zoom*.9})`,opacity:1,offset:.2},{transform:'scale(1)',opacity:1}],1160,300);
+  await Promise.all([animate(flight,frames,1160,300).finished,paperClear.finished,printReturn.finished]);if(state.cancelled)return;
+  // Swap the two copies on the same paint; a fade exposes doubled branches.
+  destination.classList.remove('is-return-target');overlay.remove();
  }catch(error){
   if(!state.cancelled){console.error('报纸返回动画失败',error);if(!rendered)renderDestination();}
  }finally{

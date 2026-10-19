@@ -37,8 +37,9 @@ export function mountClaimPress(page,entrance='feed'){
   // overlay is needed, so the machine remains visible through the teeth.
   const teeth=Array.from({length:41},(_,i)=>`${i*2.5}% ${i%2?8:0}px`).join(',');
   sheet.style.clipPath=`polygon(${teeth},100% 100%,0 100%)`;
-  await move(sheet,[{translate:'0 0'},{translate:'0 16px'}],520,'cubic-bezier(.3,.1,.22,1)');if(leaving)return;
-  const away=offscreen();await Promise.all([move(machine,[{translate:'0 0'},{translate:`0 ${away}px`}],860),move(lip,[{translate:'0 0'},{translate:`0 ${away}px`}],860),move(feed,[{translate:'0 0'},{translate:`0 ${-padding}px`}],860)]);if(leaving)return;
+  // The ticket and press separate in one continuous movement. The padding
+  // collapse below preserves the feed's final screen position exactly.
+  const away=offscreen();await Promise.all([move(machine,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(lip,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(feed,[{translate:'0 0'},{translate:`0 ${-padding}px`}],900)]);if(leaving)return;
   machine.style.visibility='hidden';lip.style.visibility='hidden';page.classList.add('is-ticket-detached');page.classList.remove('is-tearing');feed.style.translate='0 0';detached=true;
   finish();
  }
@@ -46,7 +47,7 @@ export function mountClaimPress(page,entrance='feed'){
   if(!detached)return;ready=false;sheet.inert=true;setState('redock');const padding=parseFloat(getComputedStyle(dispenser).getPropertyValue('--feed-start'));
   dispenser.style.paddingTop=`${padding}px`;feed.style.translate=`0 ${-padding}px`;page.classList.remove('is-ticket-detached');
   const away=offscreen();machine.style.translate=`0 ${away}px`;lip.style.translate=`0 ${away}px`;machine.style.visibility='visible';lip.style.visibility='visible';
-  await Promise.all([move(feed,[{translate:`0 ${-padding}px`},{translate:'0 0'}],860),move(sheet,[{translate:'0 16px'},{translate:'0 0'}],860),move(machine,[{translate:`0 ${away}px`},{translate:'0 0'}],860),move(lip,[{translate:`0 ${away}px`},{translate:'0 0'}],860)]);
+  await Promise.all([move(feed,[{translate:`0 ${-padding}px`},{translate:'0 0'}],860),move(machine,[{translate:`0 ${away}px`},{translate:'0 0'}],860),move(lip,[{translate:`0 ${away}px`},{translate:'0 0'}],860)]);
   dispenser.style.paddingTop='';detached=false;
  }
  refresh();
@@ -70,18 +71,23 @@ export function mountClaimPress(page,entrance='feed'){
   setState('retract');page.classList.add('is-retracting');status.textContent='回收中';const distance=sheet.getBoundingClientRect().height+40;
   await move(sheet,[{translate:getComputedStyle(sheet).translate},{translate:`0 ${-distance}px`}],Math.min(1400,900+distance*.12),'cubic-bezier(.4,.04,.3,1)');
  }
- async function sign(label='已签单'){
+ async function sign(label='登记完成'){
   ready=false;sheet.inert=true;setState('sign');
-  const button=page.querySelector('#claim-step-form button[type="submit"],[data-claim-pickup]'),seal=document.createElement('div');seal.className='claim-signature-seal';seal.textContent=label;const box=button.getBoundingClientRect(),paperBox=sheet.getBoundingClientRect();Object.assign(seal.style,{left:`${box.left-paperBox.left+box.width/2}px`,top:`${box.top-paperBox.top-42}px`});sheet.append(seal);
-  await move(seal,[{transform:'translate(-50%,-30px) scale(1.4)',opacity:0},{transform:'translate(-50%,0) scale(1)',opacity:1}],460);
+  const seal=document.createElement('div'),actions=page.querySelector('.claim-step-actions,.ticket-actions');
+  seal.className='claim-signature-seal';seal.setAttribute('role','status');
+  seal.innerHTML=`<span>下一枝 · 枝条驿站</span><strong>${label==='已领取'?'领取确认':label}</strong><small>BRANCH POST · VERIFIED</small>`;
+  if(actions)actions.before(seal);else sheet.append(seal);
+  await move(seal,[{transform:'translateY(-18px) rotate(-12deg) scale(1.25)',opacity:0},{transform:'translateY(0) rotate(-6deg) scale(1)',opacity:1}],540,'cubic-bezier(.18,.76,.22,1)');
   await scrollToMachine();await redock();await retract();
  }
  function leave(){
-  if(exitPromise)return exitPromise;leaving=true;ready=false;sheet.inert=true;setState('close');
+  if(exitPromise)return exitPromise;
+  const mode=detached?'ticket':'retract';
+  leaving=true;ready=false;sheet.inert=true;page.dataset.exitPressMode=mode;setState('close');
   // The route transition carries the complete printer scene straight down.
   // Freeze the current feed pose so closing during printing stays coherent.
   const poses=[sheet,machine,lip,feed].map(el=>[el,getComputedStyle(el).translate,getComputedStyle(el).clipPath]);animations.forEach(a=>a.cancel());animations.clear();poses.forEach(([el,translate,clip])=>Object.assign(el.style,{translate,clipPath:clip}));
-  exitPromise=Promise.resolve();return exitPromise;
+  exitPromise=Promise.resolve(mode);return exitPromise;
  }
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',event=>{if(!event.matches)return;observer?.disconnect();elements.forEach(el=>reveal(el,true));animations.forEach(a=>{try{a.finish();}catch{a.cancel();}});},{signal:controller.signal});
  return {refresh,sign,redock,leave,dispose(){controller.abort();observer?.disconnect();animations.forEach(a=>a.cancel());animations.clear();cancelAnimationFrame(scrollFrame);scrollReject?.(new Error('Press closed'));pending.clear();elements.clear();}};

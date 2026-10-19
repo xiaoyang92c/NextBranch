@@ -66,7 +66,7 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
   function progress(step){return `<ol class="claim-progress" aria-label="领取小票进度">${steps.map((label,index)=>`<li class="${index+1===step?'is-current':index+1<step?'is-complete':''}" ${index+1===step?'aria-current="step"':''}><span>${String(index+1).padStart(2,'0')}</span><b>${label}</b></li>`).join('')}</ol>`;}
   const source=plant=>plant.source.replace(/\s*·\s*演示/g,'').replace(/^农科村/,'');
   function paperHeader(plant,receipt=false){return `<header class="claim-mailhead"><div class="claim-mailtitle"><span class="claim-post-office" data-claim-ink>农科村 · 枝条再生驿站</span><h1 data-claim-ink>下一枝</h1><p class="claim-mail-kicker">${receipt?'领取凭条':'领取登记'} · BRANCH RECEIPT</p></div><div class="claim-receipt-rule" aria-hidden="true">********************************</div><div class="claim-specimen-row"><div class="claim-addressee"><span>品名 / ITEM 01</span><h2 data-claim-ink>${plant.name}</h2><p>${plant.no} · ${source(plant)}</p></div><div class="claim-postage"><div class="claim-plant-stamp">${stamp(plant.id,true)}</div></div></div></header><dl class="claim-origin"><div><dt>领取数量</dt><dd>1 ${itemUnit(plant)}</dd></div><div><dt>领取地点</dt><dd>农科村枝条再生驿站</dd></div></dl>`;}
-  function machine(plant){return `<div class="claim-machine" role="img" aria-label="复古小票打印机"><img class="claim-machine-art" src="./assets/vintage-receipt-printer.webp" alt="" draggable="false"></div><div class="claim-output-lip"><span class="claim-machine-status" role="status">就绪</span><button class="claim-machine-close" type="button" data-detail="${plant.id}" aria-label="关闭领取单，返回植物档案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"/><path d="M18 6L6 18"/></svg></button></div>`;}
+  function machine(plant){return `<div class="claim-machine" role="img" aria-label="复古小票打印机"><img class="claim-machine-art" src="./assets/vintage-receipt-printer-neutral.png" alt="" draggable="false"></div><div class="claim-output-lip"><span class="claim-machine-status" role="status">就绪</span><button class="claim-machine-close" type="button" data-detail="${plant.id}" aria-label="关闭领取单，返回植物档案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"/><path d="M18 6L6 18"/></svg></button></div>`;}
   function dispatch(plant,inside,{receipt=false,step=1,animation=''}={}){
     const entrance=nextEntrance;nextEntrance='feed';
     return `<main class="page claim-page claim-flow claim-dispatch ${receipt?'claim-receipt':''}${animation}" data-claim-plant="${plant.id}" style="--claim-scene:${plant.bg};--claim-ink:${plant.sceneInk||plant.ink};--claim-soft:${plant.sceneFine||plant.ink};--claim-rule:color-mix(in srgb,${plant.sceneInk||plant.ink} 32%,transparent)" data-print="${entrance}"><div class="claim-workspace"><section class="claim-dispenser" aria-label="枝条小票打印机">${machine(plant)}<div class="claim-paper-feed"><article class="form-paper dispatch-paper">${receipt?`<button class="claim-ticket-close" type="button" data-detail="${plant.id}" aria-label="收好小票，返回植物档案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"/><path d="M18 6L6 18"/></svg></button>`:''}${paperHeader(plant,receipt)}${progress(step)}${inside}<footer class="claim-paper-foot">农科村 · 下一枝 <span>请妥善保留此凭条</span></footer></article></div></section></div></main>`;
@@ -137,7 +137,7 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
     if (!page) return;
     document.body.style.backgroundColor=getComputedStyle(page).getPropertyValue('--claim-scene');
     const press=mountClaimPress(page,page.dataset.print);activePress=press;dispose=()=>press.dispose();
-    let submitting=false,changingStep=false;
+    let submitting=false,changingStep=false,noteVersion=0;
     const plant = getPlant(page.dataset.claimPlant);
     const draft = draftFor(plant.id);
     bindChangePlant(page);
@@ -147,7 +147,7 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       event.target.removeAttribute('aria-invalid');
       saveDraft(plant.id);
     });
-    page.querySelectorAll('[data-claim-field]').forEach(input=>input.addEventListener('change',()=>{
+    page.querySelectorAll('[data-claim-field]').forEach(input=>input.addEventListener('change',async()=>{
       const field = input.dataset.claimField;
       if (input.disabled) return;
       draft[field] = input.value;
@@ -160,8 +160,23 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       input.closest('label').classList.add('just-stamped');
       const region = page.querySelector(draft.step===1?'#claim-advice':'#claim-method-note');
       if (region) {
+        const version=++noteVersion;
+        region.getAnimations().forEach(animation=>animation.cancel());
+        const height=region.offsetHeight;
+        region.style.minHeight=`${height}px`;
+        region.dataset.noteSwitching='';
+        if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+          const out=region.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-6px)'}],{duration:150,easing:'ease-in',fill:'both'});
+          try{await out.finished;}catch{}out.cancel();
+        }
+        if(version!==noteVersion||!region.isConnected)return;
         region.innerHTML = draft.step===1?adviceMarkup(plant,draft):methodNote(plant,draft);
         bindChangePlant(region);press.refresh(region);
+        if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+          const incoming=region.animate([{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:290,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'});
+          try{await incoming.finished;}catch{}incoming.cancel();
+        }
+        if(version===noteVersion){region.style.minHeight='';delete region.dataset.noteSwitching;}
       }
       page.querySelector('#claim-error').hidden = true;
     }));

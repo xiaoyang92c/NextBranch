@@ -12,16 +12,17 @@ export function renderLetterTheatre(){
 export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,freshId,onReader}){
  const root=document.querySelector('.letter-mailbox');if(!root)return;
  const controller=new AbortController(),signal=controller.signal,P=Object.fromEntries(plants.map(p=>[p.id,p]));
+ const compact=matchMedia('(max-width:799px), (pointer:coarse)').matches,cycleCount=compact?3:5,centerCycle=(cycleCount-1)/2;
  const well=root.querySelector('.mailbox-well'),stack=root.querySelector('.mailbox-stack'),searchPanel=root.querySelector('.mailbox-search'),find=root.querySelector('.mailbox-find'),query=root.querySelector('.mailbox-query input');
- const animations=new Set();let stage=null,items=[],plantFilter=filter||'',statusFilter='',term='',opening=false,activeId=freshId||null,needsRefresh=false,period=0,looping=true;
+ const animations=new Set();let stage=null,items=[],plantFilter=filter||'',statusFilter='',term='',opening=false,centering=false,activeId=freshId||null,needsRefresh=false,period=0,looping=true;
  let scrollFrame=0,scrollTarget=null,scrollPosition=0,lastFrame=0,drag=null,suppressClickUntil=0,searchExpanded=false,panelAnimation=null,panelVersion=0;
  const limitScroll=value=>Math.max(0,Math.min(well.scrollHeight-well.clientHeight,value));
  function stopGlide(){cancelAnimationFrame(scrollFrame);scrollFrame=0;scrollTarget=null;lastFrame=0;}
  function recycle(){
-  if(opening||!period)return;
+  if(opening||centering||!period)return;
   let shift=0,position=well.scrollTop;
-  while(position<period*1.25){position+=period;shift+=period;}
-  while(position>period*3.75){position-=period;shift-=period;}
+  while(position<period*(centerCycle-.75)){position+=period;shift+=period;}
+  while(position>period*(centerCycle+.75)){position-=period;shift-=period;}
   if(!shift)return;
   well.scrollTop=position;if(scrollTarget!==null){scrollTarget+=shift;scrollPosition+=shift;}if(drag)drag.scroll+=shift;
  }
@@ -36,7 +37,7 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  function glideTo(target){scrollTarget=limitScroll(target);if(!scrollFrame){scrollPosition=well.scrollTop;lastFrame=0;scrollFrame=requestAnimationFrame(glide);}}
  function markup(letter){
   const plant=P[letter.plantId];
-  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" aria-hidden="true" draggable="false"><span class="garden-envelope-back" aria-hidden="true"></span><span class="garden-envelope-flap" aria-hidden="true"></span><span class="garden-letter-paper"><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}</span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong></span><span class="garden-envelope-pocket" aria-hidden="true"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>${letter.replies?.length?`${letter.replies.length} 封回信`:'等一封回信'}</span></span></span>`;
+  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" aria-hidden="true" draggable="false"><span class="garden-envelope-back" aria-hidden="true"></span><span class="garden-envelope-flap" aria-hidden="true"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket" aria-hidden="true"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>${letter.replies?.length?`${letter.replies.length} 封回信`:'等一封回信'}</span></span></span>`;
  }
  function markActive(id,button){activeId=id;const matches=[...stack.querySelectorAll(`[data-id="${id}"]`)],distance=b=>Math.abs(b.getBoundingClientRect().top+b.offsetHeight/2-innerHeight/2),selected=button||matches.sort((a,b)=>distance(a)-distance(b))[0];stack.querySelectorAll('.mailbox-letter').forEach(b=>b.setAttribute('aria-current',String(b===selected)));}
  function measurePeriod(){
@@ -51,8 +52,8 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   items=getLetters().filter(l=>P[l.plantId]&&(!plantFilter||l.plantId===plantFilter)&&(statusFilter==='waiting'?!l.replies?.length:statusFilter==='answered'?Boolean(l.replies?.length):true)&&(!term||`${P[l.plantId].name} ${l.title} ${l.text}`.toLocaleLowerCase().includes(term.toLocaleLowerCase())));
   looping=!plantFilter&&!statusFilter&&!term;
   // The complete archive repeats; a chosen plant, state, or search result is finite.
-  const nodes=Array.from({length:looping?5:1},()=>items.map((letter,index)=>{const item=document.createElement('article');item.className=`mailbox-entry${plants.findIndex(p=>p.id===letter.plantId)%2?' is-flower-right':''}`;item.setAttribute('role','listitem');item.setAttribute('aria-posinset',index+1);item.setAttribute('aria-setsize',items.length);const button=document.createElement('button');button.type='button';button.className='mailbox-letter';button.dataset.id=letter.id;button.setAttribute('aria-label',`抽出查看：${letter.title}`);button.innerHTML=markup(letter);const frame=document.createElement('div');frame.className='mailbox-ink-frame';frame.append(button);item.append(frame);return item;})).flat();stack.replaceChildren(...nodes);
-  if(looping){period=measurePeriod();well.scrollTop=period*2+phase;}else{period=0;stack.style.gap='';stack.style.paddingTop='';well.scrollTop=keep&&!wasLooping?previousTop:0;}
+  const nodes=Array.from({length:looping?cycleCount:1},()=>items.map((letter,index)=>{const item=document.createElement('article');item.className=`mailbox-entry${plants.findIndex(p=>p.id===letter.plantId)%2?' is-flower-right':''}`;item.setAttribute('role','listitem');item.setAttribute('aria-posinset',index+1);item.setAttribute('aria-setsize',items.length);const button=document.createElement('button');button.type='button';button.className='mailbox-letter';button.dataset.id=letter.id;button.setAttribute('aria-label',`抽出查看：${letter.title}`);button.innerHTML=markup(letter);const frame=document.createElement('div');frame.className='mailbox-ink-frame';frame.append(button);item.append(frame);return item;})).flat();stack.replaceChildren(...nodes);
+  if(looping){period=measurePeriod();well.scrollTop=period*centerCycle+phase;}else{period=0;stack.style.gap='';stack.style.paddingTop='';well.scrollTop=keep&&!wasLooping?previousTop:0;}
   root.classList.toggle('is-filtered',!looping);markActive(items.some(l=>l.id===activeId)?activeId:items[0]?.id);root.querySelector('.mailbox-empty').hidden=Boolean(items.length);
   root.querySelectorAll('[data-mail-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailFilter===statusFilter)));
   root.querySelectorAll('[data-mail-plant]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailPlant===plantFilter)));
@@ -75,25 +76,50 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  }
  const resizeObserver=new ResizeObserver(resizeLoop);resizeObserver.observe(well);
  const envelopeTop=button=>Math.max(118,(innerHeight-button.offsetHeight)/2-12);
+ async function centerLetter(button){
+  const view=well.getBoundingClientRect(),box=button.getBoundingClientRect();
+  // The gallery deliberately rests each envelope 12px above the viewport's
+  // mathematical centre. Do not scroll it again when it is already at rest.
+  const delta=(box.top+box.bottom-view.top-view.bottom)/2+12;
+  if(Math.abs(delta)>3&&!reduced()){
+   const from=well.scrollTop;
+   await new Promise(resolve=>{
+    let started=0;
+    const step=now=>{
+     if(signal.aborted){resolve();return;}
+     started ||=now;const t=Math.min(1,(now-started)/540),ease=1-(1-t)**3;
+     well.scrollTop=from+delta*ease;
+     if(t<1)requestAnimationFrame(step);else resolve();
+    };
+    requestAnimationFrame(step);
+   });
+  }
+  centering=false;
+  const matches=[...stack.querySelectorAll('.mailbox-letter')].filter(candidate=>candidate.dataset.id===button.dataset.id);
+  return matches.sort((a,b)=>Math.abs(a.getBoundingClientRect().top+a.getBoundingClientRect().height/2-(innerHeight/2-12))-Math.abs(b.getBoundingClientRect().top+b.getBoundingClientRect().height/2-(innerHeight/2-12)))[0]||button;
+ }
  async function open(button){
-  if(opening||!items.length)return;stopGlide();drag=null;opening=true;markActive(button.dataset.id,button);root.classList.add('is-reading');
-  const rect=button.getBoundingClientRect(),id=button.dataset.id;
-  const reset=()=>{stage?.remove();stage=null;if(signal.aborted)return;opening=false;animations.forEach(a=>a.cancel());animations.clear();root.classList.remove('is-reading');button.style.visibility='';if(needsRefresh){needsRefresh=false;load();}stack.querySelector('[aria-current="true"]')?.focus({preventScroll:true});};
+  if(opening||centering||!items.length)return;stopGlide();drag=null;centering=true;root.classList.add('is-reading');
+  button=await centerLetter(button);if(signal.aborted)return;opening=true;markActive(button.dataset.id,button);
+  const rect=button.getBoundingClientRect(),id=button.dataset.id,face=button.querySelector('.garden-letter');
+  const reset=()=>{if(face&&!button.contains(face))button.append(face);stage?.remove();stage=null;if(signal.aborted)return;opening=false;animations.forEach(a=>a.cancel());animations.clear();root.classList.remove('is-reading');button.style.visibility='';if(needsRefresh){needsRefresh=false;load();}stack.querySelector('[aria-current="true"]')?.focus({preventScroll:true});};
   const move=async(el,frames,duration)=>{if(reduced())return;const a=el.animate(frames,{duration,easing:'cubic-bezier(.22,.76,.24,1)',fill:'both'});animations.add(a);await a.finished;};
   try{
-   stage=document.createElement('div');stage.className='mail-opening-stage';stage.setAttribute('aria-hidden','true');stage.innerHTML=button.innerHTML;
-   const flowerStyle=getComputedStyle(button.querySelector('.garden-botanical')),flower=stage.querySelector('.garden-botanical');
-   for(const property of ['left','right','top','width','height'])flower.style[property]=flowerStyle[property];
-   const w=button.offsetWidth,h=button.offsetHeight,x=rect.x,y=rect.y;
+   stage=document.createElement('div');stage.className='mail-opening-stage';stage.classList.toggle('is-flower-right',Boolean(button.closest('.is-flower-right')));stage.setAttribute('aria-hidden','true');stage.append(face);
+   const w=rect.width,h=rect.height,x=rect.x,y=rect.y;
    Object.assign(stage.style,{width:`${w}px`,height:`${h}px`,left:`${x}px`,top:`${y}px`});document.body.append(stage);button.style.visibility='hidden';
    const slip=stage.querySelector('.garden-letter-paper');
    const tuckedPaper=slip.getBoundingClientRect();
-   const grow=Math.min(1.2,rect.width/slip.getBoundingClientRect().width);
-   const extractedTransform=`translateY(-65%) scale(${grow})`;
-   await move(slip,[{transform:'translateY(0) scale(1)'},{transform:extractedTransform}],760);slip.style.transform=extractedTransform;
+   const readerWidth=Math.min(620,innerWidth-32);
+   const readerLeft=(innerWidth-readerWidth)/2,readerTop=16;
+   const grow=readerWidth/tuckedPaper.width;
+   const dx=readerLeft-tuckedPaper.left-(tuckedPaper.width-readerWidth)/2;
+   const dy=readerTop-tuckedPaper.top-(tuckedPaper.height-tuckedPaper.height*grow)/2;
+   const extractedTransform=`translate3d(${dx}px,${dy}px,0) scale(${grow})`;
+   await move(slip,[{transform:'translate3d(0,0,0) scale(1)'},{transform:extractedTransform}],760);slip.style.transform=extractedTransform;
    const paper=slip.getBoundingClientRect();
    onReader({kind:'mailbox',paper,paperElement:slip,tuckedPaper,envelope:rect,paperMarkup:slip.innerHTML,pocketMarkup:stage.querySelector('.garden-envelope-pocket').outerHTML,extracted:()=>{slip.style.visibility='hidden';},revealPaper:()=>{slip.style.visibility='';},returnPaper:async()=>{
-    await move(slip,[{transform:extractedTransform},{transform:'translateY(0) scale(1)'}],680);slip.style.transform='';
+    await move(slip,[{transform:extractedTransform},{transform:'translate3d(0,0,0) scale(1)'}],680);slip.style.transform='';
    }},reset);
    if(!signal.aborted)onOpen(id);
   }catch{if(!signal.aborted&&stage){onReader({kind:'mailbox'},reset);onOpen(id);}else reset();}

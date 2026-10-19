@@ -36,6 +36,9 @@ html,body,.album-stamps,.postcard-track{scrollbar-width:none;-ms-overflow-style:
 .home-scene{--scene-stamp-width:min(60vw,35svh,340px);--scene-stamp-height:calc(var(--scene-stamp-width)*300/220);--scene-center:50%;--scene-type:clamp(48px,15vw,76px);--scene-gap:clamp(26px,6svh,65px);height:100svh;min-height:0;overflow:clip;background:var(--scene-bg);isolation:isolate;transition:background .85s ease,color .85s ease}
 .home-scene::before{inset:0;z-index:20;background-image:radial-gradient(ellipse at 50% 46%,rgba(255,252,221,.09) 0%,transparent 54%,rgba(49,81,64,.065) 100%);opacity:1;box-shadow:inset 0 0 9vw rgba(35,73,58,.045);pointer-events:none}
 .home-scene::after{content:'';position:absolute;inset:-8%;z-index:21;pointer-events:none;opacity:.11;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='144' height='144'%3E%3Cfilter id='film'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23film)'/%3E%3C/svg%3E");background-size:144px 144px;animation:scene-film-grain .75s steps(6,end) infinite;will-change:transform}
+.home-scene::before,.home-scene::after{transition:opacity 1.1s ease}
+.home-scene.is-background-bridging::before,.home-scene.is-background-bridging::after,.home-scene.is-background-arriving::before,.home-scene.is-background-arriving::after{opacity:0}
+.home-scene.is-film-arriving::after{opacity:0}
 .scene-optical-defs{position:absolute;pointer-events:none}
 .scene-optics{position:absolute;inset:0;isolation:isolate}
 .home-scene.has-lens .scene-optics{filter:url(#home-fisheye)}
@@ -58,9 +61,10 @@ html,body,.album-stamps,.postcard-track{scrollbar-width:none;-ms-overflow-style:
 .home-scene .scene-stamp>.stamp>.stamp-inner::after{opacity:0}
 .home-scene .stamp.has-paper-surface>.stamp-inner,.home-scene .stamp.has-paper-surface>.stamp-teeth{visibility:hidden}
 .stamp-paper-backing{position:absolute;inset:0;z-index:0;isolation:isolate;pointer-events:none}
-.stamp-paper-backing>.stamp-inner::after{display:none}
+.stamp-paper-backing>.stamp-teeth{z-index:0;fill:var(--stamp-bg)}
 .stamp-paper-surface{position:absolute;inset:0;z-index:1;pointer-events:none;perspective:700px;perspective-origin:50% 50%;transform-style:preserve-3d}
 .stamp-grain-overlay{position:absolute;inset:5.8% 7.2%;z-index:2;pointer-events:none;transition:opacity .25s ease}
+.home-scene .stamp.has-paper-surface>.stamp-grain-overlay{visibility:hidden}
 .home-scene .paper-print .stamp-inner::after{display:none}
 .paper-strip{position:absolute;top:0;height:100%;overflow:hidden;transform-origin:50% 50%;backface-visibility:hidden;will-change:transform}
 .home-scene .paper-print{position:absolute;top:0;width:var(--paper-width);height:100%;transform:none!important;rotate:none!important;translate:none!important;filter:none!important;transition:none!important;animation:none!important;pointer-events:none}
@@ -229,7 +233,7 @@ body[data-view] .main-nav button.active::before{content:none}
 body[data-view] .main-nav .nav-label{position:relative;padding:7px 9px}
 /* A single pair of rails follows the current chapter across page renders. */
 .nav-cursor{position:absolute;pointer-events:none;z-index:2;color:inherit}
-.main-nav.is-positioned .nav-cursor{transition:left .55s cubic-bezier(.22,.8,.22,1),right .55s cubic-bezier(.22,.8,.22,1),top .4s ease,height .4s ease}
+.main-nav.is-positioned .nav-cursor{transition:left .55s cubic-bezier(.22,.8,.22,1),right .55s cubic-bezier(.22,.8,.22,1),top .4s ease,height .4s ease,color .9s cubic-bezier(.22,.7,.2,1)}
 .nav-cursor i{position:absolute;top:0;bottom:0;left:0;width:7px;border:1px solid currentColor;border-right:0;border-radius:4px 0 0 4px;opacity:.88}
 .nav-cursor i+i{left:auto;right:0;border:1px solid currentColor;border-left:0;border-radius:0 4px 4px 0}
 @media(prefers-reduced-motion:reduce){.main-nav.is-positioned .nav-cursor{transition:none}}
@@ -296,9 +300,18 @@ body[data-view] .main-nav{background:none;box-shadow:none;backdrop-filter:none;b
 /* The reverse is a fleeting botanical impression, with no extra folio copy. */
 .news-fold-reverse{padding:16px 24px;display:grid;place-items:center}
 .news-reverse-vignette{width:min(80%,380px);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center}
+.news-reverse-top-rule,.news-reverse-bottom-rule{display:block;width:min(68%,240px);height:1px;background:var(--archive-rule);opacity:.7}
+.news-reverse-top-rule{margin-bottom:14px}.news-reverse-bottom-rule{margin-top:14px}
 .news-reverse-vignette img{display:block;width:min(42%,140px);max-height:62%;object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply;opacity:.7}
 .news-reverse-divider{width:54px;border-top:1px solid var(--archive-rule)}
 .news-reverse-vignette p{margin:0;font:400 clamp(11px,2.4vw,14px)/1.5 var(--serif);letter-spacing:.06em}
+/* Keep the returning fold's editorial back clear of the fixed chapter tabs. */
+.chapter-news-fold[data-fold-stage="return"]::after{content:'';position:absolute;inset:0 0 auto;height:66px;background:var(--archive-paper);z-index:4;pointer-events:none}
+.news-fold-reverse{display:flex;align-items:stretch;justify-content:initial;padding:clamp(70px,9svh,94px) 24px 15px;gap:7px}
+.news-reverse-specimen img{max-height:112px}
+.news-reverse-notes{padding:7px 0;gap:8px}
+.news-reverse-notes section+section{padding-left:8px}
+@media(max-height:680px){.news-fold-reverse{padding-top:66px}.news-reverse-notes{display:none}}
 /* A drawn ink mask writes each large character without shifting its baseline. */
 .scene-ink-letter{position:relative}
 .scene-writing-ink{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}

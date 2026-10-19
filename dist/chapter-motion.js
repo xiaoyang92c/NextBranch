@@ -13,7 +13,7 @@ export function stopChapterMotion(){
  ornaments.forEach(element=>element.remove());ornaments.clear();
  if(foldedPage?.page.isConnected)foldedPage.page.style.visibility=foldedPage.visibility;
  foldedPage=null;
- enteringPage?.classList.remove('is-chapter-entering','is-screen-ready');enteringPage=null;
+ enteringPage?.classList.remove('is-chapter-entering','is-screen-ready','is-background-arriving','is-film-arriving');enteringPage=null;
 }
 function tween(element,frames,duration,delay=0,easing=ease){
  if(!element)return;
@@ -68,9 +68,10 @@ function writeHomeGlyph(glyph,duration,delay,reverse=false){
  // Plain Chinese subtitle glyphs get a hidden original span with unchanged width.
  if(!glyph.children.length){const base=document.createElement('span');base.className='scene-writing-original';base.style.visibility='hidden';base.append(...original);glyph.append(base);}
  glyph.append(svg);
- const finish=()=>{svg.remove();glyph.querySelectorAll('.scene-writing-original').forEach(el=>el.replaceWith(...el.childNodes));original.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)node.style.visibility='';});inkWriters.delete(finish);};
+ let erased=false;const previousVisibility=glyph.style.visibility;
+ const finish=()=>{svg.remove();glyph.querySelectorAll('.scene-writing-original').forEach(el=>el.replaceWith(...el.childNodes));original.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)node.style.visibility='';});glyph.style.visibility=erased?'hidden':previousVisibility;inkWriters.delete(finish);};
  inkWriters.add(finish);
- tween(brush,[{strokeDashoffset:reverse?0:1},{strokeDashoffset:reverse?1:0}],duration,delay,'linear').finished.then(()=>{if(!reverse)finish();}).catch(()=>{});
+ tween(brush,[{strokeDashoffset:reverse?0:1},{strokeDashoffset:reverse?1:0}],duration,delay,'linear').finished.then(()=>{erased=reverse;finish();}).catch(()=>{});
 }
 function paintStroke(element,{opening=true,delay=0,duration=1200,holder=element.closest('main')}={}){
  if(!element||!holder)return;
@@ -82,11 +83,12 @@ function paintStroke(element,{opening=true,delay=0,duration=1200,holder=element.
  mask.append(brush);defs.append(mask);svg.append(defs);holder.append(svg);
  const previousMask=element.style.maskImage,previousVisibility=element.style.visibility;
  element.style.maskImage=`url("#${id}")`;
- const cleanup=()=>{element.style.maskImage=previousMask;element.style.visibility=previousVisibility;svg.remove();inkWriters.delete(cleanup);};
+ let erased=false;
+ const cleanup=()=>{element.style.maskImage=previousMask;element.style.visibility=erased?'hidden':previousVisibility;svg.remove();inkWriters.delete(cleanup);};
  inkWriters.add(cleanup);
  tween(brush,[{strokeDashoffset:opening?1:0},{strokeDashoffset:opening?0:1}],duration,delay,'linear').finished.then(()=>{
   if(opening)cleanup();
-  else{element.style.visibility='hidden';element.style.maskImage=previousMask;svg.remove();}
+  else{erased=true;element.style.visibility='hidden';element.style.maskImage=previousMask;svg.remove();inkWriters.delete(cleanup);}
  }).catch(()=>{});
 }
 function paintHomeStamp(card,delay=80){
@@ -135,8 +137,12 @@ export function rememberArchivePosition(page){
 }
 function newspaperReverse(page,half){
  const plant=plants.find(plant=>plant.id===page.dataset.plant),reverse=document.createElement('article');reverse.className='news-fold-reverse';reverse.style.setProperty('--reverse-height',`${half}px`);
- reverse.innerHTML=`<div class="news-reverse-vignette"><img src="./assets/${plant.art}" alt=""><span class="news-reverse-divider" aria-hidden="true"></span><p>${plant.name}<span aria-hidden="true"> · </span>给下一枝一个位置</p></div>`;
+ reverse.innerHTML=`<header class="news-reverse-masthead"><strong>农科枝报</strong><span>枝条档案 · ${plant.no}</span></header><div class="news-reverse-specimen"><figure><img src="./assets/${plant.art}" alt=""><figcaption>植物图版 · ${plant.value}</figcaption></figure><div><span class="news-reverse-kicker">THE NEXT BRANCH / FIELD NOTE</span><h2>${plant.name}</h2><p>${plant.latin}</p></div></div><div class="news-reverse-notes">${['光照','浇水','安家'].map((label,index)=>`<section><b>0${index+1}</b><p>${label}<br>${quickReverse(plant,index)}</p></section>`).join('')}</div><footer><span>修剪之后，继续生长</span><span>下一枝 · 枝条再生驿站</span></footer>`;
  return reverse;
+}
+function quickReverse(plant,index){
+ const care={podocarpus:['柔和见光','见干补水','先稳根系'],osmanthus:['柔光缓苗','保持微湿','耐心等根'],camellia:['避开暴晒','排水通畅','固定枝段']};
+ return (care[plant.id]||['循序见光','留意排水','安放新枝'])[index];
 }
 function newspaperModel(page){
  // Fold the complete camera frame, including the paper behind the transparent
@@ -186,18 +192,37 @@ export async function unfoldNewspaper(page,outgoing){
  page.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>svg.querySelectorAll('[mask]').forEach(g=>g.removeAttribute('mask')));
  page.inert=true;
  if(reducedMotion()){outgoing?.remove();page.inert=false;return;}
- const motion={duration:820,easing:'cubic-bezier(.28,.72,.24,1)',fill:'both'};
- const incoming=page.animate([{transform:`translateY(${-innerHeight}px)`},{transform:'translateY(0)'}],motion);
- const departing=outgoing?.animate([{transform:'translateY(0)'},{transform:`translateY(${innerHeight}px)`}],motion);
- try{await Promise.all([incoming.finished,departing?.finished]);}catch{}finally{incoming.cancel();departing?.cancel();outgoing?.remove();page.inert=false;window.scrollTo({top:y,behavior:'instant'});}
+ const {root,pack,lower,half}=newspaperModel(page);
+ root.dataset.foldStage='return';
+ pack.style.transform=`translateY(${-half-32}px)`;
+ lower.style.transform='rotateX(180deg)';
+ outgoing?.remove();
+ try{
+  await pack.animate([{transform:`translateY(${-half-32}px)`},{transform:'translateY(0)'}],{duration:780,easing:'cubic-bezier(.28,.72,.24,1)',fill:'both'}).finished;
+  pack.style.transform='translateY(0)';
+  await lower.animate([{transform:'rotateX(180deg)'},{transform:'rotateX(0deg)'}],{duration:1050,easing:'cubic-bezier(.34,.05,.24,1)',fill:'both'}).finished;
+ }catch{}finally{
+  root.remove();ornaments.delete(root);page.style.visibility=foldedPage?.visibility??'';foldedPage=null;page.inert=false;window.scrollTo({top:y,behavior:'instant'});
+ }
 }
 
-export function enterChapter(page,view,{initial=false}={}){
+export function enterChapter(page,view,{initial=false,fromView=null}={}){
  const carry=signalCarry;signalCarry=null;
  stopChapterMotion();if(!page)return;
  const find=selector=>page.querySelector(selector),background=getComputedStyle(page).backgroundColor;
  if(reducedMotion()){page.inert=false;page.dispatchEvent(new Event('chapter:revealed'));return;}
  page.inert=true;enteringPage=page;
+ if(view==='home'||view==='letters'){
+  // The album closes onto the home palette. Keep its vignette and grain in
+  // place from the first frame so the background cannot darken after opening.
+  const arrivingClass=view==='home'&&fromView==='album'?null:view==='home'&&fromView==='letters'?'is-film-arriving':'is-background-arriving';
+  if(arrivingClass){
+   page.classList.add(arrivingClass);
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(enteringPage===page)page.classList.remove(arrivingClass);
+   }));
+  }
+ }
  if(view==='home'){
   paintHomeStamp(find('.scene-stamp.current'));
   page.querySelectorAll('.scene-stamp:not(.current)').forEach(card=>{
@@ -235,7 +260,7 @@ export function enterChapter(page,view,{initial=false}={}){
   [...page.querySelectorAll('.mailbox-entry')].filter(entry=>{const box=entry.getBoundingClientRect();return box.bottom>bounds.top&&box.top<bounds.bottom;})
    .forEach((entry,index)=>{
     paintStroke(entry.querySelector('.mailbox-ink-frame'),{delay:index*150,duration:1210,holder:page});
-    tween(entry.querySelector('.garden-botanical'),[{opacity:0},{opacity:1}],630,index*150);
+    paintStroke(entry.querySelector('.garden-botanical'),{delay:index*150,duration:1210,holder:page});
    });
   paintStroke(find('.mailbox-toolbar'),{delay:260,duration:1050,holder:page});
  }else if(view==='write-letter'){
@@ -258,25 +283,28 @@ export function enterChapter(page,view,{initial=false}={}){
 }
 export async function leaveChapter(page,view,{nextBackground,nextView}={}){
  stopChapterMotion();signalCarry=null;if(!page||reducedMotion())return;
+ const version=generation;
  retainCompleted=true;const find=selector=>page.querySelector(selector);
- if((nextView==='album'||view==='album')&&view!=='letters'){
+ if(nextView==='album'||view==='album'){
   // Enter through a soft standby tone; close directly onto the next chapter.
   const backing=nextView==='album'?signalBlank:nextBackground||getComputedStyle(page).backgroundColor;
   if(nextView==='album')signalCarry={bridge:backing};
   document.body.style.backgroundColor=backing;
   powerOff(page);
  }else{
-  if(view==='letters'&&nextView==='home'&&nextBackground){
-   // The mailbox paper and its tint leave on the exact color of the selected
-   // stamp. A generic green intermediate frame made the hand-off flash.
-   page.classList.add('is-background-bridging');page.style.transition='none';page.style.backgroundColor=nextBackground;
-  }else if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?950:340);
+  if((view==='home'||view==='letters')&&(nextView==='home'||nextView==='letters'))page.classList.add('is-background-bridging');
+  if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
   if(view==='home'){
    homeLetters(page,false,true);
+   // Retire the continuously transformed paper strips before masking the stamp.
+   // Otherwise mobile compositors can keep painting a stale strip after its card is hidden.
+   page.querySelectorAll('.scene-stamp > .stamp').forEach(stamp=>stamp.dispatchEvent(new Event('stamp:reset')));
    page.querySelectorAll('.scene-stamp').forEach(card=>{
     const p=Number(card.dataset.position);if(Math.abs(p)>1)return;
-    paintStroke(card,{opening:false,duration:p===0?1180:1040,holder:page});
-    paintStroke(card.querySelector(':scope>.stamp-shadow'),{opening:false,duration:p===0?520:430,holder:page});
+    // Side cards travel offscreen as their ink clears. The center stays put,
+    // so its brush pass must finish sooner to disappear in the same beat.
+    paintStroke(card,{opening:false,duration:p===0?620:1240,holder:page});
+    paintStroke(card.querySelector(':scope>.stamp-shadow'),{opening:false,duration:480,holder:page});
     if(p!==0){
      const box=card.getBoundingClientRect(),outside=p<0?innerHeight-box.top+40:-box.bottom-40;
      tween(card,[{translate:'0 0'},{translate:`0 ${outside}px`}],1240,0,'cubic-bezier(.45,0,.3,1)');
@@ -294,7 +322,9 @@ export async function leaveChapter(page,view,{nextBackground,nextView}={}){
     if(box.bottom<=top||box.top>=bottom){entry.style.visibility='hidden';return;}
     const delay=visibleIndex++*100;
     paintStroke(entry.querySelector('.mailbox-ink-frame'),{opening:false,delay,duration:900,holder:page});
-    tween(entry.querySelector('.garden-botanical'),[{opacity:1},{opacity:0}],300,delay);
+    // Clear the sprig before its paper edge, so no isolated leaves linger
+    // after the envelope has been painted away.
+    paintStroke(entry.querySelector('.garden-botanical'),{opening:false,delay,duration:610,holder:page});
    });
    paintStroke(find('.mailbox-toolbar'),{opening:false,duration:750,holder:page});
    const search=find('.mailbox-search');
@@ -302,5 +332,15 @@ export async function leaveChapter(page,view,{nextBackground,nextView}={}){
   }else tween(page,[{translate:'0 0',opacity:1},{translate:'0 -12px',opacity:0}],180);
  }
  await Promise.allSettled([...active].map(animation=>animation.finished));
+ if(version!==generation||!page.isConnected)return;
+ if(view==='home'){
+  // Retire the 3D paper layers while the erased page is still mounted.
+  // Chromium can otherwise composite one stale strip over the new room.
+  const previousVisibility=page.style.visibility;
+  page.style.visibility='hidden';
+  page.querySelectorAll('.scene-stamp > .stamp').forEach(stamp=>stamp.dispatchEvent(new Event('stamp:reset')));
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if(version!==generation&&page.isConnected)page.style.visibility=previousVisibility;
+ }
 }
 motionPreference.addEventListener('change',()=>{if(reducedMotion())active.forEach(animation=>{try{animation.finish();}catch{animation.cancel();}});});

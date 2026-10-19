@@ -22,6 +22,7 @@ export function renderAlbumDesk(plants,stamp,data){
 }
 export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  const root=document.querySelector('.album-desk');if(!root)return;
+ const compact=matchMedia('(max-width:799px), (pointer:coarse)');
  const controller=new AbortController(),signal=controller.signal,animations=new Set(),reveals=new Set(),program=root.querySelector('.tv-program'),shell=root.querySelector('.tv-program-shell'),dial=root.querySelector('.tv-dial-window'),track=root.querySelector('.tv-stations');
  let warpFrame=0;let operation=0,content=null,renderKey='',swipe=null,dialDrag=null,ignoreClick=0,tunerAnimation=null;
  const wrap=value=>(value%plants.length+plants.length)%plants.length;
@@ -59,6 +60,11 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   if(reduced())return;
   scope.querySelectorAll('[data-type]').forEach(element=>{
    if(element.dataset.typed==='true')return;element.dataset.typed='true';
+   if(compact.matches){
+    const delay=Number(element.dataset.typeDelay||0);
+    animate(element,[{opacity:0,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,delay:70+delay,easing:'ease-out'});
+    return;
+   }
    const text=element.textContent,svg=element.namespaceURI==='http://www.w3.org/2000/svg',delay=Number(element.dataset.typeDelay||0),children=[];
    if(svg)element.setAttribute('aria-label',text);
    else{const accessible=document.createElement('span');accessible.className='tv-accessible';accessible.textContent=text;children.push(accessible);}
@@ -137,6 +143,10 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  const clearMotion=()=>{reveals.forEach(finish=>finish());reveals.clear();animations.forEach(animation=>animation.cancel());animations.clear();};
  function stopWarp(){cancelAnimationFrame(warpFrame);warpFrame=0;root.querySelector('.tv-warp-map').setAttribute('scale','0');root.querySelectorAll('.is-signal-bending').forEach(element=>element.classList.remove('is-signal-bending'));}
  async function bendOut(targets){
+  if(compact.matches){
+   await Promise.all(targets.map(target=>animate(target,[{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-5px)'}],{duration:300,easing:'ease-in',hold:true}).finished));
+   return;
+  }
   targets.forEach(target=>target.classList.add('is-signal-bending'));const map=root.querySelector('.tv-warp-map'),started=performance.now();
   const tick=now=>{const t=Math.min(1,(now-started)/300);map.setAttribute('scale',String(Math.sin(Math.PI*t)*6));if(t<1)warpFrame=requestAnimationFrame(tick);};warpFrame=requestAnimationFrame(tick);
   await Promise.all(targets.map(target=>animate(target,[{opacity:1,transform:'skewX(0deg)'},{opacity:1,transform:'skewX(.65deg)',offset:.35},{opacity:1,transform:'skewX(-.4deg)',offset:.65},{opacity:1,transform:'skewX(-.3deg)',offset:.75},{opacity:0,transform:'skewX(0deg)'}],{duration:300,easing:'linear',hold:true}).finished));
@@ -151,15 +161,19 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
    await animate(next,[{opacity:.65,transform:'skewX(-.4deg)'},{opacity:1,transform:'skewX(.15deg)',offset:.45},{opacity:1,transform:'skewX(0deg)'}],{duration:300,easing:'ease-out'}).finished;
   }catch{}finally{if(version===operation&&!signal.aborted)root.classList.remove('is-tuning');}
  }
- function drawDial(base=selectedIndex(),shift=0){
-  track.innerHTML=Array.from({length:11},(_,i)=>{const offset=i-5,p=plants[wrap(base+offset)],active=offset===0;return `<button role="tab" ${active?`id="station-${p.id}"`:''} data-plant="${p.id}" data-offset="${offset}" aria-label="放映${p.name}" aria-controls="tv-plant-panel" aria-selected="${active}" tabindex="${active?0:-1}" ${Math.abs(offset)>4?'aria-hidden="true"':''} style="--station-offset:${offset}"><span class="station-number">${p.value}</span><span class="station-name">${p.name}</span></button>`;}).join('');
+ let drawnDialBase=null;
+ function drawDial(base=selectedIndex(),shift=0,force=false){
+  if(force||base!==drawnDialBase){
+   track.innerHTML=Array.from({length:11},(_,i)=>{const offset=i-5,p=plants[wrap(base+offset)],active=offset===0;return `<button role="tab" ${active?`id="station-${p.id}"`:''} data-plant="${p.id}" data-offset="${offset}" aria-label="放映${p.name}" aria-controls="tv-plant-panel" aria-selected="${active}" tabindex="${active?0:-1}" ${Math.abs(offset)>4?'aria-hidden="true"':''} style="--station-offset:${offset}"><span class="station-number">${p.value}</span><span class="station-name">${p.name}</span></button>`;}).join('');
+   drawnDialBase=base;
+  }
   track.style.translate=`${shift}px 0`;
  }
  const dialStep=()=>track.querySelector('button')?.getBoundingClientRect().width||90;
  function selectPlant(id,focus=false,fromShift=0,steps=null){
   const next=plants.findIndex(plant=>plant.id===id);if(next<0)return;
   const previous=selectedIndex();let delta=steps??next-previous;if(steps===null){const half=plants.length/2;if(delta>half)delta-=plants.length;if(delta<-half)delta+=plants.length;}
-  chosenId=id;film=0;tunerAnimation?.cancel();drawDial();
+  chosenId=id;film=0;tunerAnimation?.cancel();drawDial(selectedIndex(),0,true);
   if(!reduced()&&delta!==0)tunerAnimation=track.animate([{translate:`${fromShift+delta*dialStep()}px 0`},{translate:'0px 0'}],{duration:460,easing:'cubic-bezier(.16,.8,.2,1)'});
   if(focus)track.querySelector('[aria-selected="true"]')?.focus({preventScroll:true});switchProgram();
  }

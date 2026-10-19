@@ -2,19 +2,20 @@
 // artwork and live typography are reused, so no screenshot texture is needed.
 export function mountPaperSurface(stamp,card){
   const scene=card.closest('.home-scene'),motion=matchMedia('(prefers-reduced-motion: reduce)'),compact=matchMedia('(max-width: 799px)');
-  const stripCount=()=>compact.matches?10:16;
-  let surface=null,strips=[],frame=0,epoch=0,width=stamp.offsetWidth,disposed=false,held=false;
+  const stripCount=()=>compact.matches?8:16;
+  let surface=null,strips=[],frame=0,epoch=0,width=stamp.offsetWidth,disposed=false,held=false,lastFlat=false,lastPaint=0;
   const stock=getComputedStyle(stamp.querySelector('.stamp-inner'),'::after'),grain=document.createElement('div');
   grain.className='stamp-grain-overlay';grain.setAttribute('aria-hidden','true');grain.inert=true;
   Object.assign(grain.style,{backgroundImage:stock.backgroundImage,backgroundSize:stock.backgroundSize,opacity:'.4',mixBlendMode:stock.mixBlendMode});
-  // Keep one texture layer in both flat and folded states, avoiding a colour jump
-  // when a stamp becomes current or leaves the centre.
+  // The flat stamp keeps its texture while parked. The moving strips carry
+  // their own aligned copies so the grain bends with the printed paper.
   stamp.append(grain);
   const backing=document.createElement('div');backing.className='stamp-paper-backing';backing.setAttribute('aria-hidden','true');backing.inert=true;
-  backing.append(stamp.querySelector(':scope > .stamp-teeth').cloneNode(true),document.createElement('div'));
-  backing.lastElementChild.className='stamp-inner';
+  backing.append(stamp.querySelector(':scope > .stamp-teeth').cloneNode(true));
   const smooth=t=>t*t*(3-2*t);
   function draw(progress=null){
+    if(progress===null&&lastFlat)return;
+    lastFlat=progress===null;
     const spread=.22,crest=progress===null?0:1.45-1.9*progress;
     const height=progress===null?0:width*.115*Math.sin(Math.PI*progress)**.45;
     const count=strips.length;
@@ -25,6 +26,8 @@ export function mountPaperSurface(stamp,card){
   }
   function tick(now){
     frame=0;if(!surface||disposed||held)return;
+    if(compact.matches&&now-lastPaint<32){frame=requestAnimationFrame(tick);return;}
+    lastPaint=now;
     const paused=document.hidden||scene.matches('.is-switching,.is-dragging')||card.classList.contains('is-stamp-pressed');
     if(paused)epoch=now;
     const t=((now-epoch)%7200)/7200;
@@ -32,7 +35,7 @@ export function mountPaperSurface(stamp,card){
     draw(progress);frame=requestAnimationFrame(tick);
   }
   function flatten(){
-    cancelAnimationFrame(frame);frame=0;surface?.remove();backing.remove();surface=null;strips=[];stamp.classList.remove('has-paper-surface');
+    cancelAnimationFrame(frame);frame=0;surface?.remove();backing.remove();surface=null;strips=[];lastFlat=false;stamp.classList.remove('has-paper-surface');
   }
   function sync(){
     if(disposed||motion.matches||!card.classList.contains('current')){flatten();return;}
@@ -43,11 +46,10 @@ export function mountPaperSurface(stamp,card){
     for(let i=0;i<count;i++){
       const strip=document.createElement('div');strip.className='paper-strip';strip.style.left=`${i/count*100}%`;strip.style.width=`calc(${100/count}% + 1.6px)`;
       const print=stamp.cloneNode(true);print.className='stamp paper-print';print.dataset.motionReady='true';print.style.left=`${-i/count*width}px`;
-      print.querySelector('.stamp-grain-overlay')?.remove();
       print.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
       strip.append(print);surface.append(strip);strips.push(strip);
     }
-    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();draw();if(!held)frame=requestAnimationFrame(tick);
+    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held)frame=requestAnimationFrame(tick);
   }
   function hold(){if(disposed)return;held=true;sync();cancelAnimationFrame(frame);frame=0;draw();}
   function resume(){if(disposed)return;held=false;sync();epoch=performance.now();draw();if(surface&&!frame)frame=requestAnimationFrame(tick);}

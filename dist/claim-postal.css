@@ -276,3 +276,26 @@
 .is-ticket-detached .claim-ticket-close svg path:last-child{animation:ticket-cross-stroke .26s cubic-bezier(.3,.15,.2,1) .39s forwards}
 @keyframes ticket-cross-stroke{to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){.is-ticket-detached .claim-ticket-close svg path{animation:none;stroke-dashoffset:0}}
+
+/* Let the existing width of the receipt fit inside the photographic slot. */
+.claim-machine,.claim-output-lip{left:-2.5%;right:auto;width:105%}
+.claim-machine-art{clip-path:inset(8% 0 0)}
+.claim-output-lip::before{background-image:url('./assets/vintage-receipt-printer-neutral.png');clip-path:inset(8% 0 35% 0)}
+.claim-dispenser{--feed-start:calc(var(--machine-height)*.61)}
+.claim-machine-status{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
+.claim-machine-close{top:19%;right:8%;width:32px;height:32px;padding:6px;border:0;border-radius:50%;background:transparent;color:#5b5045}
+.claim-machine-close svg path{stroke-width:1.8}
+.claim-machine-close:hover{background:#8b79621c}
+.claim-flow .suitability,.claim-flow .suitability.warn{border-left:0;padding-left:0;background:none}
+.claim-flow .claim-method.selected,.claim-flow .claim-method{padding:17px 20px;transition:border-color .28s ease,background-color .28s ease}
+.claim-flow .claim-method-mark{display:block;right:16px;bottom:14px;opacity:0;transform:translateY(5px) rotate(-6deg);transition:opacity .24s ease,transform .3s ease;pointer-events:none}
+.claim-flow .claim-method.selected .claim-method-mark{opacity:1;transform:translateY(0) rotate(-6deg)}
+.claim-flow .claim-method-copy{padding-right:58px}
+.claim-flow .claim-method.is-unavailable .claim-method-mark{display:none}
+.claim-flow .suitability[data-note-switching]{pointer-events:none}
+.claim-signature-seal{position:relative!important;left:auto!important;top:auto!important;display:grid;gap:2px;width:max-content;max-width:100%;margin:16px 0 7px auto;padding:9px 19px 8px;border:2px solid var(--claim-red);outline:1px solid var(--claim-red);outline-offset:-6px;background:transparent;box-shadow:none;transform:rotate(-6deg);text-align:center;letter-spacing:.08em}
+.claim-signature-seal span{font:600 9px/1.35 var(--sans);letter-spacing:.22em}
+.claim-signature-seal strong{font:800 22px/1.2 var(--serif);letter-spacing:.08em}
+.claim-signature-seal small{font:600 8px/1.2 var(--sans);letter-spacing:.13em}
+.page.claim-flow.claim-dispatch.is-ticket-detached{padding-top:calc(var(--nav-edge) + 20px)!important}
+@media(max-width:799px){.claim-flow .claim-method.selected,.claim-flow .claim-method{padding:18px 13px}.claim-flow .claim-method-copy{padding-right:45px}.claim-machine-close{width:30px;height:30px;right:8%}}
