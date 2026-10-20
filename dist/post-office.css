@@ -131,3 +131,8 @@ body[data-view='write-letter'] nav.main-nav{color:#426353}
 @media(max-width:380px){.page.office-compose{padding-inline:12px!important}.office-compose .office-writing-paper{padding:23px 18px 20px}.office-compose .office-writing-intro strong{font-size:25px}.office-compose .office-writing-selects{gap:9px}.office-compose .office-writing-selects select{font-size:16px}.office-compose .office-writing-paper input[type='text']{font-size:18px}.office-compose .office-writing-paper textarea{font-size:16px}.office-compose .office-send{padding:8px 10px}}
 @media(max-height:920px){.office-compose .office-writing-paper{height:auto;min-height:0}.office-compose .office-writing-paper textarea{flex:none;height:220px}}
 
+/* The writing sheet travels over the unchanged mailbox when opened there. */
+#app>.letter-mailbox.is-compose-underlay{position:fixed;inset:0;z-index:0;pointer-events:none}
+#app>.office-compose.is-over-mailbox{position:relative;z-index:1;background:transparent}
+#app>.office-compose.is-over-mailbox::before{display:none}
+

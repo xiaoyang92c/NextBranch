@@ -85,6 +85,8 @@
 .archive-mesh,.archive-window{opacity:.55;stroke-width:1}.archive-soil-grains{opacity:.45;stroke-width:1}
 .archive-section-wall{stroke-width:1.2}.archive-point-guide{stroke-width:1.4}.archive-node-mark{animation:archive-node-ink 4s ease-in-out infinite}
 .stamp-return .branch-flight-plant{z-index:3}
+.branch-flight.stamp-return{z-index:60}
+.branch-flight.stamp-return-plant{z-index:80}
 @media(prefers-reduced-motion:reduce){.archive-light-ray,.archive-water-route,.archive-node-mark{animation:none}}
 @media(min-width:361px) and (max-width:799px){.archive-care-note,.archive-care-note:first-child,.archive-care-note:last-child{grid-template-columns:130px minmax(0,1fr);gap:18px}}
 .archive-care-diagram{stroke-width:1.8}

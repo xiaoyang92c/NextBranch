@@ -12,7 +12,7 @@ const P = Object.fromEntries(plants.map(x=>[x.id,x]));
 const initial = {saved:['podocarpus','osmanthus'],claims:[{id:'DEMO-2026-01',plantId:'crape',nick:'演示访客',place:'阳台',light:'充足日照',form:'已生根幼苗',status:'claimed',date:'2026.08.18',demo:true}],postcards:[{id:'demo-post',plantId:'crape',date:'2026.09.03',status:'抽出新芽',text:'第十七天，枝条顶端有了小小的绿点。先继续耐心等根。',photo:'',demo:true}],letters:[],unread:true};
 const DATA_KEY='next-branch-demo-v2';
 const load=()=>{try{const x=JSON.parse(localStorage.getItem(DATA_KEY)||localStorage.getItem('next-branch-demo'));if(!x||!Array.isArray(x.claims))return structuredClone(initial);const known=id=>Boolean(P[id]);return {...structuredClone(initial),...x,saved:(x.saved||[]).filter(known),claims:x.claims.filter(c=>known(c.plantId)),postcards:(x.postcards||[]).filter(c=>known(c.plantId)),letters:(x.letters||[]).filter(c=>known(c.plantId))};}catch{return structuredClone(initial)}};
-let data=load(),openLetterId=null,originView='home',recordForm={status:'抽出新芽',text:'',photo:''},letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:''};
+let data=load(),openLetterId=null,originView='home',recordForm={status:'抽出新芽',text:'',photo:''},letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:''},mailboxComposeState=null;
 const app=document.querySelector('#app');
 const persist=()=>localStorage.setItem(DATA_KEY,JSON.stringify(data));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -164,6 +164,28 @@ window.addEventListener('hashchange',async()=>{
     }finally{outgoing.remove();}
     return;
   }
+  if(previous==='letters'&&next==='write-letter'&&currentPage?.classList.contains('letter-mailbox')){
+    // Keep the exact mailbox pose behind the sheet. Writing is a paper slide,
+    // not a chapter exit followed by a second mailbox entrance.
+    const mailboxScroll=currentPage.querySelector('.mailbox-well')?.scrollTop||0;
+    const mailboxQuery=currentPage.querySelector('.mailbox-query input')?.value||'';
+    mailboxComposeState={scroll:mailboxScroll,query:mailboxQuery,plant:currentPage.querySelector('[data-mail-plant][aria-pressed="true"]')?.dataset.mailPlant||'',status:currentPage.querySelector('[data-mail-filter][aria-pressed="true"]')?.dataset.mailFilter||'',searchOpen:currentPage.querySelector('.mailbox-find')?.getAttribute('aria-expanded')==='true'};
+    const underlay=currentPage.cloneNode(true);
+    underlay.classList.add('is-compose-underlay');
+    underlay.setAttribute('aria-hidden','true');
+    underlay.inert=true;
+    document.querySelector('#letter-overlay')?.remove();
+    render();
+    const compose=app.querySelector('.office-compose');
+    compose.classList.add('is-over-mailbox');
+    app.append(underlay);
+    underlay.querySelector('.mailbox-well').scrollTop=mailboxScroll;
+    underlay.querySelector('.mailbox-query input').value=mailboxQuery;
+    document.body.style.backgroundColor='#f1f3eb';
+    window.scrollTo({top:0,behavior:'instant'});
+    enterChapter(compose,'write-letter',{fromView:'letters'});
+    return;
+  }
   document.querySelector('#letter-overlay')?.remove();if(!(previous==='home'&&next==='letters'))cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
   if(previous==='detail'&&next==='home'&&!viaStamp){
     const paper=app.querySelector('.archive-page'),plant=P[paper?.dataset.plant];
@@ -186,7 +208,18 @@ window.addEventListener('hashchange',async()=>{
   if(version!==routeVersion)return;
   if(next==='claim')window.scrollTo({top:0,behavior:'instant'});
   render();window.scrollTo({top:0,behavior:'instant'});
-  if(previous!==next&&!viaStamp)enterChapter(app.querySelector('main'),next,{fromView:previous});
+  const closingCompose=previous==='write-letter'&&next==='letters'&&!hashParts()[1];
+  if(closingCompose&&mailboxComposeState){
+    const state=mailboxComposeState,mailbox=app.querySelector('.letter-mailbox');
+    const query=mailbox.querySelector('.mailbox-query input');
+    if(state.query){query.value=state.query;query.dispatchEvent(new Event('input',{bubbles:true}));}
+    if(state.plant)mailbox.querySelector(`[data-mail-plant="${state.plant}"]`)?.click();
+    if(state.status)mailbox.querySelector(`[data-mail-filter="${state.status}"]`)?.click();
+    mailbox.querySelector('.mailbox-well').scrollTop=state.scroll;
+    if(state.searchOpen){mailbox.querySelector('.mailbox-find').click();mailbox.querySelector('.mailbox-search').getAnimations().forEach(animation=>animation.finish());}
+    mailboxComposeState=null;
+  }else if(previous==='write-letter')mailboxComposeState=null;
+  if(previous!==next&&!viaStamp)enterChapter(app.querySelector('main'),next,{fromView:previous==='write-letter'&&!closingCompose?null:previous});
 });
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){cancelArchiveEntry();document.querySelector('#letter-overlay')?.remove()}});
 render();enterChapter(app.querySelector('main'),hashParts()[0],{initial:true});

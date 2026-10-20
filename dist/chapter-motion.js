@@ -137,12 +137,8 @@ export function rememberArchivePosition(page){
 }
 function newspaperReverse(page,half){
  const plant=plants.find(plant=>plant.id===page.dataset.plant),reverse=document.createElement('article');reverse.className='news-fold-reverse';reverse.style.setProperty('--reverse-height',`${half}px`);
- reverse.innerHTML=`<header class="news-reverse-masthead"><strong>农科枝报</strong><span>枝条档案 · ${plant.no}</span></header><div class="news-reverse-specimen"><figure><img src="./assets/${plant.art}" alt=""><figcaption>植物图版 · ${plant.value}</figcaption></figure><div><span class="news-reverse-kicker">THE NEXT BRANCH / FIELD NOTE</span><h2>${plant.name}</h2><p>${plant.latin}</p></div></div><div class="news-reverse-notes">${['光照','浇水','安家'].map((label,index)=>`<section><b>0${index+1}</b><p>${label}<br>${quickReverse(plant,index)}</p></section>`).join('')}</div><footer><span>修剪之后，继续生长</span><span>下一枝 · 枝条再生驿站</span></footer>`;
+ reverse.innerHTML=`<div class="news-reverse-vignette"><span class="news-reverse-top-rule" aria-hidden="true"></span><img src="./assets/${plant.art}" alt=""><span class="news-reverse-divider" aria-hidden="true"></span><p>${plant.name} · 给下一枝一个位置</p><span class="news-reverse-bottom-rule" aria-hidden="true"></span></div>`;
  return reverse;
-}
-function quickReverse(plant,index){
- const care={podocarpus:['柔和见光','见干补水','先稳根系'],osmanthus:['柔光缓苗','保持微湿','耐心等根'],camellia:['避开暴晒','排水通畅','固定枝段']};
- return (care[plant.id]||['循序见光','留意排水','安放新枝'])[index];
 }
 function newspaperModel(page){
  // Fold the complete camera frame, including the paper behind the transparent
@@ -211,6 +207,11 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
  stopChapterMotion();if(!page)return;
  const find=selector=>page.querySelector(selector),background=getComputedStyle(page).backgroundColor;
  if(reducedMotion()){page.inert=false;page.dispatchEvent(new Event('chapter:revealed'));return;}
+ if(view==='letters'&&fromView==='write-letter'){
+  page.inert=false;
+  page.dispatchEvent(new Event('chapter:revealed'));
+  return;
+ }
  page.inert=true;enteringPage=page;
  if(view==='home'||view==='letters'){
   // The album closes onto the home palette. Keep its vignette and grain in
@@ -262,11 +263,10 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
     paintStroke(entry.querySelector('.mailbox-ink-frame'),{delay:index*150,duration:1210,holder:page});
     paintStroke(entry.querySelector('.garden-botanical'),{delay:index*150,duration:1210,holder:page});
    });
-  paintStroke(find('.mailbox-toolbar'),{delay:260,duration:1050,holder:page});
+  const toolbar=find('.mailbox-toolbar'),distance=toolbar&&innerHeight-toolbar.getBoundingClientRect().top+24;
+  if(toolbar)tween(toolbar,[{translate:`0 ${distance}px`},{translate:'0 0'}],760,170,'cubic-bezier(.18,.76,.22,1)');
  }else if(view==='write-letter'){
   tween(find('.office-writing-paper'),[{translate:`0 ${innerHeight+24}px`},{translate:'0 0'}],920,0,'cubic-bezier(.18,.76,.22,1)');
-  const lines=page.querySelectorAll('.office-writing-kicker,.office-writing-intro strong,.office-writing-heading small,.office-writing-postage,.office-writing-selects,.office-writing-label,#office-letter-title,#office-letter-text,.office-writing-sign,.office-writing-bottom');
-  lines.forEach((line,index)=>tween(line,[{opacity:0,translate:'0 12px',clipPath:'inset(0 0 100% 0)'},{opacity:1,translate:'0 0',clipPath:'inset(0 0 0% 0)'}],440,300+index*76,'cubic-bezier(.2,.7,.24,1)'));
  }else{
   tween(page,[{translate:'0 16px',opacity:.3},{translate:'0 0',opacity:1}],360);
  }
@@ -290,10 +290,16 @@ export async function leaveChapter(page,view,{nextBackground,nextView}={}){
   const backing=nextView==='album'?signalBlank:nextBackground||getComputedStyle(page).backgroundColor;
   if(nextView==='album')signalCarry={bridge:backing};
   document.body.style.backgroundColor=backing;
+  if(view==='letters'){
+   const toolbar=find('.mailbox-toolbar');
+   if(toolbar)tween(toolbar,[{translate:'0 0'},{translate:`0 ${innerHeight-toolbar.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
+   const search=find('.mailbox-search');
+   if(search&&!search.hidden)tween(search,[{translate:'0 0'},{translate:`0 ${innerHeight-search.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
+  }
   powerOff(page);
  }else{
   if((view==='home'||view==='letters')&&(nextView==='home'||nextView==='letters'))page.classList.add('is-background-bridging');
-  if(nextBackground&&!(view==='detail'&&nextView==='claim'))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
+  if(nextBackground&&!(view==='detail'&&nextView==='claim')&&!(view==='write-letter'&&nextView==='letters'&&page.classList.contains('is-over-mailbox')))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
   if(view==='home'){
    homeLetters(page,false,true);
    // Retire the continuously transformed paper strips before masking the stamp.
@@ -326,9 +332,10 @@ export async function leaveChapter(page,view,{nextBackground,nextView}={}){
     // after the envelope has been painted away.
     paintStroke(entry.querySelector('.garden-botanical'),{opening:false,delay,duration:610,holder:page});
    });
-   paintStroke(find('.mailbox-toolbar'),{opening:false,duration:750,holder:page});
+   const toolbar=find('.mailbox-toolbar'),distance=toolbar&&innerHeight-toolbar.getBoundingClientRect().top+24;
+   if(toolbar)tween(toolbar,[{translate:'0 0'},{translate:`0 ${distance}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
    const search=find('.mailbox-search');
-   if(search&&!search.hidden)paintStroke(search,{opening:false,duration:750,holder:page});
+   if(search&&!search.hidden)tween(search,[{translate:'0 0'},{translate:`0 ${innerHeight-search.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
   }else tween(page,[{translate:'0 0',opacity:1},{translate:'0 -12px',opacity:0}],180);
  }
  await Promise.allSettled([...active].map(animation=>animation.finished));

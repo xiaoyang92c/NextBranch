@@ -32,22 +32,22 @@ export function mountClaimPress(page,entrance='feed'){
   return new Promise((resolve,reject)=>{scrollReject=reject;const from=window.scrollY,start=performance.now();function tick(now){if(controller.signal.aborted){reject(new Error('Press closed'));return;}const t=Math.min(1,(now-start)/520),p=1-(1-t)**3;window.scrollTo({top:from*(1-p),behavior:'instant'});if(t<1)scrollFrame=requestAnimationFrame(tick);else{scrollFrame=0;scrollReject=null;resolve();}}scrollFrame=requestAnimationFrame(tick);});
  }
  async function detach(){
-  setState('tear');page.classList.add('is-tearing');const padding=parseFloat(getComputedStyle(dispenser).paddingTop);sheet.inert=true;
+  setState('tear');page.classList.add('is-tearing');const padding=parseFloat(getComputedStyle(dispenser).paddingTop),restingPadding=40;sheet.inert=true;
   // Cut the actual paper edge before it leaves the printer. No scene-coloured
   // overlay is needed, so the machine remains visible through the teeth.
   const teeth=Array.from({length:41},(_,i)=>`${i*2.5}% ${i%2?8:0}px`).join(',');
   sheet.style.clipPath=`polygon(${teeth},100% 100%,0 100%)`;
-  // The ticket and press separate in one continuous movement. The padding
-  // collapse below preserves the feed's final screen position exactly.
-  const away=offscreen();await Promise.all([move(machine,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(lip,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(feed,[{translate:'0 0'},{translate:`0 ${-padding}px`}],900)]);if(leaving)return;
-  machine.style.visibility='hidden';lip.style.visibility='hidden';page.classList.add('is-ticket-detached');page.classList.remove('is-tearing');feed.style.translate='0 0';detached=true;
+  // Shrink the feed gap while the press leaves. The paper itself follows one
+  // continuous path to its resting place, clear of the chapter navigation.
+  const away=offscreen();await Promise.all([move(machine,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(lip,[{translate:'0 0'},{translate:`0 ${away}px`}],900),move(dispenser,[{paddingTop:`${padding}px`},{paddingTop:`${restingPadding}px`}],900)]);if(leaving)return;
+  machine.style.visibility='hidden';lip.style.visibility='hidden';page.classList.add('is-ticket-detached');page.classList.remove('is-tearing');dispenser.style.paddingTop='';detached=true;
   finish();
  }
  async function redock(){
-  if(!detached)return;ready=false;sheet.inert=true;setState('redock');const padding=parseFloat(getComputedStyle(dispenser).getPropertyValue('--feed-start'));
-  dispenser.style.paddingTop=`${padding}px`;feed.style.translate=`0 ${-padding}px`;page.classList.remove('is-ticket-detached');
+  if(!detached)return;ready=false;sheet.inert=true;setState('redock');const restingPadding=parseFloat(getComputedStyle(dispenser).paddingTop);
+  page.classList.remove('is-ticket-detached');const padding=parseFloat(getComputedStyle(dispenser).paddingTop);dispenser.style.paddingTop=`${restingPadding}px`;
   const away=offscreen();machine.style.translate=`0 ${away}px`;lip.style.translate=`0 ${away}px`;machine.style.visibility='visible';lip.style.visibility='visible';
-  await Promise.all([move(feed,[{translate:`0 ${-padding}px`},{translate:'0 0'}],860),move(machine,[{translate:`0 ${away}px`},{translate:'0 0'}],860),move(lip,[{translate:`0 ${away}px`},{translate:'0 0'}],860)]);
+  await Promise.all([move(dispenser,[{paddingTop:`${restingPadding}px`},{paddingTop:`${padding}px`}],860),move(machine,[{translate:`0 ${away}px`},{translate:'0 0'}],860),move(lip,[{translate:`0 ${away}px`},{translate:'0 0'}],860)]);
   dispenser.style.paddingTop='';detached=false;
  }
  refresh();

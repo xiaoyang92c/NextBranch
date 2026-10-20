@@ -34,8 +34,8 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
   let restingBox=sheet.getBoundingClientRect();
   const foldBox=origin?.paper;
   const panelHeight=fromEnvelope?parseFloat(sheet.style.getPropertyValue('--postal-top-height')):restingBox.height/3;
-  const clipMotion=async(element,from,to,duration)=>{
-    const animation=element.animate([{clipPath:from},{clipPath:to}],{duration,easing:'cubic-bezier(.25,.65,.24,1)',fill:'both'});
+  const clipMotion=async(element,from,mid,to,duration)=>{
+    const animation=element.animate([{clipPath:from,offset:0},{clipPath:mid,offset:.52},{clipPath:to,offset:1}],{duration,easing:'cubic-bezier(.25,.65,.24,1)',fill:'both'});
     await animation.finished;element.style.clipPath=to;animation.cancel();
   };
   function makeFoldProxy(folded){
@@ -45,9 +45,10 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
     print.querySelectorAll('button,textarea').forEach(node=>{node.tabIndex=-1;node.disabled=true;});
     Object.assign(print.style,{position:'absolute',left:'0',top:'0',width:`${restingBox.width}px`,height:`${restingBox.height}px`,margin:'0',visibility:'visible',opacity:'1'});
     const topHeight=sheet.querySelector('.postal-reader-topfold')?.getBoundingClientRect().height||panelHeight;
-    const foldedClip=`inset(0 0 ${Math.max(0,restingBox.height-topHeight)}px 0)`;
+    const clipAt=(edge,bow=0)=>`polygon(0 0,100% 0,100% ${edge}px,83% ${edge+bow*.45}px,67% ${edge+bow*.85}px,50% ${edge+bow}px,33% ${edge+bow*.85}px,17% ${edge+bow*.45}px,0 ${edge}px)`;
+    const foldedClip=clipAt(topHeight),midClip=clipAt(topHeight+(restingBox.height-topHeight)*.52,14),fullClip=clipAt(restingBox.height);
     Object.assign(stage.style,{left:`${restingBox.left}px`,top:`${restingBox.top}px`,width:`${restingBox.width}px`,height:`${restingBox.height}px`,clipPath:folded?foldedClip:'inset(0 0 0 0)'});
-    stage.append(print);overlay.append(stage);return {stage,foldedClip};
+    stage.append(print);overlay.append(stage);return {stage,foldedClip,midClip,fullClip};
   }
   function paint(){
     const current=getLatest();if(!current)return;
@@ -86,7 +87,7 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
     if(!reduced()&&foldBox)try{
       restingBox=sheet.getBoundingClientRect();foldProxy=makeFoldProxy(false);sheet.style.visibility='hidden';sheet.style.opacity='0';
       const proxy=foldProxy;
-      await clipMotion(proxy.stage,'inset(0 0 0 0)',proxy.foldedClip,650);
+      await clipMotion(proxy.stage,proxy.fullClip,proxy.midClip,proxy.foldedClip,650);
       origin?.revealPaper?.();proxy.stage.remove();foldProxy=null;
       await origin.returnPaper?.();paperReturned=true;
     }catch{if(!paperReturned)try{await origin.returnPaper?.();}catch{}}
@@ -124,7 +125,7 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
       const proxy=foldProxy;
       await new Promise(resolve=>setTimeout(resolve,130));
       overlay.style.transition='background-color .55s ease';overlay.style.background='';
-      await clipMotion(proxy.stage,proxy.foldedClip,'inset(0 0 0 0)',760);
+      await clipMotion(proxy.stage,proxy.foldedClip,proxy.midClip,proxy.fullClip,760);
       sheet.style.visibility='';sheet.style.opacity='';proxy.stage.remove();foldProxy=null;if(!closing)sheet.focus({preventScroll:true});
     })().catch(()=>{sheet.style.visibility='';sheet.style.opacity='';foldProxy?.stage.remove();foldProxy=null;overlay.style.background='';});
     onResize=()=>{openingAnimation.then(()=>{if(!closing&&overlay.isConnected)restingBox=sheet.getBoundingClientRect();}).catch(()=>{});};

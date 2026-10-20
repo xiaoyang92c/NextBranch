@@ -42,6 +42,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .letter-mailbox.is-reading .mailbox-well,.letter-mailbox.is-reading .mailbox-toolbar{pointer-events:none}.letter-mailbox.is-searching .mailbox-stack{pointer-events:none}
 .mailbox-empty{position:absolute;inset:15% 5% 20%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}.mailbox-empty p{font:500 23px var(--serif)}.mailbox-empty button{border:0;border-bottom:1px solid currentColor;padding:10px 0;background:none;color:inherit;font-size:16px}
 .mail-opening-stage{position:fixed;z-index:114;pointer-events:none;color:#426353;--sans:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif;--serif:'Songti SC','Noto Serif SC',Georgia,serif}
+.mail-opening-stage .garden-letter>:not(.garden-letter-paper){visibility:hidden}
 .mail-opening-stage.is-flower-right .garden-botanical{left:auto;right:-8%;width:62%}
 .mail-opening-stage .garden-letter-paper{translate:0 0;transition:none}
 @media(min-width:800px){.mailbox-stack{padding-top:140px;gap:76px}.mailbox-entry{width:390px}.mailbox-toolbar{bottom:25px}.mailbox-search{bottom:93px;left:auto;right:calc((100% - min(650px,100% - 36px))/2)}}
@@ -170,3 +171,18 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-reader .postal-reply-form{margin:10px 12px 8px}
 .mailbox-reader .has-envelope-topfold .letter-close{top:24px;right:27px;width:28px;height:28px;padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;color:#756b5d;font:300 25px/1 var(--letter-face);opacity:.82;transition:opacity .2s,transform .2s}
 .mailbox-reader .has-envelope-topfold .letter-close:hover{opacity:1;transform:rotate(90deg)}
+
+/* An unaddressed search reads like a small piece of stationery, not an error. */
+.mailbox-empty{gap:0;text-align:center;color:#426353}
+.mailbox-empty-kicker{font:500 11px/1.5 var(--sans);letter-spacing:.18em;color:#718674}
+.mailbox-empty-mark{position:relative;display:block;width:56px;height:68px;margin:20px 0 24px;border:1px solid #9eaf9c;background:#f9faf3;box-shadow:4px 5px 0 #c6d3c316;transform:rotate(-7deg)}
+.mailbox-empty-mark::before{content:'下一枝';position:absolute;top:10px;left:9px;font:500 10px/1.2 var(--letter-face);letter-spacing:.08em}
+.mailbox-empty-mark::after{content:'';position:absolute;left:8px;right:8px;bottom:9px;height:26px;border:1px solid #9eaf9c;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.mailbox-empty-mark i{position:absolute;left:10px;right:10px;bottom:22px;height:1px;background:#9eaf9c;transform:rotate(-24deg)}
+.mailbox-empty h2{margin:0;font:500 clamp(26px,6vw,34px)/1.35 var(--letter-face);letter-spacing:.04em}
+.mailbox-empty p{margin:12px 0 0;font:400 15px/1.8 var(--letter-face);color:#708274}
+.mailbox-empty-actions{display:grid;gap:9px;width:min(240px,100%);margin-top:28px}
+.mailbox-empty-actions button{display:flex;align-items:center;justify-content:space-between;min-height:43px;padding:8px 12px;border:1px solid #a9baaa;background:transparent;color:#426353;font:500 14px/1.5 var(--letter-face);text-align:left}
+.mailbox-empty-actions button:first-child{background:#e4ebe1;border-color:#d5e0d2}
+.mailbox-empty-actions button span{font-size:18px;line-height:1}
+@media(max-height:680px){.mailbox-empty-mark{margin:12px 0 16px}.mailbox-empty-actions{margin-top:17px}.mailbox-empty p{margin-top:7px}}

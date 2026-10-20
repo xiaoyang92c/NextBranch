@@ -81,7 +81,7 @@ function makeGlyphs(element){
  element.replaceChildren(accessible,ink);element.classList.add('archive-ink-ready');
 }
 export function mountArchive(){
- const root=document.querySelector('.archive-page');if(!root)return;
+ const root=document.querySelector('#app .archive-page');if(!root)return;
   const controller=new AbortController(),animations=new Set(),timers=new Set();let observer;
   const textSelectors='[data-archive-reveal],.archive-back,.archive-topline>span,.archive-masthead>span,.archive-masthead>h2,.archive-dateline>span,.archive-specimen figcaption>span,.archive-plate-seal,.archive-briefs span,.archive-section-title>span,.archive-care-note figcaption,.archive-journey li>span,.archive-news>h3,.archive-news time,.archive-receive .archive-section-label,.archive-pickup span,.archive-pickup strong,.archive-accept-label,.archive-accept-arrow';
   const textElements=[...root.querySelectorAll(textSelectors)];
@@ -130,7 +130,7 @@ export function mountArchive(){
 }
 export function cancelArchiveEntry(keepId=null){
  if(!arrival||(!arrival.returning&&arrival.plantId===keepId))return;
- const state=arrival;arrival=null;state.cancelled=true;state.stopLiquid?.();state.animations.forEach(animation=>animation.cancel());state.overlay.remove();
+ const state=arrival;arrival=null;state.cancelled=true;state.stopLiquid?.();state.stopLens?.();state.animations.forEach(animation=>animation.cancel());state.overlay.remove();state.flightOverlay?.remove();
   if(state.source?.isConnected){state.source.style.visibility=state.visibility;state.source.classList.remove('is-portal-source','is-portal-print-hidden');if(state.original){state.original.style.transition=state.sourceTransition;state.original.classList.remove('is-portal-flat-print');}}
  if(state.sourcePage?.isConnected)state.sourcePage.inert=false;
  if(state.source?.isConnected)state.pausedFloat?.forEach(a=>{if(a.playState==='paused')a.play();});
@@ -222,16 +222,19 @@ export async function returnArchive(plant,renderDestination){
  if(!image?.naturalWidth){renderDestination();return;}
  const from=fittedImage(image),fromFilter=getComputedStyle(image).filter;
  const overlay=document.createElement('div');overlay.className='branch-flight stamp-return';
+ const flightOverlay=document.createElement('div');flightOverlay.className='branch-flight stamp-return-plant';
  const flight=document.createElement('img');flight.className='branch-flight-plant';
  flight.src=image.currentSrc||image.src;flight.alt='';
  Object.assign(flight.style,{left:from.left+'px',top:from.top+'px',width:from.width+'px',height:from.height+'px',filter:fromFilter});
- overlay.append(flight);document.body.append(overlay);
- const state={plantId:plant.id,returning:true,overlay,animations:new Set(),cancelled:false,sourcePage:page};
+ flightOverlay.append(flight);document.body.append(overlay,flightOverlay);
+ const state={plantId:plant.id,returning:true,overlay,flightOverlay,animations:new Set(),cancelled:false,sourcePage:page};
  arrival=state;page.inert=true;
  const originalVisibility=image.style.visibility;image.style.visibility='hidden';
  let rendered=false,destination,home,lens,lensScale,floats=[],restored=false;
- const animate=(element,frames,duration,delay=0)=>{
-  const motion=element.animate(frames,{duration,delay,easing:'cubic-bezier(.25,.7,.2,1)',fill:'both'});
+ // These control points are the time reverse of the stamp's entrance curve.
+ const reverseEase='cubic-bezier(.78,0,.7,.95)';
+ const animate=(element,frames,duration,easing=reverseEase)=>{
+  const motion=element.animate(frames,{duration,easing,fill:'both'});
   state.animations.add(motion);return motion;
  };
  state.restore=()=>{
@@ -243,12 +246,12 @@ export async function returnArchive(plant,renderDestination){
   floats.forEach(motion=>{if(motion.playState==='paused')motion.play();});
   if(lens?.isConnected)lens.setAttribute('scale',lensScale);
   if(home?.isConnected)home.inert=false;
+  flightOverlay.remove();
  };
  try{
-  page.classList.add('is-archive-dispersing');
-  // Keep the folio above the new scene while it dissolves. Its specimen has
-  // already moved to the flight layer, so the plant itself travels only once.
-  Object.assign(page.style,{position:'fixed',top:`${-window.scrollY}px`,left:'0',width:'100%',height:'100svh',boxSizing:'border-box',overflow:'hidden',zIndex:'60',pointerEvents:'none'});
+  // The large print sits behind the folio; its specimen stays above it.
+  // The two layers can then follow their entrance paths in reverse.
+  Object.assign(page.style,{position:'fixed',top:`${-window.scrollY}px`,left:'0',width:'100%',height:'100svh',boxSizing:'border-box',overflow:'hidden',zIndex:'70',pointerEvents:'none'});
   document.body.append(page);
   renderDestination();rendered=true;if(state.cancelled)return;
   home=document.querySelector('.home-scene');destination=home?.querySelector('.scene-stamp.current');
@@ -256,22 +259,38 @@ export async function returnArchive(plant,renderDestination){
   if(!stampImage)throw new Error('Return stamp is missing');
   home.inert=true;destination.classList.add('is-return-target');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
   lens=home.querySelector('.scene-lens-displacement');lensScale=lens?.getAttribute('scale');
+  if(lens)lens.setAttribute('scale','0');
   if(!stampImage.complete)await stampImage.decode();if(state.cancelled)return;
   const to=fittedImage(stampImage,image),base={cx:from.cx,cy:from.cy},targetFilter=getComputedStyle(stampImage).filter;
   const frames=flightFrames({...from,scale:1},{cx:to.cx,cy:to.cy,scale:to.width/from.width},base);
   frames[0].filter=fromFilter;frames[1].filter=targetFilter;
   const bounds=stamp.getBoundingClientRect(),zoom=printZoom(stamp,bounds),shell=printLayer(stamp,bounds);
-  overlay.prepend(shell);
-  // The article's lettering clears first. Its stamp typography and perforated
-  // border then return as one enlarged print while the specimen shrinks home.
-  const paperClear=animate(page,[{opacity:1},{opacity:1,offset:.36},{opacity:0}],1460);
-  const printReturn=animate(shell,[{transform:`scale(${zoom})`,opacity:0},{transform:`scale(${zoom*.9})`,opacity:1,offset:.2},{transform:'scale(1)',opacity:1}],1160,300);
-  await Promise.all([animate(flight,frames,1160,300).finished,paperClear.finished,printReturn.finished]);if(state.cancelled)return;
-  // Swap the two copies on the same paint; a fade exposes doubled branches.
-  destination.classList.remove('is-return-target');overlay.remove();
+  shell.style.transform=`scale(${zoom})`;overlay.append(shell);
+  // Lettering erases before the folio yields to the print underneath. The
+  // frame and branch then recede together for the full 1320 ms journey.
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  if(state.cancelled)return;
+  page.classList.add('is-archive-dispersing');
+  const paperClear=animate(page,[{opacity:1,offset:0},{opacity:1,offset:.35},{opacity:0,offset:.55},{opacity:0,offset:1}],1320,'linear');
+  const printReturn=animate(shell,[{transform:`scale(${zoom})`},{transform:'scale(1)'}],1320);
+  const plantReturn=animate(flight,frames,1320);
+  if(lens){
+   let lensFrame=0,start;
+   state.stopLens=()=>cancelAnimationFrame(lensFrame);
+   const restoreLens=now=>{
+    if(state.cancelled)return;
+    start??=now;const t=Math.max(0,Math.min(1,(now-start-1080)/240));
+    lens.setAttribute('scale',String(Number(lensScale)*t*t*(3-2*t)));
+    if(t<1)lensFrame=requestAnimationFrame(restoreLens);
+   };
+   lensFrame=requestAnimationFrame(restoreLens);
+  }
+  await Promise.all([paperClear.finished,printReturn.finished,plantReturn.finished]);if(state.cancelled)return;
+  // Exchange the drawn copy for the live stamp in one paint.
+  destination.classList.remove('is-return-target');overlay.remove();flightOverlay.remove();
  }catch(error){
   if(!state.cancelled){console.error('报纸返回动画失败',error);if(!rendered)renderDestination();}
  }finally{
-  state.stopLens?.();state.animations.forEach(motion=>motion.cancel());overlay.remove();state.restore();if(arrival===state)arrival=null;
+  state.stopLens?.();state.animations.forEach(motion=>motion.cancel());overlay.remove();flightOverlay.remove();state.restore();if(arrival===state)arrival=null;
  }
 }

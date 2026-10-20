@@ -185,7 +185,17 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       if(changingStep)return;changingStep=true;
       await scrollPageUp(page);
       if(!page.isConnected)return;
-      draft.step=step;saveDraft(plant.id);refresh(plant);
+      const outgoing=page.querySelector('.claim-step-content'),animateStep=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(animateStep&&outgoing)try{
+        await outgoing.animate([{clipPath:'inset(0 0 0 0)',translate:'0 0'},{clipPath:'inset(0 0 0 100%)',translate:'-8px 0'}],{duration:240,easing:'cubic-bezier(.48,.04,.7,.55)',fill:'both'}).finished;
+      }catch{}
+      if(!page.isConnected)return;
+      draft.step=step;saveDraft(plant.id);refresh(plant,false);
+      const incoming=document.querySelector('.claim-flow .claim-step-content');
+      if(animateStep&&incoming)try{
+        await incoming.animate([{clipPath:'inset(0 100% 0 0)',translate:'8px 0'},{clipPath:'inset(0 0 0 0)',translate:'0 0'}],{duration:370,easing:'cubic-bezier(.2,.72,.22,1)',fill:'both'}).finished;
+      }catch{}
+      document.querySelector('#claim-step-title')?.focus({preventScroll:true});
     };
     page.querySelector('[data-claim-prev]')?.addEventListener('click',()=>moveTo(Math.max(1,draft.step-1)));
     page.querySelectorAll('[data-claim-step]').forEach(button=>button.addEventListener('click',()=>moveTo(Number(button.dataset.claimStep))));

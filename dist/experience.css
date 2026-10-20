@@ -278,40 +278,16 @@ body[data-view] .main-nav{background:none;box-shadow:none;backdrop-filter:none;b
 .news-fold-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;background:var(--archive-paper);outline:0}
 .news-fold-face.is-back{transform:rotateX(180deg);background:var(--archive-paper);box-shadow:inset 0 -1px 0 #24452b10}
 .news-fold-print{position:absolute}.news-fold-print .archive-paper{max-width:none}
-/* An independent reverse folio, sized for the visible folded half. */
-.news-fold-reverse{height:100%;padding:calc(var(--nav-edge) + 36px) var(--nav-edge) 12px;display:flex;flex-direction:column;gap:clamp(8px,1.3svh,14px);color:var(--archive-ink);box-sizing:border-box}
-.news-reverse-masthead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding-bottom:8px;border-bottom:3px double var(--archive-rule)}
-.news-reverse-masthead strong{font:700 clamp(20px,4vw,28px)/1.2 var(--serif);letter-spacing:.08em;white-space:nowrap}
-.news-reverse-masthead>span{font:400 10px/1.5 var(--sans);text-align:right}
-.news-reverse-specimen{display:grid;grid-template-columns:minmax(60px,24%) minmax(0,1fr);gap:clamp(16px,4vw,44px);flex:1;min-height:0;align-items:center}
-.news-reverse-specimen figure{height:100%;min-height:0;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.news-reverse-specimen img{width:100%;height:calc(100% - 21px);max-height:142px;min-height:0;object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply;opacity:.8}
-.news-reverse-specimen figcaption{font:400 11px/1.5 var(--serif);letter-spacing:.08em}
-.news-reverse-kicker{font:400 10px/1.4 var(--sans);letter-spacing:.08em}
-.news-reverse-specimen h2{font:600 clamp(19px,4.9vw,30px)/1.35 var(--serif);margin:8px 0 7px;letter-spacing:.015em}
-.news-reverse-specimen p{font:italic 400 11px/1.5 Georgia,serif;margin:0;overflow-wrap:anywhere}
-.news-reverse-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-block:1px solid var(--archive-rule);padding:10px 0}
-.news-reverse-notes section{display:block;min-width:0}.news-reverse-notes section+section{border-left:1px solid var(--archive-rule);padding-left:12px}
-.news-reverse-notes b{display:block;font:400 21px/1.3 var(--serif);opacity:.6}.news-reverse-notes p{font:400 12px/1.65 var(--serif);margin:3px 0 0;text-wrap:balance}
-.news-fold-reverse footer{display:flex;justify-content:space-between;gap:12px;font:400 9px/1.4 var(--sans);letter-spacing:.03em}
-@media(max-width:360px){.news-fold-reverse{padding-inline:24px}.news-reverse-masthead>span{font-size:9px}.news-reverse-notes{gap:7px}.news-reverse-notes section{gap:5px}.news-reverse-notes section+section{padding-left:7px}.news-reverse-notes p{font-size:11px}.news-fold-reverse footer{font-size:8px}}
-@media(max-height:560px){.news-fold-reverse{padding-top:calc(var(--nav-edge) + 24px);gap:8px}.news-reverse-masthead strong{font-size:18px}.news-reverse-notes,.news-reverse-kicker{display:none}.news-reverse-specimen h2{font-size:18px;line-height:1.25;margin:0 0 5px}.news-reverse-specimen img{max-height:80px}.news-fold-reverse footer{font-size:8px}}
-@media(prefers-reduced-motion:reduce){.chapter-news-fold{display:none}}
-/* The reverse is a fleeting botanical impression, with no extra folio copy. */
-.news-fold-reverse{padding:16px 24px;display:grid;place-items:center}
+/* The reverse stays inside the folded upper half, clear of the chapter tabs. */
+.news-fold-reverse{height:100%;box-sizing:border-box;padding:clamp(76px,12svh,100px) 24px 18px;display:grid;place-items:center;color:var(--archive-ink)}
 .news-reverse-vignette{width:min(80%,380px);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center}
 .news-reverse-top-rule,.news-reverse-bottom-rule{display:block;width:min(68%,240px);height:1px;background:var(--archive-rule);opacity:.7}
-.news-reverse-top-rule{margin-bottom:14px}.news-reverse-bottom-rule{margin-top:14px}
-.news-reverse-vignette img{display:block;width:min(42%,140px);max-height:62%;object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply;opacity:.7}
+.news-reverse-top-rule{margin-bottom:12px}.news-reverse-bottom-rule{margin-top:12px}
+.news-reverse-vignette img{display:block;width:min(45%,150px);height:min(22svh,160px);object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply;opacity:.7}
 .news-reverse-divider{width:54px;border-top:1px solid var(--archive-rule)}
 .news-reverse-vignette p{margin:0;font:400 clamp(11px,2.4vw,14px)/1.5 var(--serif);letter-spacing:.06em}
-/* Keep the returning fold's editorial back clear of the fixed chapter tabs. */
-.chapter-news-fold[data-fold-stage="return"]::after{content:'';position:absolute;inset:0 0 auto;height:66px;background:var(--archive-paper);z-index:4;pointer-events:none}
-.news-fold-reverse{display:flex;align-items:stretch;justify-content:initial;padding:clamp(70px,9svh,94px) 24px 15px;gap:7px}
-.news-reverse-specimen img{max-height:112px}
-.news-reverse-notes{padding:7px 0;gap:8px}
-.news-reverse-notes section+section{padding-left:8px}
-@media(max-height:680px){.news-fold-reverse{padding-top:66px}.news-reverse-notes{display:none}}
+@media(max-height:560px){.news-fold-reverse{padding-top:68px}.news-reverse-vignette{gap:5px}.news-reverse-top-rule{margin-bottom:3px}.news-reverse-bottom-rule{margin-top:3px}}
+@media(prefers-reduced-motion:reduce){.chapter-news-fold{display:none}}
 /* A drawn ink mask writes each large character without shifting its baseline. */
 .scene-ink-letter{position:relative}
 .scene-writing-ink{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}

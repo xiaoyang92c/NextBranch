@@ -179,7 +179,7 @@
 .claim-receipt .claim-ticket-mark>*{animation:none!important}
 .claim-ticket-close{display:none;position:absolute;right:9px;top:10px;width:38px;height:38px;border:0;background:transparent;color:var(--claim-ink);font:400 28px/1 var(--sans);z-index:8;cursor:pointer}
 .is-ticket-detached .claim-ticket-close{display:grid;place-items:center}
-.is-ticket-detached .claim-dispenser{padding-top:0}
+.is-ticket-detached .claim-dispenser{padding-top:40px}
 .is-tearing .claim-paper-feed,.is-ticket-detached .claim-paper-feed{overflow:visible}
 .is-tearing .claim-paper-feed::before,.is-ticket-detached .claim-paper-feed::before{display:none}
 .is-ticket-detached .dispatch-paper::before{left:0;right:0;top:-4px;height:5px;border:0;background:var(--claim-paper);clip-path:polygon(0 100%,0 0,2% 80%,4% 0,6% 80%,8% 0,10% 80%,12% 0,14% 80%,16% 0,18% 80%,20% 0,22% 80%,24% 0,26% 80%,28% 0,30% 80%,32% 0,34% 80%,36% 0,38% 80%,40% 0,42% 80%,44% 0,46% 80%,48% 0,50% 80%,52% 0,54% 80%,56% 0,58% 80%,60% 0,62% 80%,64% 0,66% 80%,68% 0,70% 80%,72% 0,74% 80%,76% 0,78% 80%,80% 0,82% 80%,84% 0,86% 80%,88% 0,90% 80%,92% 0,94% 80%,96% 0,98% 80%,100% 0,100% 100%)}
@@ -297,5 +297,4 @@
 .claim-signature-seal span{font:600 9px/1.35 var(--sans);letter-spacing:.22em}
 .claim-signature-seal strong{font:800 22px/1.2 var(--serif);letter-spacing:.08em}
 .claim-signature-seal small{font:600 8px/1.2 var(--sans);letter-spacing:.13em}
-.page.claim-flow.claim-dispatch.is-ticket-detached{padding-top:calc(var(--nav-edge) + 20px)!important}
 @media(max-width:799px){.claim-flow .claim-method.selected,.claim-flow .claim-method{padding:18px 13px}.claim-flow .claim-method-copy{padding-right:45px}.claim-machine-close{width:30px;height:30px;right:8%}}

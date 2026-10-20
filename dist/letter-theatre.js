@@ -4,7 +4,7 @@ const searchIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" 
 
 export function renderLetterTheatre(){
  return `<main class="page letters-page post-office letter-mailbox" aria-label="枝友来信"><h1 class="office-live">枝友来信</h1>
- <section class="mailbox-well" aria-label="上下浏览来信，点按抽出信纸"><div class="mailbox-stack" role="list"></div><div class="mailbox-empty" hidden><p>还没有找到这封信</p><button data-mail-action="reset">看看全部来信</button><button data-mail-action="write">寄出一封信 ↗</button></div></section>
+ <section class="mailbox-well" aria-label="上下浏览来信，点按抽出信纸"><div class="mailbox-stack" role="list"></div><div class="mailbox-empty" hidden><span class="mailbox-empty-kicker">来信检索 · 暂无结果</span><span class="mailbox-empty-mark" aria-hidden="true"><i></i></span><h2>这次没有找到来信</h2><p>换个关键词再找找，<br>也可以把你的问题寄给枝友。</p><div class="mailbox-empty-actions"><button data-mail-action="reset">查看全部来信 <span aria-hidden="true">→</span></button><button data-mail-action="write">寄出一封信 <span aria-hidden="true">↗</span></button></div></div></section>
  <div class="mailbox-toolbar" role="search"><label class="mailbox-query">${searchIcon}<input type="search" aria-label="搜索植物或来信" placeholder="找植物，找来信" autocomplete="off"></label><button class="mailbox-find" aria-label="筛选来信" aria-expanded="false" aria-controls="mailbox-search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4m4 0h8M4 17h9m4 0h3"/><circle cx="10" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><i aria-hidden="true"></i></button><button class="mailbox-write" data-mail-action="write" aria-label="寄出一封信"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16 11-11 3 3-11 11-4 1 1-4ZM14 7l3 3"/></svg></button></div>
  <section class="mailbox-search" id="mailbox-search" aria-label="筛选来信" hidden><header><h2>找一封来信</h2><button class="mailbox-search-close" aria-label="收起筛选">×</button></header><div class="mailbox-filters"><fieldset><legend>关于哪一枝</legend><div class="mailbox-plants" role="group" aria-label="按植物筛选来信"></div></fieldset><fieldset><legend>回信状态</legend><div class="mailbox-status" role="group" aria-label="回信状态"><button data-mail-filter="" aria-pressed="true">全部</button><button data-mail-filter="answered" aria-pressed="false">有回信</button><button data-mail-filter="waiting" aria-pressed="false">待回信</button></div></fieldset></div><footer><button class="mailbox-reset" data-mail-action="reset">清除条件</button><button class="mailbox-filter-done">查看 <span></span> 封来信 ↗</button></footer></section><span class="office-live mailbox-live" role="status" aria-live="polite"></span></main>`;
 }
@@ -102,24 +102,30 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   if(opening||centering||!items.length)return;stopGlide();drag=null;centering=true;root.classList.add('is-reading');
   button=await centerLetter(button);if(signal.aborted)return;opening=true;markActive(button.dataset.id,button);
   const rect=button.getBoundingClientRect(),id=button.dataset.id,face=button.querySelector('.garden-letter');
-  const reset=()=>{if(face&&!button.contains(face))button.append(face);stage?.remove();stage=null;if(signal.aborted)return;opening=false;animations.forEach(a=>a.cancel());animations.clear();root.classList.remove('is-reading');button.style.visibility='';if(needsRefresh){needsRefresh=false;load();}stack.querySelector('[aria-current="true"]')?.focus({preventScroll:true});};
+  const reset=()=>{face?.querySelector('.garden-letter-paper')?.style.removeProperty('visibility');stage?.remove();stage=null;if(signal.aborted)return;opening=false;animations.forEach(a=>a.cancel());animations.clear();root.classList.remove('is-reading');if(needsRefresh){needsRefresh=false;load();}stack.querySelector('[aria-current="true"]')?.focus({preventScroll:true});};
   const move=async(el,frames,duration)=>{if(reduced())return;const a=el.animate(frames,{duration,easing:'cubic-bezier(.22,.76,.24,1)',fill:'both'});animations.add(a);await a.finished;};
   try{
-   stage=document.createElement('div');stage.className='mail-opening-stage';stage.classList.toggle('is-flower-right',Boolean(button.closest('.is-flower-right')));stage.setAttribute('aria-hidden','true');stage.append(face);
+   stage=document.createElement('div');stage.className='mail-opening-stage';stage.setAttribute('aria-hidden','true');stage.append(face.cloneNode(true));
    const w=rect.width,h=rect.height,x=rect.x,y=rect.y;
-   Object.assign(stage.style,{width:`${w}px`,height:`${h}px`,left:`${x}px`,top:`${y}px`});document.body.append(stage);button.style.visibility='hidden';
+   Object.assign(stage.style,{width:`${w}px`,height:`${h}px`,left:`${x}px`,top:`${y}px`});document.body.append(stage);
    const slip=stage.querySelector('.garden-letter-paper');
    const tuckedPaper=slip.getBoundingClientRect();
+   face.querySelector('.garden-letter-paper').style.visibility='hidden';
    const readerWidth=Math.min(620,innerWidth-32);
    const readerLeft=(innerWidth-readerWidth)/2,readerTop=16;
    const grow=readerWidth/tuckedPaper.width;
    const dx=readerLeft-tuckedPaper.left-(tuckedPaper.width-readerWidth)/2;
    const dy=readerTop-tuckedPaper.top-(tuckedPaper.height-tuckedPaper.height*grow)/2;
-   const extractedTransform=`translate3d(${dx}px,${dy}px,0) scale(${grow})`;
-   await move(slip,[{transform:'translate3d(0,0,0) scale(1)'},{transform:extractedTransform}],760);slip.style.transform=extractedTransform;
+   const arc=Array.from({length:13},(_,index)=>{
+    const t=index/12,curve=2*(1-t)*t,lift=Math.min(38,Math.abs(dy)*.13);
+    const px=dx*t+curve*(dx>=0?12:-12),py=dy*t-curve*lift,scale=1+(grow-1)*(t*t*(3-2*t));
+    return {transform:`translate3d(${px}px,${py}px,0) scale(${scale})`};
+   });
+   const extractedTransform=arc.at(-1).transform;
+   await move(slip,arc,760);slip.style.transform=extractedTransform;
    const paper=slip.getBoundingClientRect();
-   onReader({kind:'mailbox',paper,paperElement:slip,tuckedPaper,envelope:rect,paperMarkup:slip.innerHTML,pocketMarkup:stage.querySelector('.garden-envelope-pocket').outerHTML,extracted:()=>{slip.style.visibility='hidden';},revealPaper:()=>{slip.style.visibility='';},returnPaper:async()=>{
-    await move(slip,[{transform:extractedTransform},{transform:'translate3d(0,0,0) scale(1)'}],680);slip.style.transform='';
+   onReader({kind:'mailbox',paper,paperElement:slip,tuckedPaper,envelope:rect,paperMarkup:slip.innerHTML,extracted:()=>{slip.style.visibility='hidden';},revealPaper:()=>{slip.style.visibility='';},returnPaper:async()=>{
+    await move(slip,arc.slice().reverse(),680);slip.style.transform='';
    }},reset);
    if(!signal.aborted)onOpen(id);
   }catch{if(!signal.aborted&&stage){onReader({kind:'mailbox'},reset);onOpen(id);}else reset();}
