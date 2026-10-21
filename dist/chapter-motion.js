@@ -93,6 +93,11 @@ function paintStroke(element,{opening=true,delay=0,duration=1200,holder=element.
   else{erased=true;element.style.visibility='hidden';element.style.maskImage=previousMask;svg.remove();inkWriters.delete(cleanup);}
  }).catch(()=>{});
 }
+export function paintInitialInterface(){
+ if(reducedMotion())return;
+ const controls=[...document.querySelectorAll('.main-nav .nav-label'),document.querySelector('.main-nav .nav-cursor'),document.querySelector('#music-toggle')];
+ controls.forEach(element=>paintStroke(element,{delay:80,duration:1440,holder:document.body}));
+}
 function paintHomeStamp(card,delay=80){
  if(!card)return;
  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),id=`home-paint-${++inkId}`;

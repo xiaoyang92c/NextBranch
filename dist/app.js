@@ -4,7 +4,7 @@ import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,select
 import {mountStampEffects} from './stamp-motion.js?v=20261021-1';
 import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261021-2';
 import {createClaimFlow} from './claim-flow.js?v=20261021-7';
-import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper} from './chapter-motion.js?v=20261021-3';
+import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper,paintInitialInterface} from './chapter-motion.js?v=20261021-4';
 import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-4';
 import {saveRecordVideo,removeRecordVideo,releaseRecordVideos} from './record-media.js';
 import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261021-1';
@@ -273,3 +273,5 @@ window.addEventListener('hashchange',async()=>{
 });
 window.addEventListener('keydown',e=>{if(e.key==='Escape'){cancelArchiveEntry();document.querySelector('#letter-overlay')?.remove()}});
 render();enterChapter(app.querySelector('main'),hashParts()[0],{initial:true});
+paintInitialInterface();
+document.body.classList.remove('is-initial-entrance');

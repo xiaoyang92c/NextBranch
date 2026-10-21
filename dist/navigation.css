@@ -12,5 +12,7 @@ body[data-view] .main-nav button.active::before{content:none}
 @keyframes nav-ink-stroke{from{background-position:100% 50%}to{background-position:0% 50%}}
 @media(prefers-reduced-motion:reduce){.main-nav.is-ink-changing .nav-label .letter-track>span{animation:none;color:inherit!important;background:none}}
 body[data-view="album"] .album-desk{--tv-gutter:var(--nav-edge)}
+body.is-initial-entrance .main-nav .nav-label,body.is-initial-entrance .main-nav .nav-cursor{visibility:hidden}
 @media(max-width:360px){:root{--nav-font:12px}}
 @media(max-height:560px) and (orientation:landscape){:root{--nav-edge:28px;--nav-font:12px}}
+@media(prefers-reduced-motion:reduce){body.is-initial-entrance .main-nav .nav-label,body.is-initial-entrance .main-nav .nav-cursor{visibility:visible}}

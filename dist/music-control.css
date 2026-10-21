@@ -21,7 +21,7 @@ body[data-view]:not([data-view="letters"]) .music-toggle{color:#fff7df}
   height:32px;
   opacity:.72;
 }
-.music-toggle-ink-layer{position:absolute;inset:6px;visibility:hidden;pointer-events:none;mask-image:linear-gradient(100deg,#000 0 42%,transparent 55%);-webkit-mask-image:linear-gradient(100deg,#000 0 42%,transparent 55%);mask-size:220% 100%;-webkit-mask-size:220% 100%;mask-position:100% 50%;-webkit-mask-position:100% 50%}
+.music-toggle-ink-layer{position:absolute;inset:6px;visibility:hidden;pointer-events:none;clip-path:inset(0 100% 0 0)}
 .music-toggle-ring::before{
   content:"";
   position:absolute;
@@ -37,6 +37,7 @@ body[data-view]:not([data-view="letters"]) .music-toggle{color:#fff7df}
 .music-toggle.is-playing .music-toggle-ring::before{animation:music-ring-pulse 1.4s ease-in-out infinite alternate}
 .music-toggle.is-playing .music-toggle-wave{animation:music-ring-spin 8s linear infinite}
 .music-toggle:focus-visible{outline:1.5px solid currentColor;outline-offset:1px;border-radius:50%}
+body.is-initial-entrance .music-toggle{visibility:hidden}
 @keyframes music-ring-spin{to{transform:rotate(360deg)}}
 @keyframes music-ring-pulse{to{transform:scale(.76);opacity:.45}}
 @media(max-width:799px){
@@ -45,4 +46,4 @@ body[data-view]:not([data-view="letters"]) .music-toggle{color:#fff7df}
   body[data-view="write-letter"] .office-writing-sign>span{padding-right:28px}
 }
 @media(max-width:360px){body[data-view="letters"] .mailbox-toolbar{width:calc(100% - 70px)}}
-@media(prefers-reduced-motion:reduce){.music-toggle.is-playing .music-toggle-ring::before,.music-toggle.is-playing .music-toggle-wave{animation:none}}
+@media(prefers-reduced-motion:reduce){.music-toggle.is-playing .music-toggle-ring::before,.music-toggle.is-playing .music-toggle-wave{animation:none}body.is-initial-entrance .music-toggle{visibility:visible}}

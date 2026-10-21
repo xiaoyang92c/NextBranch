@@ -12,6 +12,7 @@ const radii = Array(48).fill(18);
 const inkForView = () => document.body.dataset.view === 'letters' ? '#315b45' : '#fff7df';
 let currentInk = inkForView();
 let inkAnimation;
+let baseInkAnimation;
 let context;
 let analyser;
 let frequencies;
@@ -74,6 +75,7 @@ function paintMusicInk() {
   const nextInk = inkForView();
   if (nextInk === currentInk) return;
   inkAnimation?.cancel();
+  baseInkAnimation?.cancel();
   toggle.classList.remove('is-ink-changing');
   if (reducedMotion.matches) {
     toggle.style.removeProperty('color');
@@ -83,10 +85,15 @@ function paintMusicInk() {
   toggle.style.color = currentInk;
   inkLayer.style.color = nextInk;
   inkLayer.style.visibility = 'visible';
+  const timing = {duration: 700, easing: 'cubic-bezier(.22,.7,.2,1)', fill: 'both'};
+  baseInkAnimation = ring.animate([
+    {clipPath: 'inset(0 0 0 0)'},
+    {clipPath: 'inset(0 0 0 100%)'}
+  ], timing);
   inkAnimation = inkLayer.animate([
-    {maskPosition: '100% 50%', webkitMaskPosition: '100% 50%'},
-    {maskPosition: '0% 50%', webkitMaskPosition: '0% 50%'}
-  ], {duration: 700, easing: 'cubic-bezier(.22,.7,.2,1)', fill: 'both'});
+    {clipPath: 'inset(0 100% 0 0)'},
+    {clipPath: 'inset(0 0 0 0)'}
+  ], timing);
   toggle.classList.add('is-ink-changing');
   currentInk = nextInk;
   const animation = inkAnimation;
@@ -94,6 +101,8 @@ function paintMusicInk() {
     if (inkAnimation !== animation) return;
     animation.cancel();
     inkAnimation = null;
+    baseInkAnimation?.cancel();
+    baseInkAnimation = null;
     toggle.classList.remove('is-ink-changing');
     toggle.style.removeProperty('color');
     inkLayer.style.removeProperty('color');
