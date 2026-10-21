@@ -2,20 +2,15 @@ import {hydrateRecordVideos,releaseRecordVideos} from './record-media.js';
 import {careLessons,careScene} from './tv-care.js?v=20261021-4';
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
-let chosenId=null,channel='care',film=0,dispose=()=>{},lens=null;
+let chosenId=null,channel='care',film=0,dispose=()=>{};
 export const albumBackground=()=>({care:'#cbd8b9',growth:'#b8cfc4',archive:'#d8d6b5'}[channel]);
 export function cleanupAlbumDesk(){dispose();dispose=()=>{};}
 const claimFor=(data,id)=>[...data.claims].reverse().find(claim=>claim.plantId===id&&claim.status==='claimed');
 const topicLabels=plant=>['光照','浇水',['podocarpus','citron','five-lobed-maple','ginkgo'].includes(plant.id)?'安苗':'扦插'];
 const modes={care:'养护放映',growth:'生长回放',archive:'植物档案'};
-function crtLens(){
- if(lens)return lens;const canvas=document.createElement('canvas');canvas.width=canvas.height=96;const ctx=canvas.getContext('2d'),map=ctx.createImageData(96,96);
- for(let y=0;y<96;y++)for(let x=0;x<96;x++){const nx=(x-47.5)/47.5,ny=(y-47.5)/47.5,r=Math.min(1,nx*nx+ny*ny),p=(y*96+x)*4;map.data[p]=128+nx*r*78;map.data[p+1]=128+ny*r*78;map.data[p+2]=128;map.data[p+3]=255;}
- ctx.putImageData(map,0,0);const image=new Image();image.src=canvas.toDataURL();lens={url:image.src,ready:image.decode()};return lens;
-}
 export function renderAlbumDesk(plants,stamp,data){
  if(!plants.some(plant=>plant.id===chosenId))chosenId=data.claims.find(claim=>claim.status==='claimed')?.plantId||plants[0].id;
- return `<main class="page album-page album-desk" aria-label="枝条放映室"><svg width="0" height="0" class="tv-optical-defs" aria-hidden="true"><defs><filter id="crt-curvature" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${crtLens().url}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="crt-map"/><feDisplacementMap in="SourceGraphic" in2="crt-map" scale="12" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="tv-signal-warp" x="-5%" y="-8%" width="110%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".006 .035" numOctaves="1" seed="5" result="signal-noise"/><feDisplacementMap class="tv-warp-map" in="SourceGraphic" in2="signal-noise" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><section class="album-tv"><div class="tv-glass" role="region" aria-label="植物放映内容"><div class="tv-screen-content">
+ return `<main class="page album-page album-desk" aria-label="枝条放映室"><svg width="0" height="0" class="tv-optical-defs" aria-hidden="true"><defs><filter id="tv-signal-warp" x="-5%" y="-8%" width="110%" height="116%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".006 .035" numOctaves="1" seed="5" result="signal-noise"/><feDisplacementMap class="tv-warp-map" in="SourceGraphic" in2="signal-noise" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><section class="album-tv"><div class="tv-glass" role="region" aria-label="植物放映内容"><div class="tv-screen-content">
  <header class="tv-remote"><div class="tv-program-keys" role="tablist" aria-label="放映节目">${Object.entries(modes).map(([id,label],index)=>`<button role="tab" data-tv-mode="${id}" aria-selected="${channel===id}" aria-controls="tv-plant-panel"><span class="tv-key-label">${['养护','近况','档案'][index]}</span></button>`).join('')}</div><span class="tv-channel-code" data-type></span></header>
  <div class="tv-program-shell"><div class="tv-program" id="tv-plant-panel" role="tabpanel"></div></div>
  <footer class="tv-frequency" aria-label="循环植物刻度"><div class="tv-dial-pointer" aria-hidden="true"><i></i></div><div class="tv-dial-window" role="tablist" aria-label="植物调台刻度"><div class="tv-stations"></div></div></footer>
@@ -25,7 +20,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  const root=document.querySelector('.album-desk');if(!root)return;
  const compact=matchMedia('(max-width:799px), (pointer:coarse)');
  const controller=new AbortController(),signal=controller.signal,animations=new Set(),reveals=new Set(),program=root.querySelector('.tv-program'),shell=root.querySelector('.tv-program-shell'),dial=root.querySelector('.tv-dial-window'),track=root.querySelector('.tv-stations');
- let warpFrame=0;let operation=0,content=null,renderKey='',swipe=null,dialDrag=null,ignoreClick=0,tunerAnimation=null,recordDialog=null,recordPreviewUrl='',recordFocus=null,bodyOverflow='';
+ let warpFrame=0;let operation=0,content=null,renderKey='',swipe=null,dialDrag=null,ignoreClick=0,tunerAnimation=null,recordDialog=null,recordPreviewUrl='',recordFocus=null,bodyOverflow='',fittedScene=null,fittedSize='';
  const wrap=value=>(value%plants.length+plants.length)%plants.length;
  const selected=()=>plants.find(plant=>plant.id===chosenId)||plants[0];
  const selectedIndex=()=>plants.findIndex(plant=>plant.id===chosenId);
@@ -38,6 +33,9 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  };
  function fitSceneArt(){
   const svg=program.querySelector('.care-lesson-scene'),composition=svg?.querySelector('.care-scene-composition');if(!composition)return;
+  const size=`${svg.clientWidth}x${svg.clientHeight}`;
+  if(!svg.clientWidth||!svg.clientHeight||svg===fittedScene&&size===fittedSize)return;
+  fittedScene=svg;fittedSize=size;
   const width=480,height=320,art=composition.querySelector('.care-scene-art'),artBox=art.getBBox();
   const labelY=Math.max(12,Math.min(38,artBox.y-28));
   svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
@@ -55,11 +53,15 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
    // Stop the dotted annotation before the first leaf it meets, including
    // labels whose nominal target lies inside a full leaf silhouette.
    const matrix=leader.getScreenCTM(),length=leader.getTotalLength();
-   if(matrix&&leaves.length&&length){
+   const leafTransforms=matrix?leaves.map(leaf=>{
+    const leafMatrix=leaf.getScreenCTM();
+    return leafMatrix?{leaf,transform:leafMatrix.inverse().multiply(matrix)}:null;
+   }).filter(Boolean):[];
+   if(leafTransforms.length&&length){
     let stop=length;
-    for(let at=0;at<=length;at+=.5){
-     const point=leader.getPointAtLength(at),screen=new DOMPoint(point.x,point.y).matrixTransform(matrix);
-     if(leaves.some(leaf=>leaf.isPointInFill(screen.matrixTransform(leaf.getScreenCTM().inverse())))){stop=at;break;}
+    for(let at=0;at<=length;at+=2){
+     const point=leader.getPointAtLength(at);
+     if(leafTransforms.some(({leaf,transform})=>leaf.isPointInFill(point.matrixTransform(transform)))){stop=at;break;}
     }
     if(stop<length){
      const safe=Math.max(0,stop-12),clipped=[points[0]];let walked=0;
@@ -79,30 +81,74 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  const sceneSizer=new ResizeObserver(fitSceneArt);sceneSizer.observe(program);
  function typeText(scope){
   if(reduced())return;
+  scope.querySelectorAll('.tv-story-action').forEach(button=>{
+   if(button.querySelector('.tv-story-label'))return;
+   const label=button.firstChild;
+   if(label?.nodeType!==Node.TEXT_NODE||!label.textContent.trim())return;
+   const span=document.createElement('span');span.className='tv-story-label';span.setAttribute('data-type','');span.textContent=label.textContent.trim();label.replaceWith(span);
+  });
+  scope.querySelectorAll('.growth-count,.growth-rec,.growth-awaiting>span,.growth-image-caption,.growth-viewfinder-date,.growth-date,.growth-adjust-action,.growth-pages button,.tv-dossier>header>span,.tv-dossier-body dt,.tv-dossier-body dd').forEach(element=>element.setAttribute('data-type',''));
+  let order=0;const actionRevealEnds=new WeakMap();
   scope.querySelectorAll('[data-type]').forEach(element=>{
    if(element.dataset.typed==='true')return;element.dataset.typed='true';
-   if(compact.matches){
-    const delay=Number(element.dataset.typeDelay||0);
-    animate(element,[{opacity:0,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,delay:70+delay,easing:'ease-out'});
-    return;
-   }
-   const text=element.textContent,svg=element.namespaceURI==='http://www.w3.org/2000/svg',delay=Number(element.dataset.typeDelay||0),children=[];
-   if(svg)element.setAttribute('aria-label',text);
-   else{const accessible=document.createElement('span');accessible.className='tv-accessible';accessible.textContent=text;children.push(accessible);}
-   element.replaceChildren(...children,...Array.from(text,(letter,index)=>{const glyph=svg?document.createElementNS('http://www.w3.org/2000/svg','tspan'):document.createElement('span');glyph.classList.add('tv-typed-glyph');glyph.setAttribute('aria-hidden','true');glyph.textContent=letter;animate(glyph,[{opacity:0},{opacity:1}],{duration:1,delay:70+delay+index*Math.min(30,1250/Math.max(text.length,1)),fill:'backwards',easing:'steps(1,end)'});return glyph;}));
+   const baseDelay=Number(element.dataset.typeDelay||0)+order++*85;
+   const value=element.textContent,svg=element.namespaceURI==='http://www.w3.org/2000/svg';
+   element.dataset.typeText=value;
+   const letters=[...value].map(letter=>{
+    const glyph=svg?document.createElementNS('http://www.w3.org/2000/svg','tspan'):document.createElement('span');
+    glyph.classList.add('tv-typed-glyph');glyph.setAttribute('aria-hidden','true');glyph.textContent=letter;
+    return glyph;
+   });
+   if(svg){element.setAttribute('aria-label',value);element.replaceChildren(...letters);}
+   else{const accessible=document.createElement('span');accessible.className='tv-accessible';accessible.textContent=value;element.replaceChildren(accessible,...letters);}
+   const step=channel==='care'?32:Math.min(32,1600/Math.max(letters.length,1));
+   const action=element.closest('.tv-story-action'),previousEnd=action?actionRevealEnds.get(action):undefined;
+   const delay=previousEnd===undefined?baseDelay:Math.max(baseDelay,previousEnd+55);
+   if(action)actionRevealEnds.set(action,delay+Math.max(0,letters.length-1)*step);
+   letters.forEach((glyph,index)=>{
+    animate(glyph,[{opacity:0},{opacity:1}],{duration:1,delay:70+delay+index*step,fill:'backwards',easing:'steps(1,end)'});
+   });
   });
  }
  function drawScene(){
   const svg=program.querySelector('.broadcast-diagram');if(!svg||reduced())return;
-  // Small screens draw solid strokes directly. Keep the original dash pattern
-  // visible through a few local masks, instead of temporarily making dashes
-  // solid; masking every stroke can blank the CRT scene on mobile WebKit.
-  if(matchMedia('(max-width:799px), (pointer:coarse)').matches){
+  const showPreparedScene=()=>requestAnimationFrame(()=>{if(svg.isConnected)svg.classList.remove('is-drawing-pending');});
+  const animateMarker=(shape,style,delay,duration)=>{
+   if(!shape.hasAttribute('marker-end'))return ()=>{};
+   const previous=shape.style.markerEnd;shape.style.markerEnd='none';
+   const length=shape.getTotalLength(),tip=shape.getPointAtLength(length),before=shape.getPointAtLength(Math.max(0,length-8));
+   const angle=Math.atan2(tip.y-before.y,tip.x-before.x),ux=Math.cos(angle),uy=Math.sin(angle);
+   // Match the SVG marker's 10-unit viewBox, 4-unit size and 1.6-unit stroke.
+   const markerScale=(Number.parseFloat(style.strokeWidth)||2)*.4,wing=4*markerScale,back=7*markerScale;
+   const left=[tip.x-ux*back-uy*wing,tip.y-uy*back+ux*wing],right=[tip.x-ux*back+uy*wing,tip.y-uy*back-ux*wing];
+   const head=document.createElementNS('http://www.w3.org/2000/svg','path');
+   head.setAttribute('d',`M${left[0]} ${left[1]}L${tip.x} ${tip.y}L${right[0]} ${right[1]}`);
+   head.setAttribute('fill','none');head.setAttribute('stroke',style.stroke);head.setAttribute('stroke-width',String(1.6*markerScale));
+   head.setAttribute('stroke-linecap','round');head.setAttribute('stroke-linejoin','round');
+   shape.before(head);
+   const arrowLength=head.getTotalLength();head.style.strokeDasharray=`${arrowLength} ${arrowLength}`;head.style.strokeDashoffset=String(arrowLength);
+   const drawing=animate(head,[{strokeDashoffset:arrowLength},{strokeDashoffset:0}],{duration:220,delay:delay+duration-240,easing:'ease-out',hold:true});
+   return ()=>{shape.style.markerEnd=previous;head.remove();animations.delete(drawing);drawing.cancel();};
+  };
+  // Draw solid contours directly and mask only dashed paths. This keeps the
+  // original path reveal while avoiding a mask layer for every desktop shape.
+  {
+   const strokeDuration=compact.matches?960:1050;
+   // Measure the scene before inserting masks and animated fills, so those
+   // writes cannot force a fresh style/layout pass for every following path.
+   const shapes=[...svg.querySelectorAll('path,circle,rect,ellipse,line,polyline')]
+    .filter(shape=>!shape.closest('defs')&&!shape.matches('.care-anchor'))
+    .map((shape,index)=>{
+     const computed=getComputedStyle(shape);
+     return {shape,index,style:{stroke:computed.stroke,strokeWidth:computed.strokeWidth,strokeDasharray:computed.strokeDasharray,fill:computed.fill,fillOpacity:computed.fillOpacity},length:shape.getTotalLength?.()||0};
+    });
    const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');svg.prepend(defs);
-   svg.querySelectorAll('path,circle,rect,ellipse,line,polyline').forEach((shape,index)=>{
-    if(shape.closest('defs')||shape.matches('.care-anchor'))return;
-    const style=getComputedStyle(shape),delay=shape.matches('.care-leader')?190:60+Math.min(index,18)*30;
+   shapes.forEach(({shape,index,style,length})=>{
+    const delay=shape.matches('.care-leader')?190:60+Math.min(index,18)*30;
     const dashed=style.stroke!=='none'&&style.strokeDasharray!=='none';
+    if(shape.matches('.broadcast-soil,.broadcast-soil-dots circle,.scene-root-tips circle')){
+     animate(shape,[{opacity:0},{opacity:1}],{duration:650,delay:delay+400,easing:'ease-out'});return;
+    }
     if(style.fill!=='none'&&Number(style.fillOpacity)>0){
      if(dashed){
       const wash=shape.cloneNode(false);wash.removeAttribute('id');wash.classList.add('care-entry-fill');
@@ -111,60 +157,35 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
       animate(wash,[{opacity:0},{opacity:1}],{duration:820,delay:delay+180,easing:'cubic-bezier(.2,.65,.3,1)'});
      }else animate(shape,[{fillOpacity:0},{fillOpacity:style.fillOpacity}],{duration:820,delay:delay+180,easing:'cubic-bezier(.2,.65,.3,1)'});
     }
-    const length=shape.getTotalLength?.();
     if(style.stroke==='none'||!length)return;
+    const restoreMarker=animateMarker(shape,style,delay,strokeDuration);
     if(dashed){
      const mask=document.createElementNS(ns,'mask'),ink=shape.cloneNode(false),holder=document.createElementNS(ns,'g');
      const id=`scene-dashes-${operation}-${index}`;mask.id=id;
      for(const [key,value] of Object.entries({maskUnits:'userSpaceOnUse',x:'-500',y:'-500',width:'1500',height:'1500'}))mask.setAttribute(key,value);
-     ink.removeAttribute('class');ink.removeAttribute('style');
-     for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':'7','stroke-linecap':'round','stroke-linejoin':'round',pathLength:'1','stroke-dasharray':'1','stroke-dashoffset':'1'}))ink.setAttribute(key,value);
+     ink.removeAttribute('class');ink.removeAttribute('style');ink.removeAttribute('pathLength');ink.removeAttribute('marker-end');ink.removeAttribute('marker-start');ink.removeAttribute('marker-mid');
+     // Use the path's real units. Normalized pathLength is ignored in some SVG
+     // mask implementations and exposed tiny bits of every dotted leader.
+     for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':'7','stroke-linecap':'butt','stroke-linejoin':'round','stroke-dasharray':`${length} ${length}`,'stroke-dashoffset':String(length)}))ink.setAttribute(key,value);
      mask.append(ink);defs.append(mask);shape.before(holder);holder.append(shape);holder.setAttribute('mask',`url(#${id})`);
-     const drawing=animate(ink,[{strokeDashoffset:1},{strokeDashoffset:0}],{duration:960,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
-     const finish=()=>{holder.removeAttribute('mask');mask.remove();reveals.delete(finish);animations.delete(drawing);drawing.cancel();};
+     const drawing=animate(ink,[{strokeDashoffset:length},{strokeDashoffset:0}],{duration:strokeDuration,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
+     const finish=()=>{holder.removeAttribute('mask');restoreMarker();mask.remove();reveals.delete(finish);animations.delete(drawing);drawing.cancel();};
      reveals.add(finish);drawing.finished.then(finish).catch(()=>{});
      return;
     }
     const oldDash=shape.style.strokeDasharray,oldOffset=shape.style.strokeDashoffset;
     shape.style.strokeDasharray=`${length} ${length}`;
     shape.style.strokeDashoffset=String(length);
-    const drawing=animate(shape,[{strokeDashoffset:length},{strokeDashoffset:0}],{duration:960,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
+    const drawing=animate(shape,[{strokeDashoffset:length},{strokeDashoffset:0}],{duration:strokeDuration,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
     const finish=()=>{
      shape.style.strokeDasharray=oldDash;shape.style.strokeDashoffset=oldOffset;
+     restoreMarker();
      reveals.delete(finish);animations.delete(drawing);drawing.cancel();
     };
     reveals.add(finish);drawing.finished.then(finish).catch(()=>{});
    });
-   return;
+   showPreparedScene();return;
   }
-  const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');svg.prepend(defs);
-  // Draw the contour and wash in its color separately. A stroke-only mask
-  // must never be removed to suddenly reveal the whole interior fill.
-  svg.querySelectorAll('path,circle,rect,ellipse,line,polyline').forEach((shape,index)=>{
-   if(shape.closest('defs')||shape.matches('.care-anchor'))return;
-   const delay=shape.matches('.care-leader')?190:60+Math.min(index,18)*30,style=getComputedStyle(shape);
-   if(style.fill!=='none'&&Number(style.fillOpacity)>0){
-    if(style.stroke==='none'){
-     animate(shape,[{opacity:0},{opacity:1}],{duration:850,delay:delay+240,easing:'ease-out'});return;
-    }
-    const wash=shape.cloneNode(false);wash.removeAttribute('id');wash.classList.add('care-entry-fill');
-    Object.assign(wash.style,{stroke:'none',fill:style.fill,fillOpacity:style.fillOpacity,pointerEvents:'none'});
-    shape.before(wash);shape.style.fill='none';
-    animate(wash,[{opacity:0},{opacity:1}],{duration:850,delay:delay+280,easing:'cubic-bezier(.3,0,.3,1)'});
-   }
-   if(shape.matches('.broadcast-soil,.broadcast-soil-dots circle,.scene-root-tips circle')){
-    animate(shape,[{opacity:0},{opacity:1}],{duration:650,delay:delay+400,easing:'ease-out'});return;
-   }
-   const mask=document.createElementNS(ns,'mask'),ink=shape.cloneNode(false),holder=document.createElementNS(ns,'g');
-   const id=`scene-draw-${operation}-${index}`;mask.id=id;
-   for(const [key,value] of Object.entries({maskUnits:'userSpaceOnUse',x:'-500',y:'-500',width:'1500',height:'1500'}))mask.setAttribute(key,value);
-   ink.removeAttribute('class');ink.removeAttribute('style');
-   for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':'7','stroke-linecap':'round','stroke-linejoin':'round',pathLength:'1','stroke-dasharray':'1','stroke-dashoffset':'1'}))ink.setAttribute(key,value);
-   mask.append(ink);defs.append(mask);shape.before(holder);holder.append(shape);holder.setAttribute('mask',`url(#${id})`);
-   const drawing=animate(ink,[{strokeDashoffset:1},{strokeDashoffset:0}],{duration:1050,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
-   const finish=()=>{holder.removeAttribute('mask');mask.remove();reveals.delete(finish);animations.delete(drawing);drawing.cancel();};reveals.add(finish);
-   drawing.finished.then(finish).catch(()=>{});
-  });
  }
  function frames(){
   const plant=selected(),data=getData(),claim=claimFor(data,plant.id),records=data.postcards.filter(record=>record.plantId===plant.id);
@@ -179,11 +200,106 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  }
  const copyMarkup=()=>`<span class="care-subtitle-index" data-type>${topicLabels(selected())[film]}</span><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p>`;
  function careMarkup(plant){return `<section class="care-program"><header class="care-heading"><div><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></div><div class="care-difficulty"><strong>养护难度</strong><span data-type>${plant.level}</span></div></header><div class="care-stage">${careScene(plant,film)}</div><div class="care-bottom"><div class="care-copy">${copyMarkup()}</div><div class="care-topics" role="group" aria-label="选择养护场景">${topicLabels(plant).map((label,index)=>`<button data-care-frame="${index}" aria-pressed="${film===index}"><span class="tv-key-label">${label}</span></button>`).join('')}</div></div></section>`;}
- function growthMarkup(plant){
+ function growthMarkup(plant,frame=content){
+  const content=frame;
   const photo=content.photo?escape(content.photo):`./assets/${plant.art}`;
-  return `<section class="growth-program"><header class="growth-program-head"><h1 data-type>${plant.name}的近况</h1><span class="growth-count">${content.record?`TAPE ${String(content.record).padStart(2,'0')} / ${String(content.total).padStart(2,'0')}`:'NO TAPE'}</span></header><div class="growth-layout"><div class="growth-viewfinder"><span class="growth-rec">${content.photo||content.videoId?'● REC':'▷ PLAY'}</span><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i>${content.empty?`<div class="growth-awaiting"><svg class="growth-test-card" viewBox="0 0 180 126" aria-hidden="true"><rect x="12" y="8" width="156" height="110"/><path d="M12 35H168M12 91H168M38 8V35M64 8V35M90 8V35M116 8V35M142 8V35M12 104H168M12 111H168"/><path class="test-card-band" d="M12 8H38V35H12ZM64 8H90V35H64ZM116 8H142V35H116Z"/><circle cx="90" cy="63" r="24"/><path d="M54 63H126M90 37V89"/></svg><span>等待第一段生长影像</span></div>`:`${content.videoId?`<video class="growth-picture is-photo" data-record-video="${escape(content.videoId)}" controls playsinline preload="metadata" aria-label="${plant.name}的近况视频"></video>`:`<img class="growth-picture ${content.photo?'is-photo':''}" src="${photo}" alt="${content.photo?'植物近况照片':plant.name+'的图鉴画面'}">`}<span class="growth-image-caption">${content.videoId?'生长视频':content.photo?'生长照片':'图鉴画面'}</span>`}<span class="growth-viewfinder-date">${escape(content.date||plant.no)}</span></div><article class="growth-observation"><div class="growth-observation-meta"><span class="growth-date">${escape(content.date||'尚未录入')}</span>${content.editable?'<button class="growth-adjust-action" data-tv-action="edit-record" aria-label="调整这段近况">调整记录 ↗</button>':''}</div><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p><div class="growth-action-row"><div class="growth-record-actions"><button class="tv-story-action" data-tv-action="${content.action}">${content.actionLabel}<span>↗</span></button></div>${content.total>1?'<nav class="growth-pages" aria-label="翻阅近况"><button data-tv-action="previous" aria-label="上一段近况">上一段</button><button data-tv-action="next" aria-label="下一段近况">下一段</button></nav>':''}</div></article></div></section>`;
+ return `<section class="growth-program"><header class="growth-program-head"><h1 data-type>${plant.name}的近况</h1><span class="growth-count">${content.record?`TAPE ${String(content.record).padStart(2,'0')} / ${String(content.total).padStart(2,'0')}`:'NO TAPE'}</span></header><div class="growth-layout"><div class="growth-viewfinder"><span class="growth-rec">${content.photo||content.videoId?'● REC':'▷ PLAY'}</span><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i>${content.empty?`<div class="growth-awaiting"><svg class="growth-test-card" viewBox="0 0 180 126" aria-hidden="true"><rect x="12" y="8" width="156" height="110"/><path d="M12 35H168M12 91H168M38 8V35M64 8V35M90 8V35M116 8V35M142 8V35M12 104H168M12 111H168"/><path class="test-card-band" d="M12 8H38V35H12ZM64 8H90V35H64ZM116 8H142V35H116Z"/><circle cx="90" cy="63" r="24"/><path d="M54 63H126M90 37V89"/></svg><span>等待第一段生长影像</span></div>`:`${content.videoId?`<video class="growth-picture is-photo" data-record-video="${escape(content.videoId)}" controls playsinline preload="metadata" aria-label="${plant.name}的近况视频"></video>`:`<img class="growth-picture ${content.photo?'is-photo':''}" src="${photo}" alt="${content.photo?'植物近况照片':plant.name+'的图鉴画面'}">`}<span class="growth-image-caption">${content.videoId?'生长视频':content.photo?'生长照片':'图鉴画面'}</span>`}<span class="growth-viewfinder-date">${escape(content.date||plant.no)}</span></div><article class="growth-observation"><div class="growth-observation-meta"><span class="growth-date">${escape(content.date||'尚未录入')}</span>${content.editable?'<button class="growth-adjust-action" data-tv-action="edit-record" aria-label="调整这段近况">调整记录 ↗</button>':''}</div><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p><div class="growth-action-row"><div class="growth-record-actions"><button class="tv-story-action" data-tv-action="${content.action}"><span class="tv-story-caret" data-type aria-hidden="true">▷</span><span class="tv-story-label" data-type>${content.actionLabel}</span><span class="tv-story-arrow" data-type aria-hidden="true">↗</span></button></div>${content.total>1?'<nav class="growth-pages" aria-label="翻阅近况"><button data-tv-action="previous" aria-label="上一段近况">上一段</button><button data-tv-action="next" aria-label="下一段近况">下一段</button></nav>':''}</div></article></div></section>`;
  }
- function archiveMarkup(plant){return `<section class="tv-dossier"><header><span>FIELD FILE / ${plant.no}</span><span>农科村植物资料</span></header><div class="tv-dossier-body"><figure class="tv-dossier-plate"><div class="tv-dossier-art"><img src="./assets/${plant.art}" alt="${plant.name}植物插画"></div><figcaption class="tv-dossier-name"><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></figcaption></figure><article><p data-type>${plant.intro}</p><dl><div><dt>光照</dt><dd data-type>${plant.light}</dd></div><div><dt>难度</dt><dd>${plant.level}</dd></div><div><dt>来源</dt><dd>${plant.source.replace(' · 演示','')}</dd></div></dl><button class="tv-story-action" data-tv-action="archive">打开完整档案 <span>↗</span></button></article></div></section>`;}
+ function archiveMarkup(plant){return `<section class="tv-dossier"><header><span>FIELD FILE / ${plant.no}</span><span>农科村植物资料</span></header><div class="tv-dossier-body"><figure class="tv-dossier-plate"><div class="tv-dossier-art"><img src="./assets/${plant.art}" alt="${plant.name}植物插画"></div><figcaption class="tv-dossier-name"><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></figcaption></figure><article><p data-type>${plant.intro}</p><dl><div><dt>光照</dt><dd data-type>${plant.light}</dd></div><div><dt>难度</dt><dd>${plant.level}</dd></div><div><dt>来源</dt><dd>${plant.source.replace(' · 演示','')}</dd></div></dl><button class="tv-story-action" data-tv-action="archive"><span class="tv-story-caret" data-type aria-hidden="true">▷</span><span class="tv-story-label" data-type>打开完整档案</span><span class="tv-story-arrow" data-type aria-hidden="true">↗</span></button></article></div></section>`;}
+ const programFields={
+  growth:[
+   {selector:'.growth-program-head h1',kind:'text'},
+   {selector:'.growth-count',kind:'text'},
+   {selector:'.growth-rec',kind:'text'},
+   {selector:'.growth-awaiting, .growth-picture',kind:'node',parent:'.growth-viewfinder',before:'.growth-image-caption, .growth-viewfinder-date'},
+   {selector:'.growth-image-caption',kind:'text',parent:'.growth-viewfinder',before:'.growth-viewfinder-date'},
+   {selector:'.growth-viewfinder-date',kind:'text'},
+   {selector:'.growth-date',kind:'text'},
+   {selector:'.growth-adjust-action',kind:'text',parent:'.growth-observation-meta'},
+   {selector:'.growth-observation h2',kind:'text'},
+   {selector:'.growth-observation p',kind:'text'},
+   {selector:'.growth-record-actions .tv-story-action',kind:'node'},
+   {selector:'.growth-pages',kind:'node',parent:'.growth-action-row'}
+  ],
+  archive:[
+   {selector:'.tv-dossier>header>span:first-child',kind:'text'},
+   {selector:'.tv-dossier>header>span:last-child',kind:'text'},
+   {selector:'.tv-dossier-art img',kind:'node'},
+   {selector:'.tv-dossier-name h1',kind:'text'},
+   {selector:'.tv-dossier-name i',kind:'text'},
+   {selector:'.tv-dossier-body article>p',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(1) dt',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(1) dd',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(2) dt',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(2) dd',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(3) dt',kind:'text'},
+   {selector:'.tv-dossier-body dl>div:nth-child(3) dd',kind:'text'},
+   {selector:'.tv-dossier .tv-story-action',kind:'node'}
+  ]
+ };
+ const visibleText=element=>element?.dataset.typeText??element?.textContent??'';
+ function programPlan(){
+  const items=frames(),nextIndex=((film%items.length)+items.length)%items.length,nextFrame=items[nextIndex],plant=selected();
+  const preview=document.createElement('div');preview.innerHTML=channel==='growth'?growthMarkup(plant,nextFrame):archiveMarkup(plant);
+  const nextSection=preview.firstElementChild;
+  const entries=programFields[channel].map(field=>{
+   const old=program.querySelector(field.selector),next=nextSection.querySelector(field.selector);
+   let same=old===null&&next===null;
+   if(old&&next){
+    if(field.kind==='text')same=visibleText(old)===next.textContent;
+    else if(old.matches('.growth-awaiting')&&next.matches('.growth-awaiting'))same=visibleText(old.querySelector('span'))===next.querySelector('span')?.textContent;
+    else if(old.matches('video')&&next.matches('video'))same=old.dataset.recordVideo===next.dataset.recordVideo;
+    else if(old.matches('img')&&next.matches('img'))same=old.getAttribute('src')===next.getAttribute('src')&&old.getAttribute('alt')===next.getAttribute('alt');
+    else if(old.matches('.growth-pages')&&next.matches('.growth-pages'))same=[...old.querySelectorAll('button')].map(button=>`${button.dataset.tvAction}:${visibleText(button)}`).join('|')===[...next.querySelectorAll('button')].map(button=>`${button.dataset.tvAction}:${button.textContent}`).join('|');
+    else if(old.matches('button')&&next.matches('button'))same=old.dataset.tvAction===next.dataset.tvAction&&visibleText(old.querySelector('.tv-story-label')||old)===(next.querySelector('.tv-story-label')?.textContent??next.firstChild?.textContent?.trim());
+    else same=old.outerHTML===next.outerHTML;
+   }
+   return {...field,old,next,changed:!same};
+  });
+  return {nextIndex,nextFrame,entries};
+ }
+ function paintProgramPlan(plan){
+  if(plan.entries.some(entry=>entry.changed&&entry.selector==='.growth-awaiting, .growth-picture'))releaseRecordVideos();
+  film=plan.nextIndex;content=plan.nextFrame;
+  const incoming=[],stable=[];
+  plan.entries.forEach(entry=>{
+   const {old,next,kind}=entry;
+   if(!entry.changed){if(old)stable.push(old);return;}
+   if(kind==='text'&&old&&next&&old.tagName===next.tagName){
+    old.textContent=next.textContent;old.setAttribute('data-type','');delete old.dataset.typed;delete old.dataset.typeText;incoming.push(old);return;
+   }
+   const replacement=next?.cloneNode(true)||null;
+   if(replacement&&kind==='text')replacement.setAttribute('data-type','');
+   if(old)old.replaceWith(...(replacement?[replacement]:[]));
+   else if(replacement){
+    const parent=program.querySelector(entry.parent);
+    parent?.insertBefore(replacement,entry.before?parent.querySelector(entry.before):null);
+   }
+   if(replacement)incoming.push(replacement);
+  });
+  renderKey=`${channel}:${chosenId}`;updateControls();hydrateRecordVideos(program);
+  return {incoming,stable};
+ }
+ function programPieces(){
+  const section=program.firstElementChild;if(!section)return [];
+  const selectors=section.matches('.care-program')
+   ?['.care-heading','.care-stage','.care-copy','.care-topics']
+   :section.matches('.growth-program')
+    ?['.growth-program-head h1','.growth-count','.growth-rec','.viewfinder-corner','.growth-test-card','.growth-awaiting>span','.growth-picture','.growth-image-caption','.growth-viewfinder-date','.growth-date','.growth-adjust-action','.growth-observation h2','.growth-observation p','.growth-record-actions .tv-story-action','.growth-pages button']
+    :[':scope>header>span','.tv-dossier-art img','.tv-dossier-name h1','.tv-dossier-name i','.tv-dossier-body article>p','.tv-dossier-body dt','.tv-dossier-body dd','.tv-dossier .tv-story-action'];
+  return selectors.flatMap(selector=>[...section.querySelectorAll(selector)]);
+ }
+ function revealNewPieces(elements){
+  const pieces=elements.flatMap(element=>{
+   if(element.matches('.growth-awaiting'))return [...element.querySelectorAll('svg')];
+   if(element.matches('.growth-pages'))return [...element.querySelectorAll('button')];
+   if(element.matches('.tv-story-action'))return [...element.querySelectorAll(':scope>span:not(.tv-story-label)')];
+   return [element];
+  }).filter(element=>!element.hasAttribute('data-type')&&!element.querySelector('[data-type]'));
+  pieces.forEach((element,index)=>{
+   animate(element,[{clipPath:'inset(0 100% 0 0)',transform:'translateX(4px)'},{clipPath:'inset(0 0% 0 0)',transform:'translateX(0)'}],{duration:460,delay:65+index*95,easing:'cubic-bezier(.18,.7,.2,1)'});
+  });
+ }
  function updateControls(){
   root.dataset.channel=channel;root.dataset.topic=content.topic||'';program.setAttribute('aria-label',`${selected().name} · ${modes[channel]}`);
   root.querySelectorAll('[data-tv-mode]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.tvMode===channel)));
@@ -192,11 +308,28 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
   root.querySelectorAll('[data-care-frame]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.careFrame)===film)));
   root.querySelector('.album-live').textContent=`${selected().name}，${modes[channel]}${channel==='care'?'，'+topicLabels(selected())[film]:''}`;
  }
- function paint(textOnly=false){
+ function paint(careUpdate=false){
   releaseRecordVideos();
   const items=frames();film=((film%items.length)+items.length)%items.length;content=items[film];const plant=selected();
-  if(textOnly&&program.querySelector('.care-copy')){program.querySelector('.care-copy').innerHTML=copyMarkup();program.querySelector('.care-stage').innerHTML=careScene(plant,film)+``;}
+  if(careUpdate&&program.querySelector('.care-program')){
+   const setChanged=(element,value,force=false)=>{
+    if(element&&(force||(element.dataset.typeText??element.textContent)!==value)){element.textContent=value;delete element.dataset.typed;delete element.dataset.typeText;}
+   };
+   setChanged(program.querySelector('.care-heading h1'),plant.name);
+   setChanged(program.querySelector('.care-heading i'),plant.latin);
+   setChanged(program.querySelector('.care-difficulty span'),plant.level);
+   setChanged(program.querySelector('.care-subtitle-index'),topicLabels(plant)[film],true);
+   setChanged(program.querySelector('.care-copy h2'),content.title);
+   setChanged(program.querySelector('.care-copy p'),content.text);
+   program.querySelectorAll('.care-topics .tv-key-label').forEach((label,index)=>{
+    const value=topicLabels(plant)[index];
+    if((label.dataset.typeText??label.textContent)!==value)label.setAttribute('data-type','');
+    setChanged(label,value);
+   });
+   program.querySelector('.care-stage').innerHTML=careScene(plant,film);
+  }
   else program.innerHTML=channel==='care'?careMarkup(plant):channel==='growth'?growthMarkup(plant):archiveMarkup(plant);
+  if(channel==='care'&&!reduced())program.querySelector('.broadcast-diagram')?.classList.add('is-drawing-pending');
   renderKey=`${channel}:${chosenId}`;updateControls();fitSceneArt();hydrateRecordVideos(program);
  }
  function closeRecordEditor(immediate=false){
@@ -237,22 +370,56 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  const clearMotion=()=>{reveals.forEach(finish=>finish());reveals.clear();animations.forEach(animation=>animation.cancel());animations.clear();};
  function stopWarp(){cancelAnimationFrame(warpFrame);warpFrame=0;root.querySelector('.tv-warp-map').setAttribute('scale','0');root.querySelectorAll('.is-signal-bending').forEach(element=>element.classList.remove('is-signal-bending'));}
  async function bendOut(targets){
-  if(compact.matches){
-   await Promise.all(targets.map(target=>animate(target,[{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(-5px)'}],{duration:300,easing:'ease-in',hold:true}).finished));
-   return;
-  }
-  targets.forEach(target=>target.classList.add('is-signal-bending'));const map=root.querySelector('.tv-warp-map'),started=performance.now();
-  const tick=now=>{const t=Math.min(1,(now-started)/300);map.setAttribute('scale',String(Math.sin(Math.PI*t)*6));if(t<1)warpFrame=requestAnimationFrame(tick);};warpFrame=requestAnimationFrame(tick);
-  await Promise.all(targets.map(target=>animate(target,[{opacity:1,transform:'skewX(0deg)'},{opacity:1,transform:'skewX(.65deg)',offset:.35},{opacity:1,transform:'skewX(-.4deg)',offset:.65},{opacity:1,transform:'skewX(-.3deg)',offset:.75},{opacity:0,transform:'skewX(0deg)'}],{duration:300,easing:'linear',hold:true}).finished));
+  targets=targets.filter(Boolean);
+  // Keep the picture in place. Short signal jitter and uneven ink loss make
+  // it disappear without squeezing the image or clipping its top and bottom.
+  await Promise.all(targets.map(target=>animate(target,[
+   {opacity:1,transform:'translateX(0)'},
+   {opacity:.9,transform:'translateX(2px)',offset:.23},
+   {opacity:.96,transform:'translateX(-3px)',offset:.38},
+   {opacity:.55,transform:'translateX(1px)',offset:.66},
+   {opacity:.7,transform:'translateX(-1px)',offset:.78},
+   {opacity:0,transform:'translateX(0)'}
+  ],{duration:310,easing:'linear',hold:true}).finished));
  }
  async function switchProgram(){
-  const version=++operation,textOnly=channel==='care'&&renderKey===`care:${chosenId}`,target=textOnly?program.querySelector('.care-copy'):program;
-  stopWarp();clearMotion();root.classList.toggle('is-tuning',!textOnly);
-  if(reduced()){paint(textOnly);root.classList.remove('is-tuning');return;}
+  const version=++operation,careUpdate=channel==='care'&&renderKey.startsWith('care:'),code=root.querySelector('.tv-channel-code');
+  const otherUpdate=!careUpdate&&channel!=='care'&&renderKey.startsWith(`${channel}:`),plan=otherUpdate?programPlan():null;
+  const stableRects=plan?new Map(plan.entries.filter(entry=>!entry.changed&&entry.old).map(entry=>[entry.old,entry.old.getBoundingClientRect()])):null;
+  const codeChanges=code.dataset.value!==`CH ${String(selectedIndex()+1).padStart(2,'0')}`;
+  const changedCare=careUpdate?(()=>{
+   const next=frames()[film],plant=selected(),labels=topicLabels(plant);
+   return [
+    [program.querySelector('.care-heading h1'),plant.name],
+    [program.querySelector('.care-heading i'),plant.latin],
+    [program.querySelector('.care-difficulty span'),plant.level],
+    [program.querySelector('.care-subtitle-index'),labels[film]],
+    [program.querySelector('.care-copy h2'),next.title],
+    [program.querySelector('.care-copy p'),next.text],
+    ...[...program.querySelectorAll('.care-topics .tv-key-label')].map((element,index)=>[element,labels[index]])
+   ].filter(([element,value])=>element&&(element.matches('.care-subtitle-index')||(element.dataset.typeText??element.textContent)!==value)).map(([element])=>element);
+  })():[];
+  const outgoing=careUpdate?[program.querySelector('.care-stage'),...changedCare]:plan?plan.entries.filter(entry=>entry.changed).map(entry=>entry.old):programPieces();
+  if(codeChanges)outgoing.push(code);
+  stopWarp();clearMotion();root.classList.toggle('is-tuning',!careUpdate&&!plan);
+  if(reduced()){if(plan)paintProgramPlan(plan);else paint(careUpdate);root.classList.remove('is-tuning');return;}
   try{
-   await bendOut(textOnly?[target,program.querySelector('.care-stage')]:[target]);
-   if(version!==operation||signal.aborted)return;stopWarp();clearMotion();paint(textOnly);drawScene();const next=textOnly?program.querySelector('.care-copy'):program;typeText(root);
-   await animate(next,[{opacity:.65,transform:'skewX(-.4deg)'},{opacity:1,transform:'skewX(.15deg)',offset:.45},{opacity:1,transform:'skewX(0deg)'}],{duration:300,easing:'ease-out'}).finished;
+   await bendOut(outgoing);
+   if(version!==operation||signal.aborted)return;stopWarp();clearMotion();
+   const change=plan?paintProgramPlan(plan):null;
+   if(!plan)paint(careUpdate);
+   drawScene();
+   if(codeChanges)delete code.dataset.typed;
+   typeText(root);
+   if(change){
+    revealNewPieces(change.incoming);
+    change.stable.forEach(element=>{
+     const before=stableRects.get(element),after=element.getBoundingClientRect();
+     const dx=before.left-after.left,dy=before.top-after.top;
+     if(Math.abs(dx)>1||Math.abs(dy)>1)animate(element,[{transform:`translate(${dx}px,${dy}px)`},{transform:'translate(0,0)'}],{duration:360,easing:'cubic-bezier(.22,.7,.25,1)'});
+    });
+   }
+   else if(!careUpdate)revealNewPieces(programPieces());
   }catch{}finally{if(version===operation&&!signal.aborted)root.classList.remove('is-tuning');}
  }
  let drawnDialBase=null;
@@ -296,7 +463,6 @@ export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrow
  window.addEventListener('pointercancel',()=>swipe=null,{signal});
  window.addEventListener('keydown',event=>{if(recordDialog&&event.key==='Escape')closeRecordEditor()},{signal});
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{operation++;stopWarp();clearMotion();tunerAnimation?.cancel();paint();drawDial();root.classList.remove('is-tuning');},{signal});
- if(!matchMedia('(max-width:799px), (pointer:coarse)').matches)crtLens().ready.then(()=>{if(!signal.aborted)root.classList.add('is-curved');}).catch(()=>{});
  paint();drawDial();
  root.addEventListener('chapter:revealed',()=>{typeText(root);drawScene();},{signal,once:true});
  dispose=()=>{closeRecordEditor(true);controller.abort();sceneSizer.disconnect();operation++;stopWarp();clearMotion();tunerAnimation?.cancel();};

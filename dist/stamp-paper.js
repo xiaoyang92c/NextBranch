@@ -10,8 +10,6 @@ export function mountPaperSurface(stamp,card){
   // The flat stamp keeps its texture while parked. The moving strips carry
   // their own aligned copies so the grain bends with the printed paper.
   stamp.append(grain);
-  const backing=document.createElement('div');backing.className='stamp-paper-backing';backing.setAttribute('aria-hidden','true');backing.inert=true;
-  backing.append(stamp.querySelector(':scope > .stamp-teeth').cloneNode(true));
   const smooth=t=>t*t*(3-2*t);
   function draw(progress=null){
     if(progress===null&&lastFlat)return;
@@ -36,7 +34,7 @@ export function mountPaperSurface(stamp,card){
     draw(progress);frame=requestAnimationFrame(tick);
   }
   function flatten(){
-    cancelAnimationFrame(frame);frame=0;surface?.remove();backing.remove();surface=null;strips=[];lastFlat=false;stamp.classList.remove('has-paper-surface');
+    cancelAnimationFrame(frame);frame=0;surface?.remove();surface=null;strips=[];lastFlat=false;stamp.classList.remove('has-paper-surface');
   }
   function sync(){
     if(disposed||motion.matches||!card.classList.contains('current')){flatten();return;}
@@ -45,12 +43,12 @@ export function mountPaperSurface(stamp,card){
     width=stamp.offsetWidth;surface=document.createElement('div');surface.className='stamp-paper-surface';surface.setAttribute('aria-hidden','true');surface.inert=true;
     surface.style.setProperty('--paper-width',`${width}px`);
     for(let i=0;i<count;i++){
-      const strip=document.createElement('div');strip.className='paper-strip';strip.style.left=`${i/count*100}%`;strip.style.width=`calc(${100/count}% + 1.6px)`;
+      const strip=document.createElement('div');strip.className='paper-strip';strip.style.left=`${i/count*100}%`;strip.style.width=`calc(${100/count}% + 1.6px)`;strip.style.zIndex=String(i+1);
       const print=stamp.cloneNode(true);print.className='stamp paper-print';print.dataset.motionReady='true';print.style.left=`${-i/count*width}px`;
       print.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
       strip.append(print);surface.append(strip);strips.push(strip);
     }
-    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held&&!document.hidden)frame=requestAnimationFrame(tick);
+    stamp.append(surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   function hold(){if(disposed)return;held=true;sync();cancelAnimationFrame(frame);frame=0;draw();}
   function resume(){if(disposed)return;held=false;sync();epoch=performance.now();draw();if(surface&&!frame&&!document.hidden)frame=requestAnimationFrame(tick);}

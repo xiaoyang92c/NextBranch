@@ -39,7 +39,9 @@ export function mountHome(plants,onOpen){
   const duration=1120,ease='cubic-bezier(.38,.02,.22,1)';
   const play=(element,frames,options)=>{const animation=element.animate(frames,options);animations.add(animation);animation.finished.finally(()=>animations.delete(animation)).catch(()=>{});return animation;};
   const offsets=index=>cards.map((_,i)=>{let p=i-index;if(p>plants.length/2)p-=plants.length;if(p<-plants.length/2)p+=plants.length;return p;});
-  const step=()=>innerWidth/2+cards[0].offsetWidth*.38;
+  const step=()=>innerWidth>=800
+    ? Math.max(cards[0].offsetWidth*.9,innerWidth*.5+cards[0].offsetWidth*.12)
+    : innerWidth/2+cards[0].offsetWidth*.38;
   const transform=(p,gap)=>`translate(calc(-50% + ${p*gap}px),calc(-50% + ${p*Math.min(gap*.62,scene.clientHeight*.24)}px))`;
   async function slideCopy(element,markup,direction,label){
     element.setAttribute('aria-label',label);

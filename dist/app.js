@@ -1,11 +1,11 @@
 import {mountNavigation,selectNavigation} from './navigation.js';
 import {plants} from './plants.js';
-import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js?v=20261021-1';
-import {mountStampEffects} from './stamp-motion.js?v=20261021-1';
-import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261021-2';
+import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js?v=20261021-4';
+import {mountStampEffects} from './stamp-motion.js?v=20261021-3';
+import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261022-4';
 import {createClaimFlow} from './claim-flow.js?v=20261021-7';
-import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper,paintInitialInterface} from './chapter-motion.js?v=20261021-4';
-import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-4';
+import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper,paintInitialInterface} from './chapter-motion.js?v=20261021-7';
+import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-20';
 import {saveRecordVideo,removeRecordVideo,releaseRecordVideos} from './record-media.js';
 import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261021-1';
 

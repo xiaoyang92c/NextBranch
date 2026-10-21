@@ -43,8 +43,9 @@ function archiveDiagram(plant,topic){
 function journeyIcon(kind){
  const paths={
  cut:'M9 9V34M9 18Q-1 16 2 8Q10 9 9 18M9 27Q21 25 20 17Q9 18 9 27M25 32L38 13M25 32L44 20M25 32L19 41M25 32L34 42M9 30L35 20',
- post:'M5 38H43V46H5ZM9 38V32H39V38M24 32V7M24 17Q11 16 13 7Q24 8 24 17M24 27Q37 25 35 17Q24 18 24 27',
- home:'M4 24L24 6L44 24M10 23V47H38V23M24 47V25M24 34Q12 32 14 25Q24 26 24 34M24 41Q36 39 34 32Q24 33 24 41'};
+ seedling:'M3 47V28C3 16 12 7 24 7C36 7 45 16 45 28V47M3 47H45M10 47V38H38V47M16 38V25M16 31Q9 29 10 23Q16 24 16 31M16 35Q23 33 22 27Q16 28 16 35M32 38V25M32 31Q25 29 26 23Q32 24 32 31M32 35Q39 33 38 27Q32 28 32 35',
+ post:'M5 38H43V47H5ZM9 38V32H39V38M24 32V7M24 17Q11 16 13 7Q24 8 24 17M24 27Q37 25 35 17Q24 18 24 27',
+ home:'M4 24L24 7L44 24M10 19V47H38V19M24 47V25M24 34Q12 32 14 25Q24 26 24 34M24 41Q36 39 34 32Q24 33 24 41'};
  return `<svg viewBox="0 0 48 54" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[kind]}"/>${kind==='cut'?'<circle cx="16" cy="45" r="5"/><circle cx="37" cy="46" r="5"/><circle cx="25" cy="32" r="1.7"/>':''}</g></svg>`;
 }
 export function renderArchive(plant,origin,stories=[]){
@@ -52,15 +53,14 @@ export function renderArchive(plant,origin,stories=[]){
  return `<main class="page archive-page" data-plant="${plant.id}" aria-label="${plant.name}枝条档案" style="--archive-tint:${plant.bg};--archive-paper:${plant.bg};--archive-ink:${plant.sceneInk||plant.ink};--archive-muted:${plant.sceneFine||plant.ink}">
  <article class="archive-paper">
   <div class="archive-topline"><button class="archive-back" data-nav="${origin==='album'?'album':'home'}">← 返回${origin==='album'?'枝条放映室':'邮票馆'}</button><span>第 ${serial} 号</span></div>
-  <header class="archive-masthead"><h2>农科枝报</h2><span class="archive-local">观察录</span></header>
-  <div class="archive-dateline"><span>修剪之后，继续生长</span><span>田野植物志</span></div>
+  <header class="archive-masthead"><h2>农科枝报</h2><div class="archive-dateline"><span>修剪之后，继续生长</span><span>田野植物志</span></div><span class="archive-local">观察录</span></header>
   <section class="archive-hero">
    <div class="archive-lead"><h1 data-archive-reveal>${plant.name}</h1><p class="archive-latin" data-archive-reveal>${plant.latin}</p><p class="archive-intro" data-archive-reveal>${plant.intro}</p></div>
    <figure class="archive-specimen"><div class="archive-plate"><img class="archive-branch" src="./assets/${plant.art}" alt="${plant.name}植物图版" draggable="false"><span class="archive-plate-seal" aria-hidden="true">一枝<br>新生</span></div><figcaption><span>植物图版</span><span>${plant.no}</span></figcaption></figure>
   </section>
   <section class="archive-briefs" aria-label="枝条资料"><div><span>枝条来处</span><p data-archive-reveal>${plant.source.replace(' · 演示','')}</p></div><div><span>照料提示</span><p data-archive-reveal>${plant.level}</p></div></section>
   <section class="archive-cultivation"><header class="archive-section-title"><span>栽植札记</span><h2 data-archive-reveal>安家，先做好这三件事</h2></header><div class="archive-care-columns">${notes.map(([title,copy],i)=>`<article class="archive-care-note"><figure>${archiveDiagram(plant,i)}<figcaption>${['光照','浇水',seedlingOnly?'安苗':'扦插'][i]}</figcaption></figure><div><h3 data-archive-reveal>${title}</h3><p data-archive-reveal>${copy}</p></div></article>`).join('')}</div></section>
-  <section class="archive-story"><header class="archive-section-title"><span>枝条的下一站</span><h2 data-archive-reveal>从村里，到新的窗边</h2></header><ol class="archive-journey"><li>${journeyIcon(seedlingOnly?'post':'cut')}<span>${seedlingOnly?'村里育苗':'村里修剪'}</span></li><li>${journeyIcon('post')}<span>驿站整理</span></li><li>${journeyIcon('home')}<span>新家养护</span></li></ol><aside class="archive-news"><h3>生长手记</h3>${records.length?records.map(record=>`<article><time>${escape(record.date)}</time><h4 data-archive-reveal>${escape(record.title)}</h4>${record.photo?`<img class="archive-news-photo" src="${escape(record.photo)}" alt="${plant.name}的生长近况" loading="lazy">`:''}<p data-archive-reveal>${escape(record.text)}</p></article>`).join(''):'<p data-archive-reveal>新的近况，从你接过这一枝开始。安家后，在放映室记录它的变化。</p>'}</aside></section>
+  <section class="archive-story"><header class="archive-section-title"><span>枝条的下一站</span><h2 data-archive-reveal>从村里，到新的窗边</h2></header><ol class="archive-journey"><li>${journeyIcon(seedlingOnly?'seedling':'cut')}<span>${seedlingOnly?'村里育苗':'村里修剪'}</span></li><li>${journeyIcon('post')}<span>驿站整理</span></li><li>${journeyIcon('home')}<span>新家养护</span></li></ol><aside class="archive-news"><h3>生长手记</h3>${records.length?records.map(record=>`<article><time>${escape(record.date)}</time><h4 data-archive-reveal>${escape(record.title)}</h4>${record.photo?`<img class="archive-news-photo" src="${escape(record.photo)}" alt="${plant.name}的生长近况" loading="lazy">`:''}<p data-archive-reveal>${escape(record.text)}</p></article>`).join(''):'<p data-archive-reveal>新的近况，从你接过这一枝开始。安家后，在放映室记录它的变化。</p>'}</aside></section>
   <section class="archive-receive"><div class="archive-receive-heading"><span class="archive-receive-mark" aria-hidden="true">${journeyIcon('post')}</span><div><span class="archive-section-label">下一站 · 新家</span><h2 class="archive-closing" data-archive-reveal>把这一枝，带回日常</h2></div></div><div class="archive-pickup"><p><span>领取地点</span><strong>农科村枝条再生驿站</strong></p><p><span>领取方式</span><strong>线下自取 · 现场学习养护</strong></p></div><button class="archive-accept" data-claim="${plant.id}"><span class="archive-accept-label">接收这一枝</span><span class="archive-accept-arrow" aria-hidden="true">→</span>${acceptVines()}</button><p class="archive-receive-foot" data-archive-reveal>接过枝条，也给生长留一点时间</p></section>
  </article></main>`;
 }
@@ -79,8 +79,6 @@ function makeGlyphs(element){
   const group=document.createElement('span');group.className='archive-word';
   Array.from(unit).forEach(char=>{const glyph=document.createElement('span');glyph.className='archive-glyph';glyph.textContent=char;glyph.style.setProperty('--ink-delay',`${Math.min(index++*(element.tagName==='H1'?65:13),650)}ms`);glyphs.push(glyph);group.append(glyph);});ink.append(group);
  });
- const lastDelay=Math.min(Math.max(0,index-1)*(element.tagName==='H1'?65:13),650);
- glyphs.forEach(glyph=>glyph.style.setProperty('--exit-delay',`${lastDelay-parseFloat(glyph.style.getPropertyValue('--ink-delay'))}ms`));
  element.replaceChildren(accessible,ink);element.classList.add('archive-ink-ready');
 }
 export function mountArchive(){
@@ -88,11 +86,11 @@ export function mountArchive(){
   const controller=new AbortController(),animations=new Set(),timers=new Set();let observer;
   const textSelectors='[data-archive-reveal],.archive-back,.archive-topline>span,.archive-masthead>span,.archive-masthead>h2,.archive-dateline>span,.archive-specimen figcaption>span,.archive-plate-seal,.archive-briefs span,.archive-section-title>span,.archive-care-note figcaption,.archive-journey li>span,.archive-news>h3,.archive-news time,.archive-receive .archive-section-label,.archive-pickup span,.archive-pickup strong,.archive-accept-label,.archive-accept-arrow';
   const textElements=[...root.querySelectorAll(textSelectors)];
-  const ruleElements=[...root.querySelectorAll('.archive-masthead,.archive-dateline,.archive-briefs,.archive-care-columns,.archive-journey,.archive-receive')];
+  const ruleElements=[...root.querySelectorAll('.archive-masthead,.archive-briefs,.archive-care-columns,.archive-journey,.archive-receive')];
   ruleElements.forEach(element=>element.classList.add('archive-draw-rule'));
   const graphics=[...root.querySelectorAll('.archive-plate-seal,.archive-receive-mark,.archive-news-photo')];
   graphics.forEach(element=>element.classList.add('archive-draw-graphic'));
-  const elements=[...new Set([...textElements,...ruleElements,...graphics,root.querySelector('.archive-accept')])];
+  const elements=[...new Set([...textElements,...ruleElements,...graphics,root.querySelector('.archive-dateline'),root.querySelector('.archive-accept')])];
  const button=root.querySelector('.archive-accept'),vines=button.querySelector('.archive-accept-vines');
  const vineSize=new ResizeObserver(()=>{const w=button.offsetWidth,h=button.offsetHeight;vines.setAttribute('viewBox',`0 0 ${w} ${h}`);vines.innerHTML=vineDrawing(w,h);});vineSize.observe(button);
  const media=matchMedia('(prefers-reduced-motion: reduce)');
@@ -181,11 +179,12 @@ function printZoom(stamp,box){
 }
 function printLayer(stamp,box){
  const shell=document.createElement('div');shell.className='branch-portal-stamp';
- const print=stamp.cloneNode(true);print.className='stamp portal-print';print.removeAttribute('style');
+ const print=stamp.cloneNode(false);print.className='stamp portal-print';print.removeAttribute('style');
   for(const name of ['--stamp-bg','--stamp-ink','--stamp-paper'])print.style.setProperty(name,getComputedStyle(stamp).getPropertyValue(name));
-   // The wind surface adds a plant-coloured perforated backing. It belongs to
-   // the live stamp only; otherwise it covers the white edge during the flight.
-   print.querySelector('.stamp-paper-surface')?.remove();print.querySelector('.stamp-paper-backing')?.remove();print.querySelector('.stamp-grain-overlay')?.remove();print.querySelector('.stamp-art')?.remove();print.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));shell.append(print);
+ // The flight carries one print. Never clone the live paper strips or backing:
+ // they are separate copies of the typography and can show through on return.
+ print.append(stamp.querySelector(':scope > .stamp-teeth').cloneNode(true),stamp.querySelector(':scope > .stamp-inner').cloneNode(true));
+ print.querySelector('.stamp-art')?.remove();print.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));shell.append(print);
  Object.assign(shell.style,{left:`${box.left}px`,top:`${box.top}px`,width:`${box.width}px`,height:`${box.height}px`});return shell;
 }
 function pauseFloat(stamp,reset=false){
@@ -252,7 +251,7 @@ export async function returnArchive(plant,renderDestination){
  const originalVisibility=image.style.visibility;image.style.visibility='hidden';
  let rendered=false,destination,home,lens,lensScale,floats=[],restored=false,landed=false;
   // Let the entire print, including its perforations, settle with the branch.
-  const reverseEase='cubic-bezier(.78,0,.7,.95)';
+  const reverseEase='cubic-bezier(.4,.1,.6,.9)';
  const animate=(element,frames,duration,easing=reverseEase)=>{
   const motion=element.animate(frames,{duration,easing,fill:'both'});
   state.animations.add(motion);return motion;
@@ -262,7 +261,7 @@ export async function returnArchive(plant,renderDestination){
   if(image.isConnected)image.style.visibility=originalVisibility;
   if(page.parentElement===document.body)page.remove();
   else if(page.isConnected){page.style.visibility='';page.inert=false;}
-  if(destination?.isConnected){destination.classList.remove('is-return-target');const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');if(live){live.style.opacity='';if(!landed)live.classList.remove('is-portal-flat-print');}if(shadow){shadow.style.opacity='';shadow.style.transform='';}live?.dispatchEvent(new Event('stamp:resume'));}
+  if(destination?.isConnected){destination.classList.remove('is-return-target');const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');if(live){live.style.opacity='';live.classList.remove('is-portal-flat-print','is-portal-landing','is-paper-ready');}if(shadow){shadow.style.opacity='';shadow.style.transform='';}live?.dispatchEvent(new Event('stamp:resume'));}
   floats.forEach(motion=>{if(motion.playState==='paused')motion.play();});
   if(lens?.isConnected&&!landed)lens.setAttribute('scale',lensScale);
   if(home?.isConnected)home.inert=false;
@@ -277,13 +276,15 @@ export async function returnArchive(plant,renderDestination){
   home=document.querySelector('.home-scene');destination=home?.querySelector('.scene-stamp.current');
   const stamp=destination?.querySelector('.stamp'),stampImage=stamp?.querySelector('.stamp-art');
   if(!stampImage)throw new Error('Return stamp is missing');
-  home.inert=true;destination.classList.add('is-return-target');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
-  // The visible landing frame and the live stamp use the same flat paper.
-  // Keep that print in place after handoff so no textured crossfade softens it.
-  stamp.classList.add('is-portal-flat-print');
+  home.inert=true;destination.classList.add('is-return-target');stamp.classList.add('is-portal-landing');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
+  // The travelling print stays flat and untextured. The live paper takes over
+  // only after landing, so neither texture nor twelve paper copies are zoomed.
   lens=home.querySelector('.scene-lens-displacement');lensScale=lens?.getAttribute('scale');
   if(lens)lens.setAttribute('scale','0');
-  if(!stampImage.complete)await stampImage.decode();if(state.cancelled)return;
+  // The live stamp is split into paper strips; each cloned illustration must
+  // be decoded before it takes over from the travelling illustration.
+  await Promise.all([stampImage,...stamp.querySelectorAll('.paper-print .stamp-art')].map(image=>image.decode().catch(()=>{})));
+  if(state.cancelled)return;
   const to=fittedImage(stampImage,image),base={cx:from.cx,cy:from.cy},targetFilter=getComputedStyle(stampImage).filter;
   const frames=flightFrames({...from,scale:1},{cx:to.cx,cy:to.cy,scale:to.width/from.width},base);
   frames[0].filter=fromFilter;frames[1].filter=targetFilter;
@@ -293,12 +294,13 @@ export async function returnArchive(plant,renderDestination){
   // frame and branch then recede together for the full 1320 ms journey.
   const visibleInk=[...page.querySelectorAll('.archive-ink-ready.is-ink-visible')].filter(element=>{const box=element.getBoundingClientRect();return box.bottom>0&&box.top<innerHeight;});
   const entryDelay=element=>Math.min(380,Math.max(0,element.getBoundingClientRect().top/innerHeight*280));
-  const lastGroupDelay=Math.max(0,...visibleInk.map(entryDelay));
-  visibleInk.forEach(element=>element.style.setProperty('--exit-group-delay',`${Math.round(lastGroupDelay-entryDelay(element))}ms`));
+  visibleInk.forEach(element=>{element.style.setProperty('--exit-group-delay',`${Math.round(entryDelay(element))}ms`);element.classList.add('is-exiting');});
+  const dateline=page.querySelector('.archive-dateline.is-ink-visible');
+  if(dateline)dateline.style.setProperty('--exit-group-delay',`${Math.round(entryDelay(dateline))}ms`);
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   if(state.cancelled)return;
   page.classList.add('is-archive-dispersing');
-   const paperClear=animate(page,[{opacity:1,offset:0},{opacity:1,offset:.68},{opacity:0,offset:1}],1320,'linear');
+  const paperClear=animate(page,[{opacity:1,offset:0},{opacity:.85,offset:.2},{opacity:.38,offset:.55},{opacity:0,offset:.82},{opacity:0,offset:1}],1320,'linear');
   const printReturn=animate(shell,[{transform:`scale(${zoom})`},{transform:'scale(1)'}],1320);
   const plantReturn=animate(flight,frames,1320);
   await Promise.all([paperClear.finished,printReturn.finished,plantReturn.finished]);if(state.cancelled)return;
@@ -308,6 +310,8 @@ export async function returnArchive(plant,renderDestination){
   if(shadow){shadow.style.opacity='0';shadow.style.transform='translate3d(0,0,0) scale(.92)';}
   destination.classList.remove('is-return-target');
   overlay.remove();flightOverlay.remove();
+  await new Promise(resolve=>requestAnimationFrame(resolve));
+  live.classList.add('is-paper-ready');
   const settles=[];
   if(shadow){const target=getComputedStyle(shadow);const offset=target.getPropertyValue('--shadow-offset').trim()||'22px',stretch=target.getPropertyValue('--shadow-stretch').trim()||'1',squash=target.getPropertyValue('--shadow-squash').trim()||'1',skewX=target.getPropertyValue('--shadow-skew-x').trim()||'0deg',skewY=target.getPropertyValue('--shadow-skew-y').trim()||'0deg';settles.push(animate(shadow,[{opacity:0,transform:'translate3d(0,0,0) scale(.92)'},{opacity:.27,transform:`translate3d(${offset},${offset},0) skew(${skewX},${skewY}) scale(${stretch},${squash})`}],650,'cubic-bezier(.2,.7,.25,1)').finished);}
   await Promise.all(settles);landed=true;

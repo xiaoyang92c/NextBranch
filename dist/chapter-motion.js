@@ -220,9 +220,9 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
  }
  page.inert=true;enteringPage=page;
  if(view==='home'||view==='letters'){
-  // The album closes onto the home palette. Keep its vignette and grain in
-  // place from the first frame so the background cannot darken after opening.
-  const arrivingClass=view==='home'&&fromView==='album'?null:view==='home'&&fromView==='letters'?'is-film-arriving':'is-background-arriving';
+  // Let the postal gallery's edge shade and paper grain develop with its
+  // returning stamps, including when the television has just closed.
+  const arrivingClass=view==='home'&&fromView==='letters'?'is-film-arriving':'is-background-arriving';
   if(arrivingClass){
    page.classList.add(arrivingClass);
    requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -248,11 +248,11 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
   const screen=find('.album-tv'),box=screen.getBoundingClientRect(),cy=innerHeight/2-box.top;
   const aperture=(height,width=0,radius=2)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
   tween(screen,[
-   {clipPath:aperture(3,49.5),filter:'brightness(.96)'},
-   {clipPath:aperture(5,16),filter:'brightness(.98)',offset:.25},
-   {clipPath:aperture(innerHeight*.22,0,8),filter:'brightness(1)',offset:.43},
-   {clipPath:'inset(0px 0% 0px 0% round 0px)',filter:'brightness(1)',offset:.88},
-   {clipPath:'inset(0px 0% 0px 0% round 0px)',filter:'brightness(1)'}
+   {clipPath:aperture(3,49.5)},
+   {clipPath:aperture(5,16),offset:.25},
+   {clipPath:aperture(innerHeight*.22,0,8),offset:.43},
+   {clipPath:'inset(0px 0% 0px 0% round 0px)',offset:.88},
+   {clipPath:'inset(0px 0% 0px 0% round 0px)'}
   ],1140,0,'cubic-bezier(.4,.05,.22,1)');
   // Install ink and line drawing before exposing the raster, avoiding a flat
   // screen followed by a second content entrance or a full-copy flash.
@@ -295,7 +295,11 @@ export async function leaveChapter(page,view,{nextBackground,nextView,cover}={})
   // Enter through a soft standby tone; close directly onto the next chapter.
   const backing=nextView==='album'?signalBlank:nextBackground||getComputedStyle(page).backgroundColor;
   if(nextView==='album')signalCarry={bridge:backing};
-  document.body.style.backgroundColor=backing;
+  if(view==='album'&&nextView==='home'){
+   const from=getComputedStyle(page).backgroundColor;
+   document.body.style.backgroundColor=backing;
+   tween(document.body,[{backgroundColor:from},{backgroundColor:backing}],720,0,'cubic-bezier(.42,0,.58,1)');
+  }else document.body.style.backgroundColor=backing;
   if(view==='letters'){
    const toolbar=find('.mailbox-toolbar');
    if(toolbar)tween(toolbar,[{translate:'0 0'},{translate:`0 ${innerHeight-toolbar.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
