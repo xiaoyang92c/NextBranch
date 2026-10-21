@@ -4,6 +4,8 @@
 
 目前它是前端演示，没有连接真实的库存、预约或账号系统。
 
+在线体验：[nextbranch.vercel.app](https://nextbranch.vercel.app/)。
+
 ## 在本地打开
 
 在项目根目录运行：
@@ -24,7 +26,7 @@ python -m http.server 4173 --directory dist
 - **枝条放映室**：看每株植物的 3 段养护动画，也能查看和记录生长近况。
 - **枝友来信**：拆信、回信、搜索来信，或者写一封新信。
 
-植物包括罗汉松、桂花、香泡、五角枫、紫薇、茶花、银杏、三角梅、六月雪和石榴。页面中的植物插画在 `dist/assets/`。
+植物包括罗汉松、桂花、香泡、五角枫、紫薇、茶花、银杏、三角梅、六月雪和石榴。
 
 ## 记录会保存在哪里
 
@@ -32,7 +34,7 @@ python -m http.server 4173 --directory dist
 
 养护内容区分了未生根的枝段和已经生根的小苗。罗汉松、香泡、五角枫、银杏的演示领取方式只提供小苗。实际能领取什么、怎么养，还是以驿站现场说明为准。
 
-## 修改与部署
+## 修改网站
 
 直接编辑 `dist/` 里的文件即可。提交前可以运行：
 
@@ -43,8 +45,4 @@ npm run build
 
 `npm run build` 会检查入口文件、JavaScript 语法、模块引用和静态资源；它不会重新打包页面。
 
-Vercel 的设置已经写在根目录的 `vercel.json`：项目根目录保持仓库根目录，输出目录为 `dist`。不要把 Vercel 的 Root Directory 设成 `dist`。
-
-## 素材和参考
-
-信封纸张素材的生成说明见 [docs/letter-envelope-generation.md](docs/letter-envelope-generation.md)。养护文字参考了 [南京大学的香泡资料](https://www.nju.edu.cn/ysl/info/1361/9631.htm)、[Flora of China 的五角枫资料](https://efloras.org/florataxon.aspx?flora_id=2&taxon_id=250084190)、[RHS 茶花指南](https://www.rhs.org.uk/plants/camellia/growing-guide)、[RHS 柑橘指南](https://www.rhs.org.uk/fruit/citrus/grow-your-own?type=f)和 [RHS 软枝扦插指南](https://www.rhs.org.uk/propagation/softwood-cuttings)。
+网站已经部署在 Vercel。部署设置放在根目录的 `vercel.json`，输出目录是 `dist`。

@@ -303,3 +303,4 @@ body[data-view] .main-nav{background:none;box-shadow:none;backdrop-filter:none;b
 .scene-stamp.current>.stamp{translate:none}
 
 .scene-paint-defs{position:absolute;pointer-events:none}
+.home-scene.is-switching::after,.home-scene.is-portal-departing::after{animation-play-state:paused}

@@ -1,13 +1,13 @@
 import {mountNavigation,selectNavigation} from './navigation.js';
 import {plants} from './plants.js';
-import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js';
-import {mountStampEffects} from './stamp-motion.js';
+import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js?v=20261021-1';
+import {mountStampEffects} from './stamp-motion.js?v=20261021-1';
 import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261021-2';
-import {createClaimFlow} from './claim-flow.js?v=20261021-6';
+import {createClaimFlow} from './claim-flow.js?v=20261021-7';
 import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper} from './chapter-motion.js?v=20261021-3';
 import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-4';
 import {saveRecordVideo,removeRecordVideo,releaseRecordVideos} from './record-media.js';
-import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261020-16';
+import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261021-1';
 
 const P = Object.fromEntries(plants.map(x=>[x.id,x]));
 const initial = {saved:['podocarpus','osmanthus'],claims:[{id:'DEMO-2026-01',plantId:'crape',nick:'演示访客',place:'阳台',light:'充足日照',form:'已生根幼苗',status:'claimed',date:'2026.08.18',demo:true}],postcards:[{id:'demo-post',plantId:'crape',date:'2026.09.03',status:'抽出新芽',text:'第十七天，枝条顶端有了小小的绿点。先继续耐心等根。',photo:'',demo:true}],letters:[],unread:true};
@@ -37,7 +37,11 @@ function stampEdge(){
   return `<svg class="stamp-teeth" viewBox="0 0 220 300" preserveAspectRatio="none" aria-hidden="true"><path d="${d}Z"/></svg>`;
 }
 const stampTeeth=stampEdge();
-function stamp(id,small=false){const p=P[id];return `<div class="stamp ${small?'small':''}" style="--stamp-bg:${p.bg};--stamp-ink:${p.ink}">${stampTeeth}<div class="stamp-inner"><div class="stamp-top"><span class="stamp-brand">下一枝<small>NEXT BRANCH</small></span><b class="stamp-emblem">枝</b></div><img class="stamp-art" src="./assets/${p.art}" alt="${p.name}植物插画" draggable="false"><div class="stamp-bottom"><span><span class="stamp-name">${p.name}</span><span class="stamp-latin">${p.english}</span></span><span class="stamp-index">${p.value}<small>${p.no}</small></span></div></div></div>`}
+function stamp(id,small=false,{preview=false,defer=false,priority=false}={}){
+  const p=P[id],image=`./assets/${preview?p.art.replace(/\.webp$/,'-preview.webp'):p.art}`;
+  const source=defer?`data-src="${image}"`:`src="${image}"`;
+  return `<div class="stamp ${small?'small':''}" style="--stamp-bg:${p.bg};--stamp-ink:${p.ink}">${stampTeeth}<div class="stamp-inner"><div class="stamp-top"><span class="stamp-brand">下一枝<small>NEXT BRANCH</small></span><b class="stamp-emblem">枝</b></div><img class="stamp-art" ${source} ${priority?'fetchpriority="high"':''} decoding="async" alt="${p.name}植物插画" draggable="false"><div class="stamp-bottom"><span><span class="stamp-name">${p.name}</span><span class="stamp-latin">${p.english}</span></span><span class="stamp-index">${p.value}<small>${p.no}</small></span></div></div></div>`;
+}
 const claimFlow=createClaimFlow({getPlant:id=>P[id]||plants[0],stamp,getClaims:()=>data.claims,persist,render,go});
 const navLabels=[['home','邮票馆','INDEX'],['album','枝条放映室','ALBUM'],['letters','枝友来信','LETTERS']];
 const navigationSection=current=>current==='detail'||current==='story'?originView:current==='claim'?'home':current==='growth'?'album':current==='write-letter'?'letters':current;

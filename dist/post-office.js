@@ -1,4 +1,4 @@
-import {renderLetterTheatre,mountLetterTheatre} from './letter-theatre.js?v=20261020-13';
+import {renderLetterTheatre,mountLetterTheatre} from './letter-theatre.js?v=20261021-1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let dispose=()=>{},refresh=()=>{},freshId=null,readerOrigin=null,returnEnvelope=null;
@@ -7,7 +7,7 @@ export function refreshPostOffice(){refresh();}
 export function closePostLetter(){return document.querySelector('#letter-overlay')?.requestClose?.()??Promise.resolve();}
 
 function envelope(letter,plant){
-  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" draggable="false"><span class="garden-envelope-back"></span><span class="garden-envelope-flap"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>待寄</span></span></span>`;
+  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art.replace(/\.webp$/,'-preview.webp')}" decoding="async" alt="" draggable="false"><span class="garden-envelope-back"></span><span class="garden-envelope-flap"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket"><img src="./assets/letter-pocket-paper.webp" decoding="async" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>待寄</span></span></span>`;
 }
 export function renderPostOffice(plants,filter){return renderLetterTheatre(plants,filter);}
 export function mountPostOffice(config){

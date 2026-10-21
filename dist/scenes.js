@@ -21,11 +21,20 @@ function getLensMap(){
 }
 export function renderHome(plants,stamp){
   const plant=plants[homeIndex];
-  return `<main class="home-scene page" style="--scene-bg:${plant.sceneBg};--scene-accent:${plant.sceneInk||plant.ink};--scene-fine:${plant.sceneFine||plant.ink}" aria-label="植物邮票滑动展台"><svg class="scene-optical-defs" width="0" height="0" aria-hidden="true"><defs><filter id="home-fisheye" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="scene-lens-map" href="${getLensMap().url}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lens-map"/><feDisplacementMap class="scene-lens-displacement" in="SourceGraphic" in2="lens-map" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><div class="scene-optics"><div class="scene-heading"><h1 class="scene-title" aria-label="${plant.name}">${copy(titleMarkup(plant.name))}</h1><p class="scene-english" aria-label="${plant.english}">${copy(plant.english)}</p></div><div class="scene-rail">${plants.map((p,i)=>`<button class="scene-stamp" data-scene-index="${i}" aria-label="${i===homeIndex?'打开档案：':'切换到'}${p.name}邮票">${stamp(p.id)}</button>`).join('')}</div><div class="scene-end"><div class="scene-name"><strong class="scene-chinese" aria-label="${plant.heading}">${copy(plant.heading)}</strong><span class="scene-latin" aria-label="${plant.homeNote}">${copy(plant.homeNote)}</span></div></div></div></main>`;
+  return `<main class="home-scene page" style="--scene-bg:${plant.sceneBg};--scene-accent:${plant.sceneInk||plant.ink};--scene-fine:${plant.sceneFine||plant.ink}" aria-label="植物邮票滑动展台"><svg class="scene-optical-defs" width="0" height="0" aria-hidden="true"><defs><filter id="home-fisheye" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage class="scene-lens-map" href="${getLensMap().url}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lens-map"/><feDisplacementMap class="scene-lens-displacement" in="SourceGraphic" in2="lens-map" scale="20" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg><div class="scene-optics"><div class="scene-heading"><h1 class="scene-title" aria-label="${plant.name}">${copy(titleMarkup(plant.name))}</h1><p class="scene-english" aria-label="${plant.english}">${copy(plant.english)}</p></div><div class="scene-rail">${plants.map((p,i)=>{const offset=Math.abs(i-homeIndex),near=Math.min(offset,plants.length-offset);return `<button class="scene-stamp" data-scene-index="${i}" aria-label="${i===homeIndex?'打开档案：':'切换到'}${p.name}邮票">${stamp(p.id,false,{preview:true,defer:near>2,priority:near===0})}</button>`;}).join('')}</div><div class="scene-end"><div class="scene-name"><strong class="scene-chinese" aria-label="${plant.heading}">${copy(plant.heading)}</strong><span class="scene-latin" aria-label="${plant.homeNote}">${copy(plant.homeNote)}</span></div></div></div></main>`;
 }
 export function mountHome(plants,onOpen){
   const scene=document.querySelector('.home-scene');if(!scene)return;
   const controller=new AbortController(),signal=controller.signal,cards=[...scene.querySelectorAll('.scene-stamp')],animations=new Set();
+  const warmed=new Set();
+  const warmArchive=index=>{
+    const art=plants[index].art;
+    if(warmed.has(art))return;
+    warmed.add(art);
+    const image=new Image();image.decoding='async';image.fetchPriority='low';image.src=`./assets/${art}`;
+    image.decode().catch(()=>{});
+  };
+  const warmTimer=setTimeout(()=>{if(!signal.aborted)warmArchive(homeIndex);},1200);
   let busy=false,down=null,dragOffset=0;
   const duration=1120,ease='cubic-bezier(.38,.02,.22,1)';
   const play=(element,frames,options)=>{const animation=element.animate(frames,options);animations.add(animation);animation.finished.finally(()=>animations.delete(animation)).catch(()=>{});return animation;};
@@ -62,8 +71,10 @@ export function mountHome(plants,onOpen){
     const gap=step(),positions=offsets(homeIndex),movements=[];
     cards.forEach((card,i)=>{
       const previous=Number(card.dataset.position??positions[i]),p=positions[i],near=Math.abs(p),start=card.style.transform||transform(previous,gap);
+      const art=card.querySelector('.stamp-art');
+      if(near<=2&&art?.dataset.src){art.src=art.dataset.src;delete art.dataset.src;}
       card.getAnimations().forEach(animation=>animation.cancel());resetStamp(card);
-      card.style.transform=transform(p,gap);card.style.opacity=near>2?'0':'1';card.style.visibility=near>2?'hidden':'visible';card.style.zIndex=String(10-near);card.tabIndex=near<=1?0:-1;card.classList.toggle('current',p===0);card.setAttribute('aria-label',`${p===0?'打开档案：':'切换到'}${plants[i].name}邮票`);card.dataset.position=p;
+      card.style.transform=transform(p,gap);card.style.opacity=near>2?'0':'1';card.style.visibility=near>2?'hidden':'visible';card.style.willChange=near<=2?'transform':'auto';card.style.zIndex=String(10-near);card.tabIndex=near<=1?0:-1;card.classList.toggle('current',p===0);card.setAttribute('aria-label',`${p===0?'打开档案：':'切换到'}${plants[i].name}邮票`);card.dataset.position=p;
       card.querySelector('.stamp').dispatchEvent(new Event('stamp:layout'));
       if(animate&&!reducedMotion()&&Math.abs(previous-p)<2&&(Math.abs(previous)<=2||near<=2)){
         movements.push(play(card,[{transform:start},{transform:transform(p,gap)}],{duration,easing:ease}).finished);
@@ -74,6 +85,7 @@ export function mountHome(plants,onOpen){
   }
   function update(delta){
     if(busy)return;busy=true;scene.querySelectorAll('.scene-ink-letter').forEach(glyph=>glyph.getAnimations().forEach(animation=>{animation.finish();animation.cancel();}));scene.classList.add('is-switching');homeIndex=(homeIndex+delta+plants.length)%plants.length;
+    warmArchive(homeIndex);
     colors();const movement=layout(true),plant=plants[homeIndex];
     Promise.allSettled([movement,slideCopy(scene.querySelector('.scene-title'),titleMarkup(plant.name),-delta,plant.name),slideCopy(scene.querySelector('.scene-english'),plant.english,-delta,plant.english),slideCopy(scene.querySelector('.scene-chinese'),plant.heading,delta,plant.heading),slideCopy(scene.querySelector('.scene-latin'),plant.homeNote,-delta,plant.homeNote)]).then(()=>{if(!signal.aborted){busy=false;scene.classList.remove('is-switching');}});
   }
@@ -110,7 +122,7 @@ export function mountHome(plants,onOpen){
     // transforms before cancellation, including both travelling text copies.
     const moving=[...scene.querySelectorAll('.scene-copy,.scene-stamp')];
     const poses=moving.map(el=>[el,getComputedStyle(el).transform]);
-    controller.abort();observer.disconnect();animations.forEach(animation=>animation.cancel());animations.clear();
+    controller.abort();clearTimeout(warmTimer);observer.disconnect();animations.forEach(animation=>animation.cancel());animations.clear();
     poses.forEach(([el,transform])=>el.style.transform=transform);
     cards.forEach(card=>card.querySelector('.stamp').dispatchEvent(new Event('stamp:dispose')));
   };

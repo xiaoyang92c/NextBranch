@@ -2,7 +2,7 @@
 // artwork and live typography are reused, so no screenshot texture is needed.
 export function mountPaperSurface(stamp,card){
   const scene=card.closest('.home-scene'),motion=matchMedia('(prefers-reduced-motion: reduce)'),compact=matchMedia('(max-width: 799px)');
-  const stripCount=()=>compact.matches?8:16;
+  const stripCount=()=>compact.matches?6:12;
   let surface=null,strips=[],frame=0,epoch=0,width=stamp.offsetWidth,disposed=false,held=false,lastFlat=false,lastPaint=0;
   const stock=getComputedStyle(stamp.querySelector('.stamp-inner'),'::after'),grain=document.createElement('div');
   grain.className='stamp-grain-overlay';grain.setAttribute('aria-hidden','true');grain.inert=true;
@@ -26,9 +26,10 @@ export function mountPaperSurface(stamp,card){
   }
   function tick(now){
     frame=0;if(!surface||disposed||held)return;
+    if(document.hidden){draw();epoch=now;return;}
     if(compact.matches&&now-lastPaint<32){frame=requestAnimationFrame(tick);return;}
     lastPaint=now;
-    const paused=document.hidden||scene.matches('.is-switching,.is-dragging')||card.classList.contains('is-stamp-pressed');
+    const paused=scene.matches('.is-switching,.is-dragging')||card.classList.contains('is-stamp-pressed');
     if(paused)epoch=now;
     const t=((now-epoch)%7200)/7200;
     const progress=paused||t<.14||t>.86?null:smooth((t-.14)/.72);
@@ -49,16 +50,21 @@ export function mountPaperSurface(stamp,card){
       print.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
       strip.append(print);surface.append(strip);strips.push(strip);
     }
-    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held)frame=requestAnimationFrame(tick);
+    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   function hold(){if(disposed)return;held=true;sync();cancelAnimationFrame(frame);frame=0;draw();}
-  function resume(){if(disposed)return;held=false;sync();epoch=performance.now();draw();if(surface&&!frame)frame=requestAnimationFrame(tick);}
+  function resume(){if(disposed)return;held=false;sync();epoch=performance.now();draw();if(surface&&!frame&&!document.hidden)frame=requestAnimationFrame(tick);}
+  function onVisibilityChange(){
+    if(document.hidden){cancelAnimationFrame(frame);frame=0;draw();}
+    else if(surface&&!held&&!frame){epoch=performance.now();frame=requestAnimationFrame(tick);}
+  }
   const resize=new ResizeObserver(()=>{
     if(Math.abs(stamp.offsetWidth-width)>.5){flatten();sync();}
   });resize.observe(stamp);
   stamp.addEventListener('stamp:layout',sync);stamp.addEventListener('stamp:motion-preference',sync);
   const onCompactChange=()=>{flatten();sync();};
   compact.addEventListener('change',onCompactChange);
+  document.addEventListener('visibilitychange',onVisibilityChange);
   sync();
-  return {flatten,sync,hold,resume,dispose({preserve=false}={}){disposed=true;cancelAnimationFrame(frame);frame=0;if(!preserve){flatten();grain.remove();}resize.disconnect();compact.removeEventListener('change',onCompactChange);stamp.removeEventListener('stamp:layout',sync);stamp.removeEventListener('stamp:motion-preference',sync);}};
+  return {flatten,sync,hold,resume,dispose({preserve=false}={}){disposed=true;cancelAnimationFrame(frame);frame=0;if(!preserve){flatten();grain.remove();}resize.disconnect();compact.removeEventListener('change',onCompactChange);document.removeEventListener('visibilitychange',onVisibilityChange);stamp.removeEventListener('stamp:layout',sync);stamp.removeEventListener('stamp:motion-preference',sync);}};
 }

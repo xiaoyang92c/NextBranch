@@ -1,4 +1,4 @@
-import {mountPaperSurface} from './stamp-paper.js';
+import {mountPaperSurface} from './stamp-paper.js?v=20261021-1';
 const interactive = stamp => {
   const scene=stamp.closest('.home-scene');
   return !scene||(stamp.closest('.scene-stamp')?.classList.contains('current')&&!scene.matches('.is-dragging,.is-switching'));
@@ -18,8 +18,8 @@ function mountHomeStamp(stamp){
     :`<defs><filter id="${id}" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".015 .022" numOctaves="1" seed="8" result="paper-grain"><animate attributeName="baseFrequency" values=".015 .022;.019 .016;.015 .022" dur="11s" begin="0s" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="paper-grain" scale="12" xChannelSelector="R" yChannelSelector="G"><animate attributeName="scale" values="12;22;16;12" dur="6s" begin="0s" repeatCount="indefinite"/></feDisplacementMap><feGaussianBlur stdDeviation="2.1"/></filter></defs>`;};
   paintShadowFilter();compact.addEventListener('change',paintShadowFilter);
   const silhouette=stamp.querySelector('.stamp-teeth path').cloneNode(true);silhouette.setAttribute('filter',`url(#${id})`);shadow.append(silhouette);card.insertBefore(shadow,stamp);
-  const syncMotion=()=>reducedMotion()?shadow.pauseAnimations():shadow.unpauseAnimations();
-  syncMotion();stamp.addEventListener('stamp:motion-preference',syncMotion);
+  const syncMotion=()=>reducedMotion()||card.style.visibility==='hidden'?shadow.pauseAnimations():shadow.unpauseAnimations();
+  syncMotion();stamp.addEventListener('stamp:motion-preference',syncMotion);stamp.addEventListener('stamp:layout',syncMotion);
   const paper=mountPaperSurface(stamp,card);
   let frame=0,bounds=null,point=null,hovering=false;
   function reset(){
@@ -53,7 +53,7 @@ function mountHomeStamp(stamp){
   stamp.addEventListener('stamp:reset',()=>{reset();paper.flatten();});
   stamp.addEventListener('stamp:park',()=>{reset();paper.hold();});
   stamp.addEventListener('stamp:hold',()=>paper.hold());stamp.addEventListener('stamp:resume',()=>paper.resume());
-  stamp.addEventListener('stamp:dispose',()=>{hovering=false;cancelAnimationFrame(frame);frame=0;paper.dispose({preserve:true});compact.removeEventListener('change',paintShadowFilter);shadow.pauseAnimations();stamp.getAnimations().forEach(a=>a.pause());});
+  stamp.addEventListener('stamp:dispose',()=>{hovering=false;cancelAnimationFrame(frame);frame=0;paper.dispose({preserve:true});compact.removeEventListener('change',paintShadowFilter);stamp.removeEventListener('stamp:layout',syncMotion);shadow.pauseAnimations();stamp.getAnimations().forEach(a=>a.pause());});
   stamp.addEventListener('pointerdown',()=>{if(!interactive(stamp))return;reset();card.classList.add('is-stamp-pressed');stamp.style.setProperty('--press-scale','.97');});
   stamp.addEventListener('pointerup',()=>{card.classList.remove('is-stamp-pressed');stamp.style.setProperty('--press-scale','1');});
 }

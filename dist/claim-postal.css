@@ -301,7 +301,7 @@
 /* Let the existing width of the receipt fit inside the photographic slot. */
 .claim-machine,.claim-output-lip{left:-2.5%;right:auto;width:105%}
 .claim-machine-art{clip-path:inset(8% 0 0)}
-.claim-output-lip::before{background-image:url('./assets/vintage-receipt-printer-neutral.png');clip-path:inset(8% 0 35% 0)}
+.claim-output-lip::before{background-image:url('./assets/vintage-receipt-printer-neutral.webp');clip-path:inset(8% 0 35% 0)}
 .claim-dispenser{--feed-start:calc(var(--machine-height)*.61)}
 .claim-machine-status{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important}
 .claim-machine-close{top:19%;right:8%;width:32px;height:32px;padding:6px;border:0;border-radius:50%;background:transparent;color:#5b5045}
