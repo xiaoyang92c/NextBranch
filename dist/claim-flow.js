@@ -1,4 +1,4 @@
-import {mountClaimPress} from './claim-press.js';
+import {mountClaimPress} from './claim-press.js?v=20261021-5';
 const steps = ['信息', '方式', '约定', '小票'];
 const choices = {
   place: ['阳台', '窗边', '庭院'],
@@ -65,14 +65,14 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
   }
   function progress(step){return `<ol class="claim-progress" aria-label="领取小票进度">${steps.map((label,index)=>`<li class="${index+1===step?'is-current':index+1<step?'is-complete':''}" ${index+1===step?'aria-current="step"':''}><span>${String(index+1).padStart(2,'0')}</span><b>${label}</b></li>`).join('')}</ol>`;}
   const source=plant=>plant.source.replace(/\s*·\s*演示/g,'').replace(/^农科村/,'');
-  function paperHeader(plant,receipt=false){return `<header class="claim-mailhead"><div class="claim-mailtitle"><span class="claim-post-office" data-claim-ink>农科村 · 枝条再生驿站</span><h1 data-claim-ink>下一枝</h1><p class="claim-mail-kicker">${receipt?'领取凭条':'领取登记'} · BRANCH RECEIPT</p></div><div class="claim-receipt-rule" aria-hidden="true">********************************</div><div class="claim-specimen-row"><div class="claim-addressee"><span>品名 / ITEM 01</span><h2 data-claim-ink>${plant.name}</h2><p>${plant.no} · ${source(plant)}</p></div><div class="claim-postage"><div class="claim-plant-stamp">${stamp(plant.id,true)}</div></div></div></header><dl class="claim-origin"><div><dt>领取数量</dt><dd>1 ${itemUnit(plant)}</dd></div><div><dt>领取地点</dt><dd>农科村枝条再生驿站</dd></div></dl>`;}
+  function paperHeader(plant,receipt=false){return `<header class="claim-mailhead"><div class="claim-mailtitle"><span class="claim-post-office" data-claim-ink>农科村 · 枝条再生驿站</span><h1 data-claim-ink>下一枝</h1><p class="claim-mail-kicker">${receipt?'领取凭条':'领取登记'} · BRANCH RECEIPT</p></div><div class="claim-receipt-rule" aria-hidden="true">********************************</div><div class="claim-specimen-row"><div class="claim-addressee"><span>品名 / ITEM 01</span><h2 data-claim-ink>${plant.name}</h2><p>${plant.no} · ${source(plant)}</p></div><div class="claim-specimen-branch" aria-hidden="true"><img src="./assets/${plant.art}" alt="" draggable="false"></div></div></header><dl class="claim-origin"><div><dt>领取数量</dt><dd>1 ${itemUnit(plant)}</dd></div><div><dt>领取地点</dt><dd>农科村枝条再生驿站</dd></div></dl>`;}
   function machine(plant){return `<div class="claim-machine" role="img" aria-label="复古小票打印机"><img class="claim-machine-art" src="./assets/vintage-receipt-printer-neutral.png" alt="" draggable="false"></div><div class="claim-output-lip"><span class="claim-machine-status" role="status">就绪</span><button class="claim-machine-close" type="button" data-detail="${plant.id}" aria-label="关闭领取单，返回植物档案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"/><path d="M18 6L6 18"/></svg></button></div>`;}
   function dispatch(plant,inside,{receipt=false,step=1,animation=''}={}){
     const entrance=nextEntrance;nextEntrance='feed';
     return `<main class="page claim-page claim-flow claim-dispatch ${receipt?'claim-receipt':''}${animation}" data-claim-plant="${plant.id}" style="--claim-scene:${plant.bg};--claim-ink:${plant.sceneInk||plant.ink};--claim-soft:${plant.sceneFine||plant.ink};--claim-rule:color-mix(in srgb,${plant.sceneInk||plant.ink} 32%,transparent)" data-print="${entrance}"><div class="claim-workspace"><section class="claim-dispenser" aria-label="枝条小票打印机">${machine(plant)}<div class="claim-paper-feed"><article class="form-paper dispatch-paper">${receipt?`<button class="claim-ticket-close" type="button" data-detail="${plant.id}" aria-label="收好小票，返回植物档案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18"/><path d="M18 6L6 18"/></svg></button>`:''}${paperHeader(plant,receipt)}${progress(step)}${inside}<footer class="claim-paper-foot">农科村 · 下一枝 <span>请妥善保留此凭条</span></footer></article></div></section></div></main>`;
   }
   function radioGroup(field, title, draft) {
-    return `<fieldset class="claim-field"><legend data-claim-ink>${title}</legend><div class="option-row">${choices[field].map((value,index)=>`<label class="option claim-option ${draft[field]===value?'selected':''}"><input type="radio" name="claim-${field}" aria-label="${value}" value="${value}" data-claim-field="${field}" ${draft[field]===value?'checked':''}><span data-claim-ink>${value}</span></label>`).join('')}</div></fieldset>`;
+    return `<fieldset class="claim-field"><legend data-claim-ink>${title}</legend><div class="option-row">${choices[field].map(value=>`<label class="option claim-option ${draft[field]===value?'selected':''}"><input type="radio" name="claim-${field}" aria-label="${value}" value="${value}" data-claim-field="${field}" ${draft[field]===value?'checked':''}><svg class="claim-choice-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.2 6.5 12 13.5 3.5"/></svg><span data-claim-ink>${value}</span></label>`).join('')}</div></fieldset>`;
   }
   function methodNote(plant, draft) {
     if (!available(plant.id, draft.form)) return '';
@@ -115,7 +115,8 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
   }
   function scrollPageUp(page) {
     const startY=window.scrollY;
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches||startY<3)return Promise.resolve();
+    if(startY<3)return Promise.resolve();
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){window.scrollTo({top:0,behavior:'instant'});return Promise.resolve();}
     return new Promise(resolve=>{
       const start=performance.now(),duration=Math.min(860,540+startY*.16);
       function frame(now){
@@ -136,10 +137,17 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
     const page = document.querySelector('.claim-flow');
     if (!page) return;
     document.body.style.backgroundColor=getComputedStyle(page).getPropertyValue('--claim-scene');
-    const press=mountClaimPress(page,page.dataset.print);activePress=press;dispose=()=>press.dispose();
+    const press=mountClaimPress(page,page.dataset.print),hotkey=new AbortController();activePress=press;dispose=()=>{hotkey.abort();press.dispose();};
     let submitting=false,changingStep=false,noteVersion=0;
     const plant = getPlant(page.dataset.claimPlant);
     const draft = draftFor(plant.id);
+    window.addEventListener('keydown',event=>{
+      if(event.key.toLowerCase()!=='f'||event.repeat||event.isComposing||event.altKey||event.ctrlKey||event.metaKey)return;
+      if(event.target instanceof Element&&event.target.closest('input,textarea,select,[contenteditable]'))return;
+      if(!page.isConnected||!page.classList.contains('claim-receipt')||currentClaim(plant.id)?.status!=='claimed')return;
+      event.preventDefault();
+      press.scan().catch(()=>{});
+    },{signal:hotkey.signal});
     bindChangePlant(page);
     page.querySelector('#claim-nick')?.addEventListener('input',event=>{
       draft.nick = event.target.value;
@@ -162,8 +170,9 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       if (region) {
         const version=++noteVersion;
         region.getAnimations().forEach(animation=>animation.cancel());
-        const height=region.offsetHeight;
-        region.style.minHeight=`${height}px`;
+        const height=region.getBoundingClientRect().height;
+        region.style.height=`${height}px`;
+        region.style.overflow='hidden';
         region.dataset.noteSwitching='';
         if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
           const out=region.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-6px)'}],{duration:150,easing:'ease-in',fill:'both'});
@@ -172,11 +181,16 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
         if(version!==noteVersion||!region.isConnected)return;
         region.innerHTML = draft.step===1?adviceMarkup(plant,draft):methodNote(plant,draft);
         bindChangePlant(region);press.refresh(region);
+        region.style.height='auto';
+        const targetHeight=region.getBoundingClientRect().height;
+        region.style.height=`${height}px`;
         if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
           const incoming=region.animate([{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:290,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'});
-          try{await incoming.finished;}catch{}incoming.cancel();
+          const resize=region.animate([{height:`${height}px`},{height:`${targetHeight}px`}],{duration:380,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'});
+          try{await Promise.all([incoming.finished,resize.finished]);}catch{}
+          region.style.height=`${targetHeight}px`;incoming.cancel();resize.cancel();
         }
-        if(version===noteVersion){region.style.minHeight='';delete region.dataset.noteSwitching;}
+        if(version===noteVersion){region.style.height='';region.style.overflow='';delete region.dataset.noteSwitching;}
       }
       page.querySelector('#claim-error').hidden = true;
     }));
@@ -251,7 +265,7 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       if(!page.isConnected)return;
       clearDraft(plant.id);
       effect = {id:claim.id,kind:'reservation'};nextEntrance='receipt';
-      render();window.scrollTo({top:0,behavior:'instant'});
+      render();
     });
     page.querySelector('[data-claim-pickup]')?.addEventListener('click',async()=>{
       if(submitting)return;
@@ -261,11 +275,24 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       claim.status='claimed';claim.pickedUpAt=date();
       try {persist();} catch {Object.assign(claim,previous);showError('领取状态暂时没有保存成功，请重试。');return;}
       submitting=true;page.querySelector('.dispatch-paper').inert=true;
-      try{await press.sign('已领取');}catch{return;}
+      const title=page.querySelector('.ticket-title'),mark=page.querySelector('.claim-ticket-mark'),rows=page.querySelector('.ticket-dl'),note=page.querySelector('.claim-ticket .suitability'),actions=page.querySelector('.ticket-actions');
+      const changes=[
+        {element:title,apply:()=>{title.textContent='已领取';}},
+        {element:mark,apply:()=>{mark.innerHTML='<div class="red-postmark">已领取</div>';}},
+        {element:rows.lastElementChild,apply:()=>{
+          const row=document.createElement('div');row.className='claim-scan-added-row';row.innerHTML=`<dt>领取时间</dt><dd>${escape(claim.pickedUpAt)}</dd>`;rows.append(row);
+          if(!matchMedia('(prefers-reduced-motion: reduce)').matches){const height=row.getBoundingClientRect().height;row.animate([{height:'0px',opacity:0},{height:`${height}px`,opacity:1}],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)'});}
+        }},
+        {element:note,apply:()=>{note.querySelector('.claim-note-label').textContent='后续记录';note.querySelector('p').textContent='已加入「枝条放映室」，可继续记录生长近况。';}},
+        {element:actions,apply:()=>{
+          actions.innerHTML=`<button class="solid-action" data-nav="album">打开枝条放映室 <span>↗</span></button><button class="line-action" data-care="${plant.id}">写一封养护来信 <span>↗</span></button>`;
+          actions.querySelector('[data-nav]')?.addEventListener('click',()=>document.querySelector('.main-nav [data-nav="album"]')?.click());
+          actions.querySelector('[data-care]')?.addEventListener('click',()=>go('letters',plant.id));
+        }}
+      ];
+      try{await press.scan(changes);}catch{return;}
       if(!page.isConnected)return;
-      clearDraft(plant.id);
-      effect = {id:claim.id,kind:'pickup'};nextEntrance='receipt';
-      render();window.scrollTo({top:0,behavior:'instant'});
+      clearDraft(plant.id);submitting=false;
     });
   }
 
@@ -278,6 +305,6 @@ export function createClaimFlow({getPlant, stamp, getClaims, persist, render, go
       if (!claim) delete draft.editingId;
       return renderForm(plant,draft);
     },
-    mount,cleanup,leave(){return activePress?.leave()||Promise.resolve();}
+    mount,cleanup,scrollToTop(){const page=document.querySelector('.claim-flow');return page?scrollPageUp(page):Promise.resolve();},leave(){return activePress?.leave()||Promise.resolve();}
   };
 }

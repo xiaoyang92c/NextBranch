@@ -1,9 +1,10 @@
-import {renderLetterTheatre,mountLetterTheatre} from './letter-theatre.js';
+import {renderLetterTheatre,mountLetterTheatre} from './letter-theatre.js?v=20261020-13';
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let dispose=()=>{},refresh=()=>{},freshId=null,readerOrigin=null,returnEnvelope=null;
 export function cleanupPostOffice(){dispose();dispose=()=>{};refresh=()=>{};readerOrigin=null;returnEnvelope=null;}
 export function refreshPostOffice(){refresh();}
+export function closePostLetter(){return document.querySelector('#letter-overlay')?.requestClose?.()??Promise.resolve();}
 
 function envelope(letter,plant){
   return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art}" alt="" draggable="false"><span class="garden-envelope-back"></span><span class="garden-envelope-flap"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket"><img src="./assets/letter-pocket-paper.png" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>待寄</span></span></span>`;
@@ -22,21 +23,28 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
   const fromEnvelope=origin?.kind==='mailbox'&&origin.paperElement;
   const heading=fromEnvelope?'<div class="postal-reader-topfold" aria-hidden="true"></div><button class="round-control letter-close" aria-label="收好这封信">×</button>':`<div class="postal-sheet-head"><span>${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><button class="round-control letter-close" aria-label="收好这封信">×</button></div><div class="postal-sheet-postage" aria-hidden="true">${stamp(plant.id,true)}</div><h2 id="postal-letter-title">${esc(letter.title)}</h2>`;
   overlay.innerHTML=`<article class="letter-sheet postal-sheet ${fromEnvelope?'has-envelope-topfold':''}" role="dialog" aria-modal="true" ${fromEnvelope?`aria-label="${esc(letter.title)}"`:'aria-labelledby="postal-letter-title"'} tabindex="-1">${heading}<div class="postal-reader-tabs" role="group" aria-label="翻阅信件"><button data-letter-tab="question" aria-pressed="true">来信正文</button><button data-letter-tab="replies" aria-pressed="false"></button></div><div class="postal-reader-body"></div><form class="postal-reply-form"><label for="postal-reply">回一封经验</label><div><textarea id="postal-reply" rows="2" maxlength="300" required placeholder="说说你的观察或建议…"></textarea><button type="submit">寄出回复 ↗</button></div><span class="postal-reply-status" role="status" aria-live="polite"></span></form><div class="postal-sheet-bottom">下一枝 · 农科村枝条邮局</div></article>`;
-  if(origin?.kind==='mailbox')overlay.classList.add('mailbox-reader');
-  document.body.append(overlay);const sheet=overlay.querySelector('.postal-sheet'),body=overlay.querySelector('.postal-reader-body');let tab='question',requestedTab='question',tabVersion=0,closing=false,openingAnimation=Promise.resolve(),onResize=()=>{},foldProxy=null;
+  if(origin?.kind==='mailbox'){
+    overlay.classList.add('mailbox-reader');
+    if(Number.isFinite(origin.readerTop))overlay.style.setProperty('--mail-reader-top',`${origin.readerTop}px`);
+  }
+  document.body.append(overlay);const sheet=overlay.querySelector('.postal-sheet'),body=overlay.querySelector('.postal-reader-body');let tab='question',requestedTab='question',tabVersion=0,closing=false,openingAnimation=Promise.resolve(),onResize=()=>{},alignClose=()=>{},foldProxy=null;
   if(fromEnvelope){
     const source=origin.paperElement,face=source.closest('.garden-letter'),top=sheet.querySelector('.postal-reader-topfold'),copy=face.cloneNode(false),paper=source.cloneNode(true);
     const scale=sheet.getBoundingClientRect().width/source.offsetWidth;
+    sheet.style.setProperty('--postal-outline-inset',`${6*scale}px`);
     Object.assign(copy.style,{position:'absolute',left:`${-source.offsetLeft*scale}px`,top:`${-source.offsetTop*scale}px`,width:`${face.offsetWidth}px`,height:`${face.offsetHeight}px`,transform:`scale(${scale})`,transformOrigin:'top left'});
     Object.assign(paper.style,{transform:'none',translate:'0 0',visibility:'visible',transition:'none'});
     copy.append(paper);top.append(copy);sheet.style.setProperty('--postal-top-height',`${source.offsetHeight*scale}px`);
+    const brand=top.querySelector('.garden-paper-brand'),reference=brand.querySelector('small'),mark=sheet.querySelector('.letter-close');
+    alignClose=()=>{const sheetBox=sheet.getBoundingClientRect(),brandBox=brand.getBoundingClientRect(),referenceBox=reference.getBoundingClientRect();mark.style.top=`${referenceBox.top+referenceBox.height/2-sheetBox.top-mark.offsetHeight/2}px`;mark.style.left=`${brandBox.right-sheetBox.left-19-mark.offsetWidth/2}px`;};
+    alignClose();
   }
   let restingBox=sheet.getBoundingClientRect();
   const foldBox=origin?.paper;
   const panelHeight=fromEnvelope?parseFloat(sheet.style.getPropertyValue('--postal-top-height')):restingBox.height/3;
-  const clipMotion=async(element,from,mid,to,duration)=>{
-    const animation=element.animate([{clipPath:from,offset:0},{clipPath:mid,offset:.52},{clipPath:to,offset:1}],{duration,easing:'cubic-bezier(.25,.65,.24,1)',fill:'both'});
-    await animation.finished;element.style.clipPath=to;animation.cancel();
+  const clipMotion=(element,clips,duration,easing='cubic-bezier(.32,.04,.2,1)')=>{
+    const offsets=clips.length===5?[0,.24,.5,.77,1]:clips.map((_,index)=>index/(clips.length-1));
+    return element.animate(clips.map((clipPath,index)=>({clipPath,offset:offsets[index]})),{duration,easing,fill:'both'});
   };
   function makeFoldProxy(folded){
     const stage=document.createElement('div'),print=sheet.cloneNode(true);
@@ -46,9 +54,10 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
     Object.assign(print.style,{position:'absolute',left:'0',top:'0',width:`${restingBox.width}px`,height:`${restingBox.height}px`,margin:'0',visibility:'visible',opacity:'1'});
     const topHeight=sheet.querySelector('.postal-reader-topfold')?.getBoundingClientRect().height||panelHeight;
     const clipAt=(edge,bow=0)=>`polygon(0 0,100% 0,100% ${edge}px,83% ${edge+bow*.45}px,67% ${edge+bow*.85}px,50% ${edge+bow}px,33% ${edge+bow*.85}px,17% ${edge+bow*.45}px,0 ${edge}px)`;
-    const foldedClip=clipAt(topHeight),midClip=clipAt(topHeight+(restingBox.height-topHeight)*.52,14),fullClip=clipAt(restingBox.height);
-    Object.assign(stage.style,{left:`${restingBox.left}px`,top:`${restingBox.top}px`,width:`${restingBox.width}px`,height:`${restingBox.height}px`,clipPath:folded?foldedClip:'inset(0 0 0 0)'});
-    stage.append(print);overlay.append(stage);return {stage,foldedClip,midClip,fullClip};
+    const distance=restingBox.height-topHeight;
+    const foldClips=[clipAt(topHeight,6),clipAt(topHeight+distance*.2,13),clipAt(topHeight+distance*.52,21),clipAt(topHeight+distance*.82,12),clipAt(restingBox.height)];
+    Object.assign(stage.style,{left:`${restingBox.left}px`,top:`${restingBox.top}px`,width:`${restingBox.width}px`,height:`${restingBox.height}px`,clipPath:folded?foldClips[0]:'inset(0 0 0 0)'});
+    stage.append(print);overlay.append(stage);return {stage,foldClips};
   }
   function paint(){
     const current=getLatest();if(!current)return;
@@ -82,21 +91,26 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
       if(reduced())overlay.scrollTop=0;
       else await new Promise(resolve=>{const start=overlay.scrollTop,began=performance.now();const step=now=>{const progress=Math.min(1,(now-began)/320),eased=1-(1-progress)**3;overlay.scrollTop=start*(1-eased);if(progress<1)requestAnimationFrame(step);else resolve();};requestAnimationFrame(step);});
     }
-    overlay.style.background='transparent';overlay.style.backdropFilter='none';
+    overlay.classList.add('is-closing');overlay.classList.remove('is-opened','is-washed');
+    if(!reduced())await new Promise(resolve=>setTimeout(resolve,760));
     let paperReturned=false;
     if(!reduced()&&foldBox)try{
       restingBox=sheet.getBoundingClientRect();foldProxy=makeFoldProxy(false);sheet.style.visibility='hidden';sheet.style.opacity='0';
       const proxy=foldProxy;
-      await clipMotion(proxy.stage,proxy.fullClip,proxy.midClip,proxy.foldedClip,650);
+      await clipMotion(proxy.stage,proxy.foldClips.slice().reverse(),740,'cubic-bezier(.32,.04,.25,.88)').finished;
+      const returning=Promise.resolve(origin.returnPaper?.());returning.catch(()=>{});
       origin?.revealPaper?.();proxy.stage.remove();foldProxy=null;
-      await origin.returnPaper?.();paperReturned=true;
+      await returning;paperReturned=true;
     }catch{if(!paperReturned)try{await origin.returnPaper?.();}catch{}}
     else if(!reduced())try{await sheet.animate([{opacity:1},{opacity:0}],{duration:220,fill:'forwards'}).finished;}catch{}
     else if(foldBox)try{await origin.returnPaper?.();}catch{}
     foldProxy?.stage.remove();foldProxy=null;origin?.revealPaper?.();sheet.style.visibility='hidden';
     removeEventListener('resize',onResize);overlay.remove();if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});else document.querySelector('[data-talk-action="open"]')?.focus({preventScroll:true});foldBack?.();onClose?.();
   }
-  overlay.addEventListener('click',event=>{if(event.target===overlay||event.target.closest('.letter-close'))close();const button=event.target.closest('[data-letter-tab]');if(button)switchTab(button.dataset.letterTab);});
+  let closeTask=null;
+  const requestClose=()=>closeTask||(closeTask=close());
+  overlay.requestClose=requestClose;
+  overlay.addEventListener('click',event=>{if(event.target===overlay||event.target.closest('.letter-close'))requestClose();const button=event.target.closest('[data-letter-tab]');if(button)switchTab(button.dataset.letterTab);});
   overlay.querySelector('form').addEventListener('submit',async event=>{
     event.preventDefault();const input=overlay.querySelector('#postal-reply'),text=input.value.trim();
     if(!text){input.setCustomValidity('写一句你的观察，再寄出吧。');input.reportValidity();return;}
@@ -109,7 +123,7 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
   });
   overlay.querySelector('#postal-reply').addEventListener('input',event=>event.target.setCustomValidity(''));
   overlay.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close();}
+    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();requestClose();}
     if(event.key==='Tab'){
       const nodes=[...sheet.querySelectorAll('button,textarea,[tabindex="0"]')].filter(element=>!element.disabled),first=nodes[0],last=nodes.at(-1);
       if(event.shiftKey&&(document.activeElement===first||document.activeElement===sheet)){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
@@ -117,20 +131,17 @@ export function showPostLetter({getLatest,plant,stamp,onReply,onClose}){
   });
   paint();
   if(foldBox){
-    overlay.style.background='transparent';
-    if(reduced()){origin?.extracted?.();sheet.focus({preventScroll:true});overlay.style.background='';}
+    if(reduced()){origin?.extracted?.();sheet.focus({preventScroll:true});overlay.classList.add('is-opened','is-washed');}
     else openingAnimation=(async()=>{
       restingBox=sheet.getBoundingClientRect();
       sheet.style.visibility='hidden';sheet.style.opacity='0';foldProxy=makeFoldProxy(true);origin?.extracted?.();
       const proxy=foldProxy;
-      await new Promise(resolve=>setTimeout(resolve,130));
-      overlay.style.transition='background-color .55s ease';overlay.style.background='';
-      await clipMotion(proxy.stage,proxy.foldedClip,proxy.midClip,proxy.fullClip,760);
-      sheet.style.visibility='';sheet.style.opacity='';proxy.stage.remove();foldProxy=null;if(!closing)sheet.focus({preventScroll:true});
-    })().catch(()=>{sheet.style.visibility='';sheet.style.opacity='';foldProxy?.stage.remove();foldProxy=null;overlay.style.background='';});
-    onResize=()=>{openingAnimation.then(()=>{if(!closing&&overlay.isConnected)restingBox=sheet.getBoundingClientRect();}).catch(()=>{});};
+      await clipMotion(proxy.stage,proxy.foldClips,800).finished;
+      sheet.style.visibility='';sheet.style.opacity='';proxy.stage.remove();foldProxy=null;if(!closing){overlay.classList.add('is-opened','is-washed');sheet.focus({preventScroll:true});}
+    })().catch(()=>{sheet.style.visibility='';sheet.style.opacity='';foldProxy?.stage.remove();foldProxy=null;if(!closing)overlay.classList.add('is-opened','is-washed');});
+    onResize=()=>{openingAnimation.then(()=>{if(!closing&&overlay.isConnected){restingBox=sheet.getBoundingClientRect();alignClose();}}).catch(()=>{});};
     addEventListener('resize',onResize);
-  }else{sheet.focus({preventScroll:true});if(!reduced())sheet.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});}
+  }else{sheet.focus({preventScroll:true});overlay.classList.add('is-washed');if(!reduced())sheet.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});}
 }
 
 export function renderPostCompose(plants,stamp,draft){

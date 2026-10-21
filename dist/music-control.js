@@ -1,9 +1,17 @@
 const audio = document.querySelector('#site-music');
 const toggle = document.querySelector('#music-toggle');
-const wave = toggle.querySelector('.music-toggle-wave path');
+const ring = toggle.querySelector('.music-toggle-ring');
+const inkLayer = ring.cloneNode(true);
+inkLayer.classList.add('music-toggle-ink-layer');
+toggle.append(inkLayer);
+const waves = toggle.querySelectorAll('.music-toggle-wave path');
+const wave = waves[0];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const restingRing = wave.getAttribute('d');
 const radii = Array(48).fill(18);
+const inkForView = () => document.body.dataset.view === 'letters' ? '#315b45' : '#fff7df';
+let currentInk = inkForView();
+let inkAnimation;
 let context;
 let analyser;
 let frequencies;
@@ -43,7 +51,8 @@ function drawRing() {
       const angle = index * Math.PI * 2 / radii.length - Math.PI / 2;
       return [(24 + Math.cos(angle) * radii[index]).toFixed(2), (24 + Math.sin(angle) * radii[index]).toFixed(2)];
     });
-    wave.setAttribute('d', 'M' + points.map(point => point.join(' ')).join('L') + 'Z');
+    const shape = 'M' + points.map(point => point.join(' ')).join('L') + 'Z';
+    waves.forEach(path => path.setAttribute('d', shape));
   }
   frame = requestAnimationFrame(drawRing);
 }
@@ -56,10 +65,43 @@ function syncMusicControl() {
   cancelAnimationFrame(frame);
   if (playing && !reducedMotion.matches) frame = requestAnimationFrame(drawRing);
   else {
-    wave.setAttribute('d', restingRing);
+    waves.forEach(path => path.setAttribute('d', restingRing));
     radii.fill(18);
   }
 }
+
+function paintMusicInk() {
+  const nextInk = inkForView();
+  if (nextInk === currentInk) return;
+  inkAnimation?.cancel();
+  toggle.classList.remove('is-ink-changing');
+  if (reducedMotion.matches) {
+    toggle.style.removeProperty('color');
+    currentInk = nextInk;
+    return;
+  }
+  toggle.style.color = currentInk;
+  inkLayer.style.color = nextInk;
+  inkLayer.style.visibility = 'visible';
+  inkAnimation = inkLayer.animate([
+    {maskPosition: '100% 50%', webkitMaskPosition: '100% 50%'},
+    {maskPosition: '0% 50%', webkitMaskPosition: '0% 50%'}
+  ], {duration: 700, easing: 'cubic-bezier(.22,.7,.2,1)', fill: 'both'});
+  toggle.classList.add('is-ink-changing');
+  currentInk = nextInk;
+  const animation = inkAnimation;
+  animation.finished.then(() => {
+    if (inkAnimation !== animation) return;
+    animation.cancel();
+    inkAnimation = null;
+    toggle.classList.remove('is-ink-changing');
+    toggle.style.removeProperty('color');
+    inkLayer.style.removeProperty('color');
+    inkLayer.style.removeProperty('visibility');
+  }).catch(() => {});
+}
+
+new MutationObserver(paintMusicInk).observe(document.body, {attributes: true, attributeFilter: ['data-view']});
 
 toggle.addEventListener('click', async () => {
   if (!audio.paused) {

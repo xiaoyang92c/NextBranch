@@ -34,10 +34,10 @@ function archiveDiagram(plant,topic){
  const plantAt=(x,base,top=30)=>`<path d="M${x} ${base}V${top}"/>${node(x,top+25,0)}${node(x,top+51,1)}`;
 
  const shade=['camellia','serissa','osmanthus','podocarpus'].includes(plant.id);
- const light=`<circle cx="26" cy="32" r="12"/><path d="M26 11V5M26 59V53M5 32H0M52 32H47M11 17L7 13M41 47L45 51M11 47L7 51M41 17L45 13"/>${shade?'<path class="archive-mesh" d="M65 12V91M71 12V91M65 22H71M65 34H71M65 46H71M65 58H71M65 70H71M65 82H71"/>':'<path d="M62 12H75V92H62ZM68 12V92" class="archive-window"/>'}${plantAt(132,117,31)}<path d="M42 32H57M82 33L117 45M82 61L${paired?117:146} 73" class="archive-light-ray"/><path d="M112 41L117 45L111 47M${paired?112:141} 69L${paired?117:146} 73L${paired?111:140} 75"/>`;
+ const light=`<circle cx="26" cy="32" r="12"/><path d="M26 11V5M26 59V53M5 32H0M52 32H47M11 17L7 13M41 47L45 51M11 47L7 51M41 17L45 13"/>${shade?'<path class="archive-mesh" d="M65 12V91M71 12V91M65 22H71M65 34H71M65 46H71M65 58H71M65 70H71M65 82H71"/>':'<path d="M62 12H75V92H62ZM68 12V92" class="archive-window"/>'}${plantAt(132,117,31)}<path d="M42 32H57M78 37L102 45M78 62L102 72" class="archive-light-ray"/><path d="M96 41L102 45L96 47M96 68L102 72L96 74"/>`;
  const water=`<path d="M26 80H157M26 80V116H79M102 116H157V80" class="archive-section-wall"/><path d="M33 91h4m9 13h4m12-13h4m49 14h4m14-14h4m10 13h4" class="archive-soil-grains"/><path d="M40 14C37 23 31 28 31 34A9 9 0 0 0 49 34C49 28 43 23 40 14Z" class="archive-water-drop"/>${plantAt(126,109,28)}<path d="M40 49V76M40 84C40 100 75 99 90 113M90 119V127" class="archive-water-route"/><path d="M36 70L40 76L44 70M86 122L90 128L94 122"/>`;
  const thorn=['citron','bougainvillea'].includes(plant.id);
- const cutting=seedlingOnly?`<path d="M25 92H155M25 116H155" class="archive-soil"/>${plantAt(90,93,24)}<path d="M90 93Q83 103 75 109M90 93Q96 101 105 108M90 99V113" class="archive-root"/><path d="M49 107H62M118 107H133" class="archive-point-guide"/>`:`${plantAt(43,111,26)}<path d="M68 66H92M86 61L92 66L86 71" class="archive-prep-arrow"/><path d="M108 87H167M108 119H167" class="archive-soil"/>${plantAt(137,114,29)}<circle cx="137" cy="101" r="3" fill="currentColor" stroke="none"/><path d="M137 96V106M132 101H142" class="archive-node-mark"/>${thorn?'<path d="M43 86L54 78"/><path d="M62 84L56 79M60 74L56 79" class="archive-point-guide"/>':'<path d="M163 101H147M152 97L147 101L152 105" class="archive-point-guide"/>'}`;
+ const cutting=seedlingOnly?`<path d="M25 92H155M25 116H155" class="archive-soil"/>${plantAt(90,93,24)}<path d="M90 93Q83 103 75 109M90 93Q96 101 105 108M90 99V113" class="archive-root"/><path d="M49 107H62M118 107H133" class="archive-point-guide"/>`:`${plantAt(43,111,26)}<path d="M75 66H99M93 61L99 66L93 71" class="archive-prep-arrow"/><path d="M108 87H167M108 119H167" class="archive-soil"/>${plantAt(137,114,29)}<circle cx="137" cy="101" r="3" fill="currentColor" stroke="none"/><path d="M137 96V106M132 101H142" class="archive-node-mark"/>${thorn?'<path d="M43 86L54 78"/><path d="M62 84L56 79M60 74L56 79" class="archive-point-guide"/>':'<path d="M163 101H147M152 97L147 101L152 105" class="archive-point-guide"/>'}`;
  return `<svg class="archive-care-diagram" viewBox="0 0 180 134" role="img" aria-label="${plant.name}：${['柔光经过遮挡后落向叶面','从表土补水，多余水从底部排出',seedlingOnly?'将小苗安放在透气介质中':thorn?'留意枝刺并固定枝段':'保留上部叶片，裸露叶节进入介质'][topic]}"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${[light,water,cutting][topic]}</g></svg>`;
 }
 function journeyIcon(kind){
@@ -60,7 +60,7 @@ export function renderArchive(plant,origin,stories=[]){
   </section>
   <section class="archive-briefs" aria-label="枝条资料"><div><span>枝条来处</span><p data-archive-reveal>${plant.source.replace(' · 演示','')}</p></div><div><span>照料提示</span><p data-archive-reveal>${plant.level}</p></div></section>
   <section class="archive-cultivation"><header class="archive-section-title"><span>栽植札记</span><h2 data-archive-reveal>安家，先做好这三件事</h2></header><div class="archive-care-columns">${notes.map(([title,copy],i)=>`<article class="archive-care-note"><figure>${archiveDiagram(plant,i)}<figcaption>${['光照','浇水',seedlingOnly?'安苗':'扦插'][i]}</figcaption></figure><div><h3 data-archive-reveal>${title}</h3><p data-archive-reveal>${copy}</p></div></article>`).join('')}</div></section>
-  <section class="archive-story"><header class="archive-section-title"><span>枝条的下一站</span><h2 data-archive-reveal>从村里，到新的窗边</h2></header><ol class="archive-journey"><li>${journeyIcon(seedlingOnly?'post':'cut')}<span>${seedlingOnly?'村里育苗':'村里修剪'}</span></li><li>${journeyIcon('post')}<span>驿站整理</span></li><li>${journeyIcon('home')}<span>新家养护</span></li></ol><aside class="archive-news"><h3>生长手记</h3>${records.length?records.map(record=>`<article><time>${escape(record.date)}</time><h4 data-archive-reveal>${escape(record.title)}</h4>${record.photo?`<img class="archive-news-photo" src="${escape(record.photo)}" alt="${plant.name}的生长近况" loading="lazy">`:''}<p data-archive-reveal>${escape(record.text)}</p></article>`).join(''):'<p data-archive-reveal>新的近况，从你接过这一枝开始。安家后，在放映室留下一张生长明信片。</p>'}</aside></section>
+  <section class="archive-story"><header class="archive-section-title"><span>枝条的下一站</span><h2 data-archive-reveal>从村里，到新的窗边</h2></header><ol class="archive-journey"><li>${journeyIcon(seedlingOnly?'post':'cut')}<span>${seedlingOnly?'村里育苗':'村里修剪'}</span></li><li>${journeyIcon('post')}<span>驿站整理</span></li><li>${journeyIcon('home')}<span>新家养护</span></li></ol><aside class="archive-news"><h3>生长手记</h3>${records.length?records.map(record=>`<article><time>${escape(record.date)}</time><h4 data-archive-reveal>${escape(record.title)}</h4>${record.photo?`<img class="archive-news-photo" src="${escape(record.photo)}" alt="${plant.name}的生长近况" loading="lazy">`:''}<p data-archive-reveal>${escape(record.text)}</p></article>`).join(''):'<p data-archive-reveal>新的近况，从你接过这一枝开始。安家后，在放映室记录它的变化。</p>'}</aside></section>
   <section class="archive-receive"><div class="archive-receive-heading"><span class="archive-receive-mark" aria-hidden="true">${journeyIcon('post')}</span><div><span class="archive-section-label">下一站 · 新家</span><h2 class="archive-closing" data-archive-reveal>把这一枝，带回日常</h2></div></div><div class="archive-pickup"><p><span>领取地点</span><strong>农科村枝条再生驿站</strong></p><p><span>领取方式</span><strong>线下自取 · 现场学习养护</strong></p></div><button class="archive-accept" data-claim="${plant.id}"><span class="archive-accept-label">接收这一枝</span><span class="archive-accept-arrow" aria-hidden="true">→</span>${acceptVines()}</button><p class="archive-receive-foot" data-archive-reveal>接过枝条，也给生长留一点时间</p></section>
  </article></main>`;
 }
@@ -73,11 +73,14 @@ function makeGlyphs(element){
  const units=text.match(/[A-Za-zÀ-ž×\d—-]+|\s+|[^\s]/gu)||[];
  for(let i=units.length-1;i>0;i--)if(/^[，。！？；：、）》」』”’]/u.test(units[i])){units[i-1]+=units[i];units.splice(i,1);}
  let index=0;
+ const glyphs=[];
  units.forEach(unit=>{
   if(/^\s+$/u.test(unit)){ink.append(document.createTextNode(unit));return;}
   const group=document.createElement('span');group.className='archive-word';
-  Array.from(unit).forEach(char=>{const glyph=document.createElement('span');glyph.className='archive-glyph';glyph.textContent=char;glyph.style.setProperty('--ink-delay',`${Math.min(index*(element.tagName==='H1'?65:13),650)}ms`);glyph.style.setProperty('--exit-delay',`${Math.min(index++*5,170)}ms`);group.append(glyph);});ink.append(group);
+  Array.from(unit).forEach(char=>{const glyph=document.createElement('span');glyph.className='archive-glyph';glyph.textContent=char;glyph.style.setProperty('--ink-delay',`${Math.min(index++*(element.tagName==='H1'?65:13),650)}ms`);glyphs.push(glyph);group.append(glyph);});ink.append(group);
  });
+ const lastDelay=Math.min(Math.max(0,index-1)*(element.tagName==='H1'?65:13),650);
+ glyphs.forEach(glyph=>glyph.style.setProperty('--exit-delay',`${lastDelay-parseFloat(glyph.style.getPropertyValue('--ink-delay'))}ms`));
  element.replaceChildren(accessible,ink);element.classList.add('archive-ink-ready');
 }
 export function mountArchive(){
@@ -100,10 +103,25 @@ export function mountArchive(){
   root.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>{
    const group=svg.querySelector('g'),id=`archive-sketch-${++sketchId}`,defs=document.createElementNS('http://www.w3.org/2000/svg','defs'),mask=document.createElementNS(svg.namespaceURI,'mask');mask.id=id;mask.setAttribute('maskUnits','userSpaceOnUse');mask.setAttribute('x','-10');mask.setAttribute('y','-10');mask.setAttribute('width','210');mask.setAttribute('height','165');
    const tracing=group.cloneNode(true);tracing.setAttribute('stroke','white');tracing.setAttribute('stroke-width','4');tracing.querySelectorAll('*').forEach(el=>{el.removeAttribute('class');el.removeAttribute('style');el.setAttribute('fill','none');el.setAttribute('stroke','white');});
-   const lines=[...tracing.querySelectorAll('path,circle')],originals=[...group.querySelectorAll('path,circle')];lines.forEach((el,i)=>{const length=originals[i].getTotalLength();el.style.strokeDasharray=`${length} ${length}`;el.style.strokeDashoffset=String(length);});mask.append(tracing);defs.append(mask);svg.prepend(defs);group.setAttribute('mask',`url(#${id})`);sketches.set(svg,{group,defs,lines});
+   const shapes=[...tracing.querySelectorAll('path,circle')],originals=[...group.querySelectorAll('path,circle')],lines=[],fills=[];
+   shapes.forEach((el,i)=>{
+    if(originals[i].getAttribute('fill')&&originals[i].getAttribute('fill')!=='none'){
+     el.setAttribute('fill','white');el.setAttribute('stroke','none');el.style.transformBox='fill-box';el.style.transformOrigin='center';el.style.transform='scale(0)';el.style.opacity='0';fills.push({element:el,index:i});
+    }else{
+     const length=originals[i].getTotalLength();el.style.strokeDasharray=`${length} ${length}`;el.style.strokeDashoffset=String(length);lines.push({element:el,index:i,length});
+    }
+   });
+   mask.append(tracing);defs.append(mask);svg.prepend(defs);group.setAttribute('mask',`url(#${id})`);sketches.set(svg,{group,defs,lines,fills});
   });
-  sketchObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting||!root.classList.contains('is-archive-awake'))return;sketchObserver.unobserve(entry.target);const item=sketches.get(entry.target);if(!item)return;const batch=item.lines.map((el,i)=>{const a=el.animate([{strokeDashoffset:el.style.strokeDashoffset},{strokeDashoffset:'0'}],{duration:1100,delay:i*38,easing:'cubic-bezier(.25,.1,.25,1)',fill:'both'});animations.add(a);return a;});Promise.allSettled(batch.map(a=>a.finished)).then(()=>{finishSketch(entry.target);batch.forEach(a=>{a.cancel();animations.delete(a);});});}),{threshold:.4});
+  sketchObserver=new IntersectionObserver(entries=>entries.forEach(entry=>{if(!entry.isIntersecting||!root.classList.contains('is-archive-awake'))return;sketchObserver.unobserve(entry.target);const item=sketches.get(entry.target);if(!item)return;
+   const batch=item.lines.map(({element,index,length})=>{const a=element.animate([{strokeDashoffset:String(length)},{strokeDashoffset:'0'}],{duration:1250,delay:index*42,easing:'cubic-bezier(.25,.1,.25,1)',fill:'both'});animations.add(a);return a;});
+   item.fills.forEach(({element,index})=>{const a=element.animate([{opacity:0,transform:'scale(0)'},{opacity:1,transform:'scale(1)'}],{duration:360,delay:index*42+340,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'});animations.add(a);batch.push(a);});
+   Promise.allSettled(batch.map(a=>a.finished)).then(()=>{finishSketch(entry.target);batch.forEach(a=>{a.cancel();animations.delete(a);});});
+  }),{threshold:.4});
  }
+ root.addEventListener('archive:settle-visible-sketches',()=>{
+  sketches.forEach((_,svg)=>{const box=svg.getBoundingClientRect();if(box.bottom<=0||box.top>=innerHeight)return;sketchObserver?.unobserve(svg);finishSketch(svg);});
+ },{signal:controller.signal});
    const reveal=element=>{element.classList.add('is-ink-visible');observer?.unobserve(element);};
  if(!reduced()){
    root.classList.add('is-archive-staged');
@@ -164,8 +182,10 @@ function printZoom(stamp,box){
 function printLayer(stamp,box){
  const shell=document.createElement('div');shell.className='branch-portal-stamp';
  const print=stamp.cloneNode(true);print.className='stamp portal-print';print.removeAttribute('style');
- for(const name of ['--stamp-bg','--stamp-ink'])print.style.setProperty(name,getComputedStyle(stamp).getPropertyValue(name));
-  print.querySelector('.stamp-paper-surface')?.remove();print.querySelector('.stamp-grain-overlay')?.remove();print.querySelector('.stamp-art')?.remove();print.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));shell.append(print);
+  for(const name of ['--stamp-bg','--stamp-ink','--stamp-paper'])print.style.setProperty(name,getComputedStyle(stamp).getPropertyValue(name));
+   // The wind surface adds a plant-coloured perforated backing. It belongs to
+   // the live stamp only; otherwise it covers the white edge during the flight.
+   print.querySelector('.stamp-paper-surface')?.remove();print.querySelector('.stamp-paper-backing')?.remove();print.querySelector('.stamp-grain-overlay')?.remove();print.querySelector('.stamp-art')?.remove();print.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));shell.append(print);
  Object.assign(shell.style,{left:`${box.left}px`,top:`${box.top}px`,width:`${box.width}px`,height:`${box.height}px`});return shell;
 }
 function pauseFloat(stamp,reset=false){
@@ -230,9 +250,9 @@ export async function returnArchive(plant,renderDestination){
  const state={plantId:plant.id,returning:true,overlay,flightOverlay,animations:new Set(),cancelled:false,sourcePage:page};
  arrival=state;page.inert=true;
  const originalVisibility=image.style.visibility;image.style.visibility='hidden';
- let rendered=false,destination,home,lens,lensScale,floats=[],restored=false;
- // These control points are the time reverse of the stamp's entrance curve.
- const reverseEase='cubic-bezier(.78,0,.7,.95)';
+ let rendered=false,destination,home,lens,lensScale,floats=[],restored=false,landed=false;
+  // Let the entire print, including its perforations, settle with the branch.
+  const reverseEase='cubic-bezier(.78,0,.7,.95)';
  const animate=(element,frames,duration,easing=reverseEase)=>{
   const motion=element.animate(frames,{duration,easing,fill:'both'});
   state.animations.add(motion);return motion;
@@ -242,9 +262,9 @@ export async function returnArchive(plant,renderDestination){
   if(image.isConnected)image.style.visibility=originalVisibility;
   if(page.parentElement===document.body)page.remove();
   else if(page.isConnected){page.style.visibility='';page.inert=false;}
-  if(destination?.isConnected){destination.classList.remove('is-return-target');destination.querySelector('.stamp')?.dispatchEvent(new Event('stamp:resume'));}
+  if(destination?.isConnected){destination.classList.remove('is-return-target');const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');if(live){live.style.opacity='';if(!landed)live.classList.remove('is-portal-flat-print');}if(shadow){shadow.style.opacity='';shadow.style.transform='';}live?.dispatchEvent(new Event('stamp:resume'));}
   floats.forEach(motion=>{if(motion.playState==='paused')motion.play();});
-  if(lens?.isConnected)lens.setAttribute('scale',lensScale);
+  if(lens?.isConnected&&!landed)lens.setAttribute('scale',lensScale);
   if(home?.isConnected)home.inert=false;
   flightOverlay.remove();
  };
@@ -258,6 +278,9 @@ export async function returnArchive(plant,renderDestination){
   const stamp=destination?.querySelector('.stamp'),stampImage=stamp?.querySelector('.stamp-art');
   if(!stampImage)throw new Error('Return stamp is missing');
   home.inert=true;destination.classList.add('is-return-target');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
+  // The visible landing frame and the live stamp use the same flat paper.
+  // Keep that print in place after handoff so no textured crossfade softens it.
+  stamp.classList.add('is-portal-flat-print');
   lens=home.querySelector('.scene-lens-displacement');lensScale=lens?.getAttribute('scale');
   if(lens)lens.setAttribute('scale','0');
   if(!stampImage.complete)await stampImage.decode();if(state.cancelled)return;
@@ -268,26 +291,26 @@ export async function returnArchive(plant,renderDestination){
   shell.style.transform=`scale(${zoom})`;overlay.append(shell);
   // Lettering erases before the folio yields to the print underneath. The
   // frame and branch then recede together for the full 1320 ms journey.
+  const visibleInk=[...page.querySelectorAll('.archive-ink-ready.is-ink-visible')].filter(element=>{const box=element.getBoundingClientRect();return box.bottom>0&&box.top<innerHeight;});
+  const entryDelay=element=>Math.min(380,Math.max(0,element.getBoundingClientRect().top/innerHeight*280));
+  const lastGroupDelay=Math.max(0,...visibleInk.map(entryDelay));
+  visibleInk.forEach(element=>element.style.setProperty('--exit-group-delay',`${Math.round(lastGroupDelay-entryDelay(element))}ms`));
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   if(state.cancelled)return;
   page.classList.add('is-archive-dispersing');
-  const paperClear=animate(page,[{opacity:1,offset:0},{opacity:1,offset:.35},{opacity:0,offset:.55},{opacity:0,offset:1}],1320,'linear');
+   const paperClear=animate(page,[{opacity:1,offset:0},{opacity:1,offset:.68},{opacity:0,offset:1}],1320,'linear');
   const printReturn=animate(shell,[{transform:`scale(${zoom})`},{transform:'scale(1)'}],1320);
   const plantReturn=animate(flight,frames,1320);
-  if(lens){
-   let lensFrame=0,start;
-   state.stopLens=()=>cancelAnimationFrame(lensFrame);
-   const restoreLens=now=>{
-    if(state.cancelled)return;
-    start??=now;const t=Math.max(0,Math.min(1,(now-start-1080)/240));
-    lens.setAttribute('scale',String(Number(lensScale)*t*t*(3-2*t)));
-    if(t<1)lensFrame=requestAnimationFrame(restoreLens);
-   };
-   lensFrame=requestAnimationFrame(restoreLens);
-  }
   await Promise.all([paperClear.finished,printReturn.finished,plantReturn.finished]);if(state.cancelled)return;
-  // Exchange the drawn copy for the live stamp in one paint.
-  destination.classList.remove('is-return-target');overlay.remove();flightOverlay.remove();
+  // Swap in one paint. Overlapping the flight and live print for a fade makes
+  // their slightly different rasterisation read as a momentary full blur.
+  const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');
+  if(shadow){shadow.style.opacity='0';shadow.style.transform='translate3d(0,0,0) scale(.92)';}
+  destination.classList.remove('is-return-target');
+  overlay.remove();flightOverlay.remove();
+  const settles=[];
+  if(shadow){const target=getComputedStyle(shadow);const offset=target.getPropertyValue('--shadow-offset').trim()||'22px',stretch=target.getPropertyValue('--shadow-stretch').trim()||'1',squash=target.getPropertyValue('--shadow-squash').trim()||'1',skewX=target.getPropertyValue('--shadow-skew-x').trim()||'0deg',skewY=target.getPropertyValue('--shadow-skew-y').trim()||'0deg';settles.push(animate(shadow,[{opacity:0,transform:'translate3d(0,0,0) scale(.92)'},{opacity:.27,transform:`translate3d(${offset},${offset},0) skew(${skewX},${skewY}) scale(${stretch},${squash})`}],650,'cubic-bezier(.2,.7,.25,1)').finished);}
+  await Promise.all(settles);landed=true;
  }catch(error){
   if(!state.cancelled){console.error('报纸返回动画失败',error);if(!rendered)renderDestination();}
  }finally{

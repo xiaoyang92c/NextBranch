@@ -116,7 +116,7 @@ const sceneGuides={
   ['枝段安放稳固',[174,211],'给根系更多时间',[365,133],[[56,211]]]
  ],
  'ginkgo':[
-  ['新枝先用柔光',[128,120],'长稳再见日照',[389,51]],
+  ['新枝先用柔光',[128,120],'长稳再见日照',[410,51]],
   ['使用透气介质',[63,183],'检查底部排水',[337,283]],
   ['优先选择小苗',[187,160],'给根留足空间',[187,235]]
  ],
@@ -172,7 +172,7 @@ function createScene(plant,topic){
   ()=>{const b=branch(225,230,{length:134,thin:true});picture=soil(207)+b.html+roots(225,230)+clock(365,167,31)+path('M199 207H251','care-position-mark')+flow('M313 173Q278 189 243 204');}
  ],
  citron:[
-  ()=>{const b=branch(340,244,{scale:1.05});picture=sun(99,167,20,'care-morning-sun')+b.html+horizon()+flow('M134 153Q222 121 313 158');},
+  ()=>{const b=branch(340,244,{scale:1.05});picture=sun(99,167,20,'care-morning-sun')+b.html+horizon()+flow('M134 153Q211 122 288 141');},
   ()=>{const b=branch(249,235,{scale:.82,bare:58});picture=soil(201)+b.html+drop(110,143,.74)+flow('M110 163L110 202Q143 233 180 267','water')+circle(331,229,14,'care-air-pocket')+circle(293,252,9,'care-air-pocket')+circle(94,248,10,'care-air-pocket')+flow('M368 261Q387 223 363 185','air');},
   ()=>{const b=branch(222,232,{length:145});picture=soil(208)+b.html+roots(222,232)+circle(260,162,17,'care-inspect-ring')+path('M243 151L254 139','care-thorn-detail')+flow('M335 153Q289 179 248 205');}
  ],
@@ -182,7 +182,7 @@ function createScene(plant,topic){
   ()=>{const b=branch(198,235,{length:142,thin:true});picture=soil(208,93,284)+b.html+roots(198,235)+clock(357,176,29)+path('M170 208H226','care-position-mark');}
  ],
  crape:[
-  ()=>{const young=branch(128,245,{scale:.66,bare:54}),settled=branch(356,240,{scale:1.04});picture=mesh(79,125,95,120)+young.html+settled.html+roots(356,240)+sun(249,103,18)+flow('M272 117Q314 127 337 164')+panelArrow(211,222);},
+  ()=>{const young=branch(128,245,{scale:.66,bare:54}),settled=branch(356,240,{scale:1.04});picture=mesh(79,125,95,120)+young.html+settled.html+roots(356,240)+sun(249,103,18)+flow('M272 117Q302 123 319 144')+panelArrow(211,222);},
   ()=>{picture=soil(181)+branch(252,207,{length:128,scale:.78,bare:60}).html+drop(111,133,.72)+flow('M111 153V182Q175 219 231 226T366 269V284','water')+path('M95 217L105 208L117 215M178 252L190 242L203 250M286 199L297 192L310 201','care-granules')+path('M350 269H382','care-outlet');},
   ()=>{const b=branch(213,247,{length:142,bare:68,bud:true});picture=soil(214,100,215)+b.html+brace(213,210)+clock(365,162,27)+path('M301 237V207M295 214L301 207L307 214M292 202L310 220M310 202L292 220','care-do-not-pull');}
  ],
@@ -192,17 +192,17 @@ function createScene(plant,topic){
   ()=>{const b=branch(224,248,{thin:true,length:136,bare:64});picture=soil(209)+b.html+circle(224,226,7,'care-node-ring')+brace(224,211)+drop(101,167,.5)+flow('M105 187Q145 206 182 228','water')+flow('M294 157Q346 134 394 160','air');}
  ],
  'camellia':[
-  ()=>{const b=branch(171,245,{scale:1.05});picture=b.html+roots(171,245)+sun(365,105,22)+mesh(264,104,26,179)+flow('M334 119L296 142')+flow('M258 151Q230 157 191 158')+flow('M332 143L296 170')+flow('M258 177Q226 188 195 190')+horizon(283);},
+  ()=>{const b=branch(171,245,{scale:1.05});picture=b.html+roots(171,245)+sun(365,105,22)+mesh(264,104,26,179)+flow('M334 119L296 142')+flow('M258 151Q231 154 207 154')+flow('M332 143L296 170')+flow('M258 177Q226 188 195 190')+horizon(283);},
   ()=>{const b=branch(219,249,{scale:.98});picture=soil(225)+b.html+sun(79,118,16)+flow('M102 143Q140 148 162 169')+circle(354,230,31,'care-lens')+path('M375 253L393 274','care-lens-handle')+path('M334 231l9-7l9 7l-9 7ZM355 219l7-6l8 7l-8 6ZM356 242l8-6l8 6','care-granules');},
   ()=>{const before=branch(129,242,{scale:1.02,bare:0}),after=branch(349,248,{length:137,bare:75,scale:.92});picture=before.html+path('M101 165L116 180M116 165L101 180','care-remove-cross')+panelArrow(211,173)+soil(208,290,125)+after.html+brace(349,209);}
  ],
  osmanthus:[
-  ()=>{const b=branch(354,247,{length:136});picture=sun(74,100,18)+path('M185 251V66H411V251M185 80H411','care-diffuse-canopy')+Array.from({length:7},(_,i)=>path(`M${203+i*30} 66V80`,'care-mesh-line')).join('')+b.html+horizon(251)+flow('M104 96L176 72')+flow('M272 84Q294 127 326 153')+flow('M381 84Q383 133 377 165');},
+  ()=>{const b=branch(354,247,{length:136});picture=sun(74,100,18)+path('M185 251V66H411V251M185 80H411','care-diffuse-canopy')+Array.from({length:7},(_,i)=>path(`M${203+i*30} 66V80`,'care-mesh-line')).join('')+b.html+horizon(251)+flow('M104 96L176 72')+flow('M272 84Q290 102 308 118');},
   ()=>{picture=soil(187)+branch(240,216,{length:128,scale:.8,bare:58}).html+path('M88 229Q122 222 157 229T226 229T295 229T391 229','care-stable-moisture')+path('M88 211H391M88 246H391','care-moisture-range')+circle(342,214,10,'care-air-pocket')+circle(280,251,8,'care-air-pocket')+drop(108,148,.52)+path('M107 170V183','care-small-water');},
   ()=>{const b=branch(191,242,{length:140,bare:69});picture=soil(209,91,202)+b.html+roots(191,242,'care-patient-roots')+clock(365,166,33)+path('M174 211H208','care-position-mark');}
  ],
  'ginkgo':[
-  ()=>{const young=branch(128,241,{scale:.63,bare:57}),settled=branch(354,241,{scale:.91});picture=path('M68 151Q128 89 188 151M77 143V241M179 143V241','care-shelter')+young.html+settled.html+roots(354,241)+sun(389,68,17)+flow('M377 98L344 129')+panelArrow(214,220);},
+  ()=>{const young=branch(128,241,{scale:.63,bare:57}),settled=branch(354,241,{scale:.91});picture=path('M68 151Q128 89 188 151M77 143V241M179 143V241','care-shelter')+young.html+settled.html+roots(354,241)+sun(410,68,17)+flow('M398 99Q392 108 390 118')+panelArrow(214,220);},
   ()=>{picture=soil(183)+branch(130,214,{length:128,scale:.75,bare:56}).html+drop(241,125,.7)+Array.from({length:8},(_,i)=>{const x=86+(i%4)*91,y=208+Math.floor(i/4)*36;return path(`M${x} ${y}l13-9l13 9l-13 9Z`,'care-drain-grain');}).join('')+flow('M241 146V185Q221 208 214 232Q211 252 193 270V284','water')+flow('M247 187Q277 219 303 235Q323 249 337 270V284','drain')+path('M177 269H209M320 269H352','care-outlet');},
   ()=>{const b=branch(187,232,{length:142,thin:true});picture=soil(208)+b.html+roots(187,232)+circle(187,245,43,'care-inspect-ring')+clock(356,160,31)+flow('M313 165Q260 192 224 227');}
  ],

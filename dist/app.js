@@ -2,17 +2,18 @@ import {mountNavigation,selectNavigation} from './navigation.js';
 import {plants} from './plants.js';
 import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js';
 import {mountStampEffects} from './stamp-motion.js';
-import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js';
-import {createClaimFlow} from './claim-flow.js';
-import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper} from './chapter-motion.js';
-import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js';
-import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,renderPostCompose,mountPostCompose} from './post-office.js';
+import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261021-2';
+import {createClaimFlow} from './claim-flow.js?v=20261021-6';
+import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper} from './chapter-motion.js?v=20261021-3';
+import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-4';
+import {saveRecordVideo,removeRecordVideo,releaseRecordVideos} from './record-media.js';
+import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261020-16';
 
 const P = Object.fromEntries(plants.map(x=>[x.id,x]));
 const initial = {saved:['podocarpus','osmanthus'],claims:[{id:'DEMO-2026-01',plantId:'crape',nick:'演示访客',place:'阳台',light:'充足日照',form:'已生根幼苗',status:'claimed',date:'2026.08.18',demo:true}],postcards:[{id:'demo-post',plantId:'crape',date:'2026.09.03',status:'抽出新芽',text:'第十七天，枝条顶端有了小小的绿点。先继续耐心等根。',photo:'',demo:true}],letters:[],unread:true};
 const DATA_KEY='next-branch-demo-v2';
 const load=()=>{try{const x=JSON.parse(localStorage.getItem(DATA_KEY)||localStorage.getItem('next-branch-demo'));if(!x||!Array.isArray(x.claims))return structuredClone(initial);const known=id=>Boolean(P[id]);return {...structuredClone(initial),...x,saved:(x.saved||[]).filter(known),claims:x.claims.filter(c=>known(c.plantId)),postcards:(x.postcards||[]).filter(c=>known(c.plantId)),letters:(x.letters||[]).filter(c=>known(c.plantId))};}catch{return structuredClone(initial)}};
-let data=load(),openLetterId=null,originView='home',recordForm={status:'抽出新芽',text:'',photo:''},letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:''},mailboxComposeState=null;
+let data=load(),openLetterId=null,originView='home',letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:''},mailboxComposeState=null;
 const app=document.querySelector('#app');
 const persist=()=>localStorage.setItem(DATA_KEY,JSON.stringify(data));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -42,14 +43,13 @@ const navLabels=[['home','邮票馆','INDEX'],['album','枝条放映室','ALBUM'
 const navigationSection=current=>current==='detail'||current==='story'?originView:current==='claim'?'home':current==='growth'?'album':current==='write-letter'?'letters':current;
 function nav(current){const section=navigationSection(current);return `<nav class="main-nav" aria-label="主要导航"><button class="nav-brand" data-nav="home" aria-label="下一枝 · 返回邮票馆">下一枝<span>NEXT BRANCH</span></button>${navLabels.map(([id,cn])=>`<button data-nav="${id}" aria-label="${cn}" ${section===id?'aria-current="page"':''} class="${section===id?'active':''}"><span class="nav-label char-shift" aria-label="${cn}">${letterMarkup(cn)}</span></button>`).join('')}</nav>`}
 function header(){return ''}
-const hashParts=()=>{let [view,id]=location.hash.replace(/^#/,'').split('/');if(view==='story'){history.replaceState(null,'',`#detail/${P[id]?id:plants[0].id}`);return ['detail',P[id]?id:plants[0].id];}if(view==='claim-list'){history.replaceState(null,'','#home');return ['home'];}if(id&&!P[id]){const next=view==='letters'?'#letters':'#home';history.replaceState(null,'',next);return [view==='letters'?'letters':'home'];}return [view||'home',id]};
+const hashParts=()=>{let [view,id]=location.hash.replace(/^#/,'').split('/');if(view==='story'){history.replaceState(null,'',`#detail/${P[id]?id:plants[0].id}`);return ['detail',P[id]?id:plants[0].id];}if(view==='claim-list'){history.replaceState(null,'','#home');return ['home'];}if(view==='growth'){history.replaceState(null,'','#album');return ['album'];}if(id&&!P[id]){const next=view==='letters'?'#letters':'#home';history.replaceState(null,'',next);return [view==='letters'?'letters':'home'];}return [view||'home',id]};
 function go(view,id){selectNavigation(navigationSection(view));cancelArchiveEntry(view==='detail'?id:null);openLetterId=null;const next=`#${view}${id?'/'+id:''}`;if(location.hash===next){render();window.scrollTo(0,0)}else location.hash=next}
-function render(){const [view,id]=hashParts();let body=view==='home'?home():view==='detail'?detail(id):view==='claim'?claim(id):view==='album'?album():view==='growth'?growth(id):view==='letters'?letters(id):view==='write-letter'?writeLetter():home();stopChapterMotion();cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();app.innerHTML=header()+body;document.body.dataset.view=view;mountNavigation(nav(view),navigationSection(view));bind();if(view==='home')mountHome(plants,(id,el)=>openArchive(id,el));if(view==='album')mountAlbumDesk({plants,getData:()=>data,onClaim:id=>go('claim',id),onGrowth:id=>go('growth',id),onArchive:id=>openArchive(id,null)});if(view==='letters')mountPostOffice({plants,stamp,getLetters:allLetters,onOpen:openLetter,onWrite:plantId=>{if(plantId)letterForm.plantId=plantId;go('write-letter');},filter:id});if(view==='write-letter')mountPostCompose({plants,stamp,draft:letterForm,readPhoto:readFile,onSend:draft=>{const letter={id:`L-${Date.now()}`,date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),...draft,replies:[]};data.letters.unshift(letter);try{persist();}catch(error){data.letters.shift();throw error;}letterForm={plantId:draft.plantId,category:'扦插',title:'',text:'',photo:''};return letter;},onComplete:letter=>go('letters',letter.plantId)});mountStampEffects(app);mountArchive();}
+function render(){releaseRecordVideos();const [view,id]=hashParts();let body=view==='home'?home():view==='detail'?detail(id):view==='claim'?claim(id):view==='album'?album():view==='letters'?letters(id):view==='write-letter'?writeLetter():home();stopChapterMotion();cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();app.innerHTML=header()+body;document.body.dataset.view=view;mountNavigation(nav(view),navigationSection(view));bind();if(view==='home')mountHome(plants,(id,el)=>openArchive(id,el));if(view==='album')mountAlbumDesk({plants,getData:()=>data,onClaim:id=>go('claim',id),onSaveGrowth:saveAlbumGrowth,onDeleteGrowth:deleteAlbumGrowth,onArchive:id=>openArchive(id,null)});if(view==='letters')mountPostOffice({plants,stamp,getLetters:allLetters,onOpen:openLetter,onWrite:plantId=>{if(plantId)letterForm.plantId=plantId;go('write-letter');},filter:id});if(view==='write-letter')mountPostCompose({plants,stamp,draft:letterForm,readPhoto:readFile,onSend:draft=>{const letter={id:`L-${Date.now()}`,date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),...draft,mine:true,replies:[]};data.letters.unshift(letter);try{persist();}catch(error){data.letters.shift();throw error;}letterForm={plantId:draft.plantId,category:'扦插',title:'',text:'',photo:''};return letter;},onComplete:letter=>go('letters',letter.plantId)});mountStampEffects(app);mountArchive();}
 function home(){return renderHome(plants,stamp)}
 function detail(id){const p=P[id]||plants[0],records=[...(publicStories[p.id]||[]).map(r=>({date:r[0],title:r[1],text:r[2],demo:true})),...data.postcards.filter(r=>r.plantId===p.id).map(r=>({date:r.date,title:r.status,text:r.text,photo:r.photo,demo:Boolean(r.demo)}))],stories=[...new Map(records.map(r=>[`${r.date}-${r.title}`,r])).values()].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3);return renderArchive(p,originView,stories)}
 function claim(id){return claimFlow.render(id)}
 function album(){return renderAlbumDesk(plants,stamp,data)}
-function growth(id){if(!data.claims.some(x=>x.plantId===id&&x.status==='claimed'))return detail(id);const p=P[id]||plants[0];const records=data.postcards.filter(x=>x.plantId===p.id);return `<main class="page growth-page"><div class="growth-header"><button class="text-back" data-nav="album">← 返回枝条放映室</button><h1>${p.name}的生长来信</h1><p>${p.no} · 左右翻阅，轻点明信片看背面 · ${records.length} 张${records.some(x=>x.demo)?' · 含演示记录':''}</p></div>${records.length?`<div class="postcard-track">${records.map((x,i)=>`<div class="postcard" role="button" tabindex="0" aria-label="翻转第${i+1}张${p.name}生长明信片"><div class="postcard-inner"><div class="postcard-face postcard-front"><div class="photo ${x.photo?'':'art-photo'}"><img src="${x.photo||'./assets/'+p.art}" alt="${x.photo?'用户上传的植物照片':'演示植物插画'}"></div><div class="postcard-caption"><strong>${esc(x.status)}</strong><span>${esc(x.date)} ↻ 翻面</span></div></div><div class="postcard-face postcard-back"><div class="back-head"><span>FROM MY BRANCH</span><span>${p.no}</span></div><div class="mini-stamp">${stamp(p.id,true)}</div><h3>${/暂未生根|枯萎/.test(x.status)?"植物标本卡":"寄给以后的自己"}</h3><p>${esc(x.text)}</p>${/暂未生根|枯萎/.test(x.status)?`<p class="specimen-advice">${x.status==="枯萎了"?"妥善清理枯枝和介质，清洗容器；下一次可换一枝重新尝试。":"再给它一点时间，保持通风和微湿；若枝条变软发黑，可重新选择健康枝条。"}</p>`:""}<div class="back-sign">${esc(x.date)} · ${x.demo?'演示明信片':'我的近况'}</div>${/成功生根|暂未生根|枯萎/.test(x.status)?`<div class="memory-mark">${x.status==='成功生根'?'生根纪念':'植物标本'}<br>下一枝</div>`:''}</div></div></div>`).join('')}</div>`:'<p class="empty-note" style="padding:20px 22px">还没有近况。寄出第一张明信片吧。</p>'}<div class="growth-controls"><button class="solid-action" id="show-record-form">寄出一张近况 <span>↗</span></button><button class="line-action" data-detail="${p.id}">植物资料 <span>→</span></button></div><section class="compose-paper" id="record-form" hidden><h2>寄出一张近况</h2><p>每一段生长都值得保存。生根、停滞或枯萎，都可以诚实记下来。</p><label>01 / 植物照片</label><div class="upload-box" id="photo-box"><span>＋ 轻点上传植物照片</span><input id="record-photo" type="file" accept="image/*" aria-label="上传植物照片"></div><label for="record-status">02 / 现在的状态</label><select id="record-status"><option>抽出新芽</option><option>正在生根</option><option>成功生根</option><option>暂未生根</option><option>枯萎了</option></select><label for="record-text">03 / 写一句观察</label><textarea id="record-text" placeholder="今天，它有了什么变化？" maxlength="180"></textarea><button class="solid-action" id="submit-record">生成明信片 <span>↗</span></button><p id="record-error" class="required-hint" hidden>请上传照片并写一句观察。</p></section></main>`}
 const publicStories={
  podocarpus:[['2026.09.02','刚刚安家','把罗汉松小苗安放在明亮通风处，先让根系适应新的介质。'],['2026.09.24','细叶舒展','新梢逐渐舒展，暂时不急着造型。']],
  crape:[['2026.08.18','开始扦插','把紫薇放进疏松的介质，给它留一个温暖的新位置。'],['2026.09.03','抽出新芽','叶芽长大了一点，但还不能太早判断已经生根。']],
@@ -74,7 +74,29 @@ function writeLetter(){return renderPostCompose(plants,stamp,letterForm)}
 function openArchive(id,source){const p=P[id];if(!p)return;const from=hashParts()[0];if(['home','album','growth'].includes(from))originView=from==='growth'?'album':from;enterArchive(p,source,()=>go('detail',id));}
 
 async function readFile(input){const file=input.files?.[0];if(!file)return '';const blobUrl=URL.createObjectURL(file);try{const img=new Image();img.src=blobUrl;await img.decode();const ratio=Math.min(1,1000/Math.max(img.width,img.height));const canvas=document.createElement('canvas');canvas.width=Math.round(img.width*ratio);canvas.height=Math.round(img.height*ratio);const ctx=canvas.getContext('2d');ctx.fillStyle='#f8f5ea';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/jpeg',.8)}catch{return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=reject;fr.readAsDataURL(file)})}finally{URL.revokeObjectURL(blobUrl)}}
-function bind(){document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>go(b.dataset.nav));document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>openArchive(b.dataset.detail,b));document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=()=>go('claim',b.dataset.claim));document.querySelectorAll('[data-care]').forEach(b=>b.onclick=()=>go('letters',b.dataset.care));document.querySelectorAll('[data-growth]').forEach(b=>b.onclick=()=>go('growth',b.dataset.growth));claimFlow.mount();document.querySelector('#show-record-form')?.addEventListener('click',()=>{const f=document.querySelector('#record-form');f.hidden=false;f.scrollIntoView({behavior:'smooth',block:'start'})});document.querySelector('#record-photo')?.addEventListener('change',async e=>{recordForm.photo=await readFile(e.target);const box=document.querySelector('#photo-box');box.querySelector('span').textContent=e.target.files[0]?.name||'已选择照片';if(recordForm.photo)box.insertAdjacentHTML('afterbegin',`<img class="upload-preview" src="${recordForm.photo}" alt="上传照片预览">`)});document.querySelector('#submit-record')?.addEventListener('click',()=>{recordForm.status=document.querySelector('#record-status').value;recordForm.text=document.querySelector('#record-text').value.trim();if(!recordForm.photo||!recordForm.text){document.querySelector('#record-error').hidden=false;return}data.postcards.push({id:`PC-${Date.now()}`,plantId:hashParts()[1],date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),...recordForm,demo:false});persist();recordForm={status:'抽出新芽',text:'',photo:''};render();window.scrollTo(0,0)});document.querySelectorAll('.postcard').forEach(card=>{card.onclick=()=>card.classList.toggle('flipped');card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.classList.toggle('flipped')}}});document.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>{b.classList.add('open');setTimeout(()=>openLetter(b.dataset.letter),220)});document.querySelector('#unread-letter')?.addEventListener('click',()=>{data.unread=false;persist();go('letters','crape');setTimeout(()=>openLetter('n2'),120)});}
+async function saveAlbumGrowth({plantId,recordId,status,text,input,removeMedia=false}){
+ const previous=recordId?data.postcards.find(item=>item.id===recordId&&item.plantId===plantId&&!item.demo):null;
+ if(recordId&&!previous)throw new Error('这段近况已不存在，请重新打开。');
+ const file=input.files?.[0],nextVideo=file?.type.startsWith('video/')?await saveRecordVideo(file):'',nextPhoto=file?.type.startsWith('image/')?await readFile(input):'';
+ const record=previous?{...previous,status,text,photo:file?nextPhoto:removeMedia?'':previous.photo,videoId:file?nextVideo:removeMedia?'':previous.videoId}:{id:`PC-${Date.now()}`,plantId,date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),status,text,photo:nextPhoto,videoId:nextVideo,demo:false};
+ const index=previous?data.postcards.indexOf(previous):-1;if(index>=0)data.postcards[index]=record;else data.postcards.push(record);
+ try{persist();if(previous?.videoId&&previous.videoId!==record.videoId)await removeRecordVideo(previous.videoId).catch(()=>{});return record}
+ catch(error){if(index>=0)data.postcards[index]=previous;else data.postcards.pop();if(nextVideo)removeRecordVideo(nextVideo).catch(()=>{});throw new Error('保存失败，请检查浏览器存储空间后重试。')}
+}
+async function deleteAlbumGrowth({plantId,recordId}){
+ const index=data.postcards.findIndex(item=>item.id===recordId&&item.plantId===plantId&&!item.demo);
+ if(index<0)throw new Error('这段近况已不存在，请重新打开。');
+ const [record]=data.postcards.splice(index,1);
+ try{persist();if(record.videoId)await removeRecordVideo(record.videoId).catch(()=>{});return record}
+ catch(error){data.postcards.splice(index,0,record);throw new Error('删除失败，请稍后再试。')}
+}
+let chapterNavIntent=0;
+function bind(){document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=async()=>{const target=b.dataset.nav,intent=++chapterNavIntent;if(document.body.dataset.view==='letters'&&target!=='letters'&&target!=='album'&&document.querySelector('#letter-overlay')){await closePostLetter();if(intent!==chapterNavIntent)return;}if(document.body.dataset.view==='claim'){
+  // Finish the current feed in place before changing the scene or nav colour.
+  claimChapterExitPromise??=(async()=>{await claimFlow.scrollToTop();const mode=await claimFlow.leave();await animateClaimExit(app,mode);})();
+  try{await claimChapterExitPromise;}catch{}if(intent!==chapterNavIntent||document.body.dataset.view!=='claim')return;
+  claimChapterExitDone=true;
+}go(target);});document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>openArchive(b.dataset.detail,b));document.querySelectorAll('[data-claim]').forEach(b=>b.onclick=async()=>{if(b.classList.contains('archive-accept')){if(b.classList.contains('is-accepting'))return;b.classList.add('is-accepting');b.disabled=true;if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await new Promise(resolve=>setTimeout(resolve,570));if(!b.isConnected||document.body.dataset.view!=='detail')return;}go('claim',b.dataset.claim);});document.querySelectorAll('[data-care]').forEach(b=>b.onclick=()=>go('letters',b.dataset.care));document.querySelectorAll('[data-growth]').forEach(b=>b.onclick=()=>go('growth',b.dataset.growth));claimFlow.mount();document.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>{b.classList.add('open');setTimeout(()=>openLetter(b.dataset.letter),220)});document.querySelector('#unread-letter')?.addEventListener('click',()=>{data.unread=false;persist();go('letters','crape');setTimeout(()=>openLetter('n2'),120)});}
 function openLetter(id){
   const letter=allLetters().find(item=>item.id===id);if(!letter)return;openLetterId=id;
   if(id==='n2'){data.unread=false;persist();}
@@ -89,7 +111,22 @@ function openLetter(id){
   },onClose:()=>{openLetterId=null;}});
 }
 let scrollFrame=0;window.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;if(hashParts()[0]!=='home')return;document.querySelectorAll('.field-stamp').forEach((el,i)=>{const amount=Math.min(24,window.scrollY*.035)*Math.sin(i*1.9+.6);el.style.setProperty('--drift',`${amount.toFixed(1)}px`)})})},{passive:true});
-let routeVersion=0;
+let routeVersion=0,claimChapterExitPromise=null,claimChapterExitDone=false,claimBackgroundBlend=null;
+function stopClaimBackgroundBlend(){
+  if(!claimBackgroundBlend)return;
+  const current=getComputedStyle(document.body).backgroundColor;
+  claimBackgroundBlend.cancel();claimBackgroundBlend=null;
+  document.body.style.backgroundColor=current;
+}
+async function blendClaimBackground(color){
+  if(!color)return;
+  const from=getComputedStyle(document.body).backgroundColor;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches||from===color){document.body.style.backgroundColor=color;return;}
+  const animation=document.body.animate([{backgroundColor:from},{backgroundColor:color}],{duration:720,easing:'cubic-bezier(.42,0,.58,1)',fill:'both'});
+  claimBackgroundBlend=animation;
+  try{await animation.finished;}catch{}
+  if(claimBackgroundBlend===animation){document.body.style.backgroundColor=color;animation.cancel();claimBackgroundBlend=null;}
+}
 async function animateClaimExit(frame,mode){
   const snapshot=frame.querySelector('.claim-page'),sheet=snapshot?.querySelector('.dispatch-paper'),machine=snapshot?.querySelector('.claim-machine'),lip=snapshot?.querySelector('.claim-output-lip'),feed=snapshot?.querySelector('.claim-paper-feed');
   if(!sheet)return;
@@ -133,8 +170,10 @@ async function scrollArchiveToTop(isStale){
   });
 }
 window.addEventListener('hashchange',async()=>{
-  const version=++routeVersion,previous=document.body.dataset.view,next=hashParts()[0];stopChapterMotion();selectNavigation(navigationSection(next));cancelArchiveEntry(next==='detail'?hashParts()[1]:null);const viaStamp=Boolean(document.querySelector('.branch-flight'));
+  stopClaimBackgroundBlend();
+  const version=++routeVersion,previous=document.body.dataset.view,next=hashParts()[0],finishedClaimChapterExit=previous==='claim'&&claimChapterExitDone;claimChapterExitDone=false;claimChapterExitPromise=null;stopChapterMotion();selectNavigation(navigationSection(next));cancelArchiveEntry(next==='detail'?hashParts()[1]:null);const viaStamp=Boolean(document.querySelector('.branch-flight'));
   const currentPage=app.querySelector('main');
+  if(previous==='claim'&&next==='home'&&currentPage?.dataset.claimPlant)selectHomePlant(plants,currentPage.dataset.claimPlant);
   if(previous==='detail'&&next==='claim'&&currentPage?.classList.contains('archive-page'))rememberArchivePosition(currentPage);
   if(previous==='claim'&&next==='detail'){
     const exitSelectors=['.dispatch-paper','.claim-machine','.claim-output-lip','.claim-paper-feed'];
@@ -169,7 +208,7 @@ window.addEventListener('hashchange',async()=>{
     // not a chapter exit followed by a second mailbox entrance.
     const mailboxScroll=currentPage.querySelector('.mailbox-well')?.scrollTop||0;
     const mailboxQuery=currentPage.querySelector('.mailbox-query input')?.value||'';
-    mailboxComposeState={scroll:mailboxScroll,query:mailboxQuery,plant:currentPage.querySelector('[data-mail-plant][aria-pressed="true"]')?.dataset.mailPlant||'',status:currentPage.querySelector('[data-mail-filter][aria-pressed="true"]')?.dataset.mailFilter||'',searchOpen:currentPage.querySelector('.mailbox-find')?.getAttribute('aria-expanded')==='true'};
+    mailboxComposeState={scroll:mailboxScroll,query:mailboxQuery,plant:currentPage.querySelector('[data-mail-plant][aria-pressed="true"]')?.dataset.mailPlant||'',status:currentPage.querySelector('[data-mail-filter][aria-pressed="true"]')?.dataset.mailFilter||'',origin:currentPage.querySelector('[data-mail-origin][aria-pressed="true"]')?.dataset.mailOrigin||'',searchOpen:currentPage.querySelector('.mailbox-find')?.getAttribute('aria-expanded')==='true'};
     const underlay=currentPage.cloneNode(true);
     underlay.classList.add('is-compose-underlay');
     underlay.setAttribute('aria-hidden','true');
@@ -186,7 +225,9 @@ window.addEventListener('hashchange',async()=>{
     enterChapter(compose,'write-letter',{fromView:'letters'});
     return;
   }
-  document.querySelector('#letter-overlay')?.remove();if(!(previous==='home'&&next==='letters'))cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
+  const closingReader=previous==='letters'&&next==='album'?document.querySelector('#letter-overlay'):null;
+  if(closingReader)closingReader.inert=true;else document.querySelector('#letter-overlay')?.remove();
+  if(!(previous==='home'&&next==='letters'))cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();
   if(previous==='detail'&&next==='home'&&!viaStamp){
     const paper=app.querySelector('.archive-page'),plant=P[paper?.dataset.plant];
     if(plant){
@@ -202,9 +243,13 @@ window.addEventListener('hashchange',async()=>{
   }
   // Blend the outgoing paper into the destination before replacing its DOM.
   const nextBackground=next==='home'?homeBackground(plants):next==='album'?albumBackground():next==='letters'||next==='write-letter'?'#f1f3eb':next==='claim'?P[hashParts()[1]]?.bg:next==='detail'?P[hashParts()[1]]?.bg:next==='growth'?'#e5b8be':null;
-  if(nextBackground)document.body.style.backgroundColor=nextBackground;
   const page=app.querySelector('main');if(page)page.inert=true;
-  if(previous!==next&&!viaStamp)await leaveChapter(page,previous,{nextBackground,nextView:next});
+  if(finishedClaimChapterExit&&(next==='home'||next==='letters')){
+    await blendClaimBackground(nextBackground);
+    if(version!==routeVersion)return;
+  }else if(nextBackground)document.body.style.backgroundColor=nextBackground;
+  if(previous!==next&&!viaStamp&&!finishedClaimChapterExit)await leaveChapter(page,previous,{nextBackground,nextView:next,cover:closingReader});
+  closingReader?.remove();
   if(version!==routeVersion)return;
   if(next==='claim')window.scrollTo({top:0,behavior:'instant'});
   render();window.scrollTo({top:0,behavior:'instant'});
@@ -215,6 +260,7 @@ window.addEventListener('hashchange',async()=>{
     if(state.query){query.value=state.query;query.dispatchEvent(new Event('input',{bubbles:true}));}
     if(state.plant)mailbox.querySelector(`[data-mail-plant="${state.plant}"]`)?.click();
     if(state.status)mailbox.querySelector(`[data-mail-filter="${state.status}"]`)?.click();
+    if(state.origin)mailbox.querySelector(`[data-mail-origin="${state.origin}"]`)?.click();
     mailbox.querySelector('.mailbox-well').scrollTop=state.scroll;
     if(state.searchOpen){mailbox.querySelector('.mailbox-find').click();mailbox.querySelector('.mailbox-search').getAnimations().forEach(animation=>animation.finish());}
     mailboxComposeState=null;

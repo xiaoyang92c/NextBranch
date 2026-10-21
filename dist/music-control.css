@@ -2,7 +2,7 @@
   position:fixed;
   right:calc(var(--nav-edge,32px) - 8px + env(safe-area-inset-right));
   bottom:calc(31px + env(safe-area-inset-bottom));
-  z-index:82;
+  z-index:250;
   display:grid;
   place-items:center;
   width:44px;
@@ -13,7 +13,7 @@
   box-shadow:none;
   color:#315b45;
 }
-body[data-view="home"] .music-toggle{color:#fff7df}
+body[data-view]:not([data-view="letters"]) .music-toggle{color:#fff7df}
 .music-toggle-ring{
   position:relative;
   display:block;
@@ -21,6 +21,7 @@ body[data-view="home"] .music-toggle{color:#fff7df}
   height:32px;
   opacity:.72;
 }
+.music-toggle-ink-layer{position:absolute;inset:6px;visibility:hidden;pointer-events:none;mask-image:linear-gradient(100deg,#000 0 42%,transparent 55%);-webkit-mask-image:linear-gradient(100deg,#000 0 42%,transparent 55%);mask-size:220% 100%;-webkit-mask-size:220% 100%;mask-position:100% 50%;-webkit-mask-position:100% 50%}
 .music-toggle-ring::before{
   content:"";
   position:absolute;

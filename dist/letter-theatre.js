@@ -4,9 +4,9 @@ const searchIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" 
 
 export function renderLetterTheatre(){
  return `<main class="page letters-page post-office letter-mailbox" aria-label="枝友来信"><h1 class="office-live">枝友来信</h1>
- <section class="mailbox-well" aria-label="上下浏览来信，点按抽出信纸"><div class="mailbox-stack" role="list"></div><div class="mailbox-empty" hidden><span class="mailbox-empty-kicker">来信检索 · 暂无结果</span><span class="mailbox-empty-mark" aria-hidden="true"><i></i></span><h2>这次没有找到来信</h2><p>换个关键词再找找，<br>也可以把你的问题寄给枝友。</p><div class="mailbox-empty-actions"><button data-mail-action="reset">查看全部来信 <span aria-hidden="true">→</span></button><button data-mail-action="write">寄出一封信 <span aria-hidden="true">↗</span></button></div></div></section>
+ <section class="mailbox-well" aria-label="上下浏览来信，点按抽出信纸"><div class="mailbox-stack" role="list"></div><div class="mailbox-empty" hidden><span class="mailbox-empty-kicker">来信检索 · 暂无结果</span><div class="mailbox-empty-rule" aria-hidden="true"></div><h2>这次没有找到来信</h2><p>试试别的植物或关键词<br>也欢迎写下你的问题，寄给枝友</p><div class="mailbox-empty-actions"><button data-mail-action="reset">查看全部来信 <span aria-hidden="true">→</span></button><button data-mail-action="write">寄出一封信 <span aria-hidden="true">↗</span></button></div></div></section>
  <div class="mailbox-toolbar" role="search"><label class="mailbox-query">${searchIcon}<input type="search" aria-label="搜索植物或来信" placeholder="找植物，找来信" autocomplete="off"></label><button class="mailbox-find" aria-label="筛选来信" aria-expanded="false" aria-controls="mailbox-search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4m4 0h8M4 17h9m4 0h3"/><circle cx="10" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><i aria-hidden="true"></i></button><button class="mailbox-write" data-mail-action="write" aria-label="寄出一封信"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 16 11-11 3 3-11 11-4 1 1-4ZM14 7l3 3"/></svg></button></div>
- <section class="mailbox-search" id="mailbox-search" aria-label="筛选来信" hidden><header><h2>找一封来信</h2><button class="mailbox-search-close" aria-label="收起筛选">×</button></header><div class="mailbox-filters"><fieldset><legend>关于哪一枝</legend><div class="mailbox-plants" role="group" aria-label="按植物筛选来信"></div></fieldset><fieldset><legend>回信状态</legend><div class="mailbox-status" role="group" aria-label="回信状态"><button data-mail-filter="" aria-pressed="true">全部</button><button data-mail-filter="answered" aria-pressed="false">有回信</button><button data-mail-filter="waiting" aria-pressed="false">待回信</button></div></fieldset></div><footer><button class="mailbox-reset" data-mail-action="reset">清除条件</button><button class="mailbox-filter-done">查看 <span></span> 封来信 ↗</button></footer></section><span class="office-live mailbox-live" role="status" aria-live="polite"></span></main>`;
+ <section class="mailbox-search" id="mailbox-search" aria-label="筛选来信" hidden><header><h2>找一封来信</h2><button class="mailbox-search-close" aria-label="收起筛选">×</button></header><div class="mailbox-filters"><fieldset><legend>关于哪一枝</legend><div class="mailbox-plants" role="group" aria-label="按植物筛选来信"></div></fieldset><fieldset><legend>回信状态</legend><div class="mailbox-status" role="group" aria-label="回信状态"><button data-mail-filter="" aria-pressed="true">全部</button><button data-mail-filter="answered" aria-pressed="false">有回信</button><button data-mail-filter="waiting" aria-pressed="false">待回信</button></div></fieldset><fieldset><legend>来信来源</legend><div class="mailbox-origin" role="group" aria-label="按来信来源筛选"><button data-mail-origin="" aria-pressed="true">全部来信</button><button data-mail-origin="mine" aria-pressed="false">我写的信</button></div></fieldset></div><footer><button class="mailbox-reset" data-mail-action="reset">清除条件</button><button class="mailbox-filter-done">查看 <span></span> 封来信 ↗</button></footer></section><span class="office-live mailbox-live" role="status" aria-live="polite"></span></main>`;
 }
 
 export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,freshId,onReader}){
@@ -14,7 +14,7 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  const controller=new AbortController(),signal=controller.signal,P=Object.fromEntries(plants.map(p=>[p.id,p]));
  const compact=matchMedia('(max-width:799px), (pointer:coarse)').matches,cycleCount=compact?3:5,centerCycle=(cycleCount-1)/2;
  const well=root.querySelector('.mailbox-well'),stack=root.querySelector('.mailbox-stack'),searchPanel=root.querySelector('.mailbox-search'),find=root.querySelector('.mailbox-find'),query=root.querySelector('.mailbox-query input');
- const animations=new Set();let stage=null,items=[],plantFilter=filter||'',statusFilter='',term='',opening=false,centering=false,activeId=freshId||null,needsRefresh=false,period=0,looping=true;
+ const animations=new Set();let stage=null,items=[],plantFilter=filter||'',statusFilter='',originFilter='',term='',opening=false,centering=false,activeId=freshId||null,needsRefresh=false,period=0,looping=true;
  let scrollFrame=0,scrollTarget=null,scrollPosition=0,lastFrame=0,drag=null,suppressClickUntil=0,searchExpanded=false,panelAnimation=null,panelVersion=0;
  const limitScroll=value=>Math.max(0,Math.min(well.scrollHeight-well.clientHeight,value));
  function stopGlide(){cancelAnimationFrame(scrollFrame);scrollFrame=0;scrollTarget=null;lastFrame=0;}
@@ -49,16 +49,17 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  function load(keep=true){
   stopGlide();drag=null;
   const previousTop=well.scrollTop,wasLooping=looping,phase=keep&&period?previousTop%period:0;
-  items=getLetters().filter(l=>P[l.plantId]&&(!plantFilter||l.plantId===plantFilter)&&(statusFilter==='waiting'?!l.replies?.length:statusFilter==='answered'?Boolean(l.replies?.length):true)&&(!term||`${P[l.plantId].name} ${l.title} ${l.text}`.toLocaleLowerCase().includes(term.toLocaleLowerCase())));
-  looping=!plantFilter&&!statusFilter&&!term;
+  items=getLetters().filter(l=>P[l.plantId]&&(!plantFilter||l.plantId===plantFilter)&&(statusFilter==='waiting'?!l.replies?.length:statusFilter==='answered'?Boolean(l.replies?.length):true)&&(!originFilter||l.mine===true||/^L-\d+$/.test(l.id))&&(!term||`${P[l.plantId].name} ${l.title} ${l.text}`.toLocaleLowerCase().includes(term.toLocaleLowerCase())));
+  looping=!plantFilter&&!statusFilter&&!originFilter&&!term;
   // The complete archive repeats; a chosen plant, state, or search result is finite.
   const nodes=Array.from({length:looping?cycleCount:1},()=>items.map((letter,index)=>{const item=document.createElement('article');item.className=`mailbox-entry${plants.findIndex(p=>p.id===letter.plantId)%2?' is-flower-right':''}`;item.setAttribute('role','listitem');item.setAttribute('aria-posinset',index+1);item.setAttribute('aria-setsize',items.length);const button=document.createElement('button');button.type='button';button.className='mailbox-letter';button.dataset.id=letter.id;button.setAttribute('aria-label',`抽出查看：${letter.title}`);button.innerHTML=markup(letter);const frame=document.createElement('div');frame.className='mailbox-ink-frame';frame.append(button);item.append(frame);return item;})).flat();stack.replaceChildren(...nodes);
   if(looping){period=measurePeriod();well.scrollTop=period*centerCycle+phase;}else{period=0;stack.style.gap='';stack.style.paddingTop='';well.scrollTop=keep&&!wasLooping?previousTop:0;}
   root.classList.toggle('is-filtered',!looping);markActive(items.some(l=>l.id===activeId)?activeId:items[0]?.id);root.querySelector('.mailbox-empty').hidden=Boolean(items.length);
   root.querySelectorAll('[data-mail-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailFilter===statusFilter)));
+  root.querySelectorAll('[data-mail-origin]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailOrigin===originFilter)));
   root.querySelectorAll('[data-mail-plant]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailPlant===plantFilter)));
   root.querySelector('.mailbox-filter-done span').textContent=items.length;
-  find.classList.toggle('has-filter',Boolean(plantFilter||statusFilter));root.querySelector('.mailbox-live').textContent=`${items.length} 封来信`;
+  find.classList.toggle('has-filter',Boolean(plantFilter||statusFilter||originFilter));root.querySelector('.mailbox-live').textContent=`${items.length} 封来信`;
  }
  function searchOpen(value,focus=true){
   stopGlide();drag=null;searchExpanded=value;const version=++panelVersion;
@@ -103,7 +104,7 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   button=await centerLetter(button);if(signal.aborted)return;opening=true;markActive(button.dataset.id,button);
   const rect=button.getBoundingClientRect(),id=button.dataset.id,face=button.querySelector('.garden-letter');
   const reset=()=>{face?.querySelector('.garden-letter-paper')?.style.removeProperty('visibility');stage?.remove();stage=null;if(signal.aborted)return;opening=false;animations.forEach(a=>a.cancel());animations.clear();root.classList.remove('is-reading');if(needsRefresh){needsRefresh=false;load();}stack.querySelector('[aria-current="true"]')?.focus({preventScroll:true});};
-  const move=async(el,frames,duration)=>{if(reduced())return;const a=el.animate(frames,{duration,easing:'cubic-bezier(.22,.76,.24,1)',fill:'both'});animations.add(a);await a.finished;};
+  const move=async(el,frames,duration)=>{if(reduced())return;const a=el.animate(frames,{duration,easing:'linear',fill:'both'});animations.add(a);await a.finished;el.style.transform=frames.at(-1).transform;a.cancel();animations.delete(a);};
   try{
    stage=document.createElement('div');stage.className='mail-opening-stage';stage.setAttribute('aria-hidden','true');stage.append(face.cloneNode(true));
    const w=rect.width,h=rect.height,x=rect.x,y=rect.y;
@@ -112,20 +113,37 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
    const tuckedPaper=slip.getBoundingClientRect();
    face.querySelector('.garden-letter-paper').style.visibility='hidden';
    const readerWidth=Math.min(620,innerWidth-32);
-   const readerLeft=(innerWidth-readerWidth)/2,readerTop=16;
+   const navLabel=document.querySelector('.main-nav .nav-label')?.getBoundingClientRect();
+   const readerLeft=(innerWidth-readerWidth)/2,readerTop=navLabel?Math.round(navLabel.top+navLabel.bottom):84;
    const grow=readerWidth/tuckedPaper.width;
    const dx=readerLeft-tuckedPaper.left-(tuckedPaper.width-readerWidth)/2;
    const dy=readerTop-tuckedPaper.top-(tuckedPaper.height-tuckedPaper.height*grow)/2;
-   const arc=Array.from({length:13},(_,index)=>{
-    const t=index/12,curve=2*(1-t)*t,lift=Math.min(38,Math.abs(dy)*.13);
-    const px=dx*t+curve*(dx>=0?12:-12),py=dy*t-curve*lift,scale=1+(grow-1)*(t*t*(3-2*t));
-    return {transform:`translate3d(${px}px,${py}px,0) scale(${scale})`};
+   const pocket=stage.querySelector('.garden-envelope-pocket'),address=stage.querySelector('.garden-envelope-address');
+   const preScale=Math.min(1.1,grow);
+   const liftY=Math.min(0,pocket.getBoundingClientRect().top-tuckedPaper.bottom-12-tuckedPaper.height*(preScale-1)/2);
+   const frame=(x,y,scale)=>({transform:`translate3d(${x}px,${y}px,0) scale(${scale})`});
+   const liftFrames=Array.from({length:19},(_,index)=>{
+    const t=index/18,motion=t*t*(2-t),scaleTime=Math.max(0,(t-.2)/.8),scaleEase=scaleTime*scaleTime*(2-scaleTime);
+    return {...frame(0,liftY*motion,1+(preScale-1)*scaleEase),offset:t};
    });
-   const extractedTransform=arc.at(-1).transform;
-   await move(slip,arc,760);slip.style.transform=extractedTransform;
+   const expandFrames=Array.from({length:27},(_,index)=>{
+    const t=index/26,motion=t+t*t-t*t*t,arcLift=Math.sin(Math.PI*motion)*Math.min(22,Math.abs(dy-liftY)*.1);
+    return {...frame(dx*motion,liftY+(dy-liftY)*motion-arcLift,preScale+(grow-preScale)*motion),offset:t};
+   });
+   const retractFrames=Array.from({length:27},(_,index)=>{
+    const t=index/26,motion=t+.2*t*(1-t),remaining=1-motion,arcLift=Math.sin(Math.PI*remaining)*Math.min(22,Math.abs(dy-liftY)*.1);
+    return {...frame(dx*remaining,liftY+(dy-liftY)*remaining-arcLift,grow+(preScale-grow)*motion),offset:t};
+   });
+   const reverse=frames=>frames.slice().reverse().map((item,index)=>({...item,offset:index/(frames.length-1)}));
+   const extractedTransform=expandFrames.at(-1).transform;
+   await move(slip,liftFrames,340);
+   pocket.style.visibility='hidden';address.style.visibility='hidden';
+   await move(slip,expandFrames,510);slip.style.transform=extractedTransform;
    const paper=slip.getBoundingClientRect();
-   onReader({kind:'mailbox',paper,paperElement:slip,tuckedPaper,envelope:rect,paperMarkup:slip.innerHTML,extracted:()=>{slip.style.visibility='hidden';},revealPaper:()=>{slip.style.visibility='';},returnPaper:async()=>{
-    await move(slip,arc.slice().reverse(),680);slip.style.transform='';
+   onReader({kind:'mailbox',readerTop,paper,paperElement:slip,tuckedPaper,envelope:rect,paperMarkup:slip.innerHTML,extracted:()=>{slip.style.visibility='hidden';},revealPaper:()=>{slip.style.visibility='';},returnPaper:async()=>{
+    await move(slip,retractFrames,510);
+    pocket.style.visibility='';address.style.visibility='';
+    await move(slip,reverse(liftFrames),340);slip.style.transform='';
    }},reset);
    if(!signal.aborted)onOpen(id);
   }catch{if(!signal.aborted&&stage){onReader({kind:'mailbox'},reset);onOpen(id);}else reset();}
@@ -137,9 +155,10 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  root.addEventListener('click',event=>{
   const p=event.target.closest('[data-mail-plant]');if(p){plantFilter=p.dataset.mailPlant;load(false);return;}
   const f=event.target.closest('[data-mail-filter]');if(f){statusFilter=f.dataset.mailFilter;load(false);return;}
+  const o=event.target.closest('[data-mail-origin]');if(o){originFilter=o.dataset.mailOrigin;load(false);return;}
   const action=event.target.closest('[data-mail-action]')?.dataset.mailAction;
   if(action==='write'){if(!opening)onWrite(plantFilter||undefined);return;}
-  if(action==='reset'){term='';plantFilter='';statusFilter='';query.value='';load(false);return;}
+  if(action==='reset'){term='';plantFilter='';statusFilter='';originFilter='';query.value='';load(false);return;}
   const button=event.target.closest('.mailbox-letter');if(button&&!opening){if(searchExpanded){searchOpen(false);return;}open(button);}
  },{signal});
  well.addEventListener('scroll',recycle,{signal,passive:true});

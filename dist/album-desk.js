@@ -1,4 +1,5 @@
-import {careLessons,careScene} from './tv-care.js';
+import {hydrateRecordVideos,releaseRecordVideos} from './record-media.js';
+import {careLessons,careScene} from './tv-care.js?v=20261021-4';
 const escape=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 let chosenId=null,channel='care',film=0,dispose=()=>{},lens=null;
@@ -20,11 +21,11 @@ export function renderAlbumDesk(plants,stamp,data){
  <footer class="tv-frequency" aria-label="循环植物刻度"><div class="tv-dial-pointer" aria-hidden="true"><i></i></div><div class="tv-dial-window" role="tablist" aria-label="植物调台刻度"><div class="tv-stations"></div></div></footer>
  </div><span class="tv-reflection" aria-hidden="true"></span><span class="tv-scanlines" aria-hidden="true"></span><span class="tv-interference" aria-hidden="true"></span><span class="tv-static" aria-hidden="true"></span></div></section><span class="album-live" role="status" aria-live="polite"></span></main>`;
 }
-export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
+export function mountAlbumDesk({plants,getData,onClaim,onSaveGrowth,onDeleteGrowth,onArchive}){
  const root=document.querySelector('.album-desk');if(!root)return;
  const compact=matchMedia('(max-width:799px), (pointer:coarse)');
  const controller=new AbortController(),signal=controller.signal,animations=new Set(),reveals=new Set(),program=root.querySelector('.tv-program'),shell=root.querySelector('.tv-program-shell'),dial=root.querySelector('.tv-dial-window'),track=root.querySelector('.tv-stations');
- let warpFrame=0;let operation=0,content=null,renderKey='',swipe=null,dialDrag=null,ignoreClick=0,tunerAnimation=null;
+ let warpFrame=0;let operation=0,content=null,renderKey='',swipe=null,dialDrag=null,ignoreClick=0,tunerAnimation=null,recordDialog=null,recordPreviewUrl='',recordFocus=null,bodyOverflow='';
  const wrap=value=>(value%plants.length+plants.length)%plants.length;
  const selected=()=>plants.find(plant=>plant.id===chosenId)||plants[0];
  const selectedIndex=()=>plants.findIndex(plant=>plant.id===chosenId);
@@ -43,6 +44,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   // Keep every plant on the same canvas and the annotation type at one optical size.
   const scale=Math.min(svg.clientWidth/width,svg.clientHeight/height);
   if(scale>0)svg.style.setProperty('--care-svg-type-size',`${12.5/scale}px`);
+  const leaves=[...art.querySelectorAll('.care-leaf')];
   svg.querySelectorAll('.scene-callout').forEach((callout,index)=>{
    const leader=callout.querySelector('.care-leader'),text=callout.querySelector('text'),labelX=index===0?120:360,target=leader.dataset.target.split(',').map(Number),via=leader.dataset.via?leader.dataset.via.split(' ').map(pair=>pair.split(',').map(Number)):[];
    text.setAttribute('x',labelX);text.setAttribute('y',labelY);
@@ -50,6 +52,25 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
    const points=[[labelX,labelY+10],[labelX,stemY],...via],last=points.at(-1),distance=Math.hypot(target[0]-last[0],target[1]-last[1]),gap=Math.min(11,distance*.35);
    if(distance)points.push([target[0]+(last[0]-target[0])*gap/distance,target[1]+(last[1]-target[1])*gap/distance]);
    leader.setAttribute('d',points.map(([px,py],index)=>`${index?'L':'M'}${px} ${py}`).join(''));
+   // Stop the dotted annotation before the first leaf it meets, including
+   // labels whose nominal target lies inside a full leaf silhouette.
+   const matrix=leader.getScreenCTM(),length=leader.getTotalLength();
+   if(matrix&&leaves.length&&length){
+    let stop=length;
+    for(let at=0;at<=length;at+=.5){
+     const point=leader.getPointAtLength(at),screen=new DOMPoint(point.x,point.y).matrixTransform(matrix);
+     if(leaves.some(leaf=>leaf.isPointInFill(screen.matrixTransform(leaf.getScreenCTM().inverse())))){stop=at;break;}
+    }
+    if(stop<length){
+     const safe=Math.max(0,stop-12),clipped=[points[0]];let walked=0;
+     for(let part=1;part<points.length;part++){
+      const from=points[part-1],to=points[part],span=Math.hypot(to[0]-from[0],to[1]-from[1]);
+      if(walked+span>=safe){const ratio=span?Math.max(0,(safe-walked)/span):0;clipped.push([from[0]+(to[0]-from[0])*ratio,from[1]+(to[1]-from[1])*ratio]);break;}
+      clipped.push(to);walked+=span;
+     }
+     leader.setAttribute('d',clipped.map(([px,py],part)=>`${part?'L':'M'}${px} ${py}`).join(''));
+    }
+   }
   });
   composition.removeAttribute('transform');
   const box=composition.getBBox();
@@ -73,10 +94,47 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  }
  function drawScene(){
   const svg=program.querySelector('.broadcast-diagram');if(!svg||reduced())return;
-  // On narrow screens, avoid hundreds of animated SVG masks. They can render
-  // the whole illustration transparent in mobile WebKit during a filter pass.
+  // Small screens draw solid strokes directly. Keep the original dash pattern
+  // visible through a few local masks, instead of temporarily making dashes
+  // solid; masking every stroke can blank the CRT scene on mobile WebKit.
   if(matchMedia('(max-width:799px), (pointer:coarse)').matches){
-   animate(svg,[{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:720,easing:'ease-out'});
+   const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');svg.prepend(defs);
+   svg.querySelectorAll('path,circle,rect,ellipse,line,polyline').forEach((shape,index)=>{
+    if(shape.closest('defs')||shape.matches('.care-anchor'))return;
+    const style=getComputedStyle(shape),delay=shape.matches('.care-leader')?190:60+Math.min(index,18)*30;
+    const dashed=style.stroke!=='none'&&style.strokeDasharray!=='none';
+    if(style.fill!=='none'&&Number(style.fillOpacity)>0){
+     if(dashed){
+      const wash=shape.cloneNode(false);wash.removeAttribute('id');wash.classList.add('care-entry-fill');
+      Object.assign(wash.style,{stroke:'none',fill:style.fill,fillOpacity:style.fillOpacity,pointerEvents:'none'});
+      shape.before(wash);shape.style.fill='none';
+      animate(wash,[{opacity:0},{opacity:1}],{duration:820,delay:delay+180,easing:'cubic-bezier(.2,.65,.3,1)'});
+     }else animate(shape,[{fillOpacity:0},{fillOpacity:style.fillOpacity}],{duration:820,delay:delay+180,easing:'cubic-bezier(.2,.65,.3,1)'});
+    }
+    const length=shape.getTotalLength?.();
+    if(style.stroke==='none'||!length)return;
+    if(dashed){
+     const mask=document.createElementNS(ns,'mask'),ink=shape.cloneNode(false),holder=document.createElementNS(ns,'g');
+     const id=`scene-dashes-${operation}-${index}`;mask.id=id;
+     for(const [key,value] of Object.entries({maskUnits:'userSpaceOnUse',x:'-500',y:'-500',width:'1500',height:'1500'}))mask.setAttribute(key,value);
+     ink.removeAttribute('class');ink.removeAttribute('style');
+     for(const [key,value] of Object.entries({fill:'none',stroke:'white','stroke-width':'7','stroke-linecap':'round','stroke-linejoin':'round',pathLength:'1','stroke-dasharray':'1','stroke-dashoffset':'1'}))ink.setAttribute(key,value);
+     mask.append(ink);defs.append(mask);shape.before(holder);holder.append(shape);holder.setAttribute('mask',`url(#${id})`);
+     const drawing=animate(ink,[{strokeDashoffset:1},{strokeDashoffset:0}],{duration:960,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
+     const finish=()=>{holder.removeAttribute('mask');mask.remove();reveals.delete(finish);animations.delete(drawing);drawing.cancel();};
+     reveals.add(finish);drawing.finished.then(finish).catch(()=>{});
+     return;
+    }
+    const oldDash=shape.style.strokeDasharray,oldOffset=shape.style.strokeDashoffset;
+    shape.style.strokeDasharray=`${length} ${length}`;
+    shape.style.strokeDashoffset=String(length);
+    const drawing=animate(shape,[{strokeDashoffset:length},{strokeDashoffset:0}],{duration:960,delay,easing:'cubic-bezier(.3,0,.25,1)',hold:true});
+    const finish=()=>{
+     shape.style.strokeDasharray=oldDash;shape.style.strokeDashoffset=oldOffset;
+     reveals.delete(finish);animations.delete(drawing);drawing.cancel();
+    };
+    reveals.add(finish);drawing.finished.then(finish).catch(()=>{});
+   });
    return;
   }
   const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs');svg.prepend(defs);
@@ -112,8 +170,8 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   const plant=selected(),data=getData(),claim=claimFor(data,plant.id),records=data.postcards.filter(record=>record.plantId===plant.id);
   if(channel==='care')return careLessons[plant.id].map(([title,text,aside],index)=>({title,text,aside,topic:['light','water','roots'][index]}));
   if(channel==='growth'){
-   if(claim&&records.length)return records.map((record,index)=>({title:record.status,text:record.text,date:record.date,photo:record.photo,record:index+1,total:records.length,claimDate:claim.date,action:'growth',actionLabel:'打开生长明信片'}));
-   if(claim)return [{title:'第一张近况，等你来拍',text:'这一枝已经安家。拍下它今天的样子，留住生长的起点。',date:claim.date,empty:true,claimed:true,action:'growth',actionLabel:'记录第一张近况'}];
+   if(claim&&records.length)return records.map((record,index)=>({title:record.status,text:record.text,date:record.date,photo:record.photo,videoId:record.videoId,record:index+1,total:records.length,recordId:record.id,editable:!record.demo,claimDate:claim.date,action:'record',actionLabel:'再记一段'}));
+   if(claim)return [{title:'第一段近况，等你记录',text:'这一枝已经安家。写下今天的观察，也可以加上照片或视频。',date:claim.date,empty:true,claimed:true,action:'record',actionLabel:'记录近况'}];
    const reserved=data.claims.some(item=>item.plantId===plant.id);
    return [{title:reserved?'等这一枝到家':'这段生长，还没开始',text:reserved?'线下领取后，就能在这里记录它的变化。':'接过一枝植物，再留下它的第一段影像。',empty:true,action:'claim',actionLabel:reserved?'查看领取邮单':'接收这一枝'}];
   }
@@ -123,7 +181,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  function careMarkup(plant){return `<section class="care-program"><header class="care-heading"><div><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></div><div class="care-difficulty"><strong>养护难度</strong><span data-type>${plant.level}</span></div></header><div class="care-stage">${careScene(plant,film)}</div><div class="care-bottom"><div class="care-copy">${copyMarkup()}</div><div class="care-topics" role="group" aria-label="选择养护场景">${topicLabels(plant).map((label,index)=>`<button data-care-frame="${index}" aria-pressed="${film===index}"><span class="tv-key-label">${label}</span></button>`).join('')}</div></div></section>`;}
  function growthMarkup(plant){
   const photo=content.photo?escape(content.photo):`./assets/${plant.art}`;
-  return `<section class="growth-program"><header class="growth-program-head"><h1 data-type>${plant.name}的近况</h1><span class="growth-count">${content.record?`TAPE ${String(content.record).padStart(2,'0')} / ${String(content.total).padStart(2,'0')}`:'NO TAPE'}</span></header><div class="growth-layout"><div class="growth-viewfinder"><span class="growth-rec">${content.photo?'● REC':'▷ PLAY'}</span><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i>${content.empty?`<div class="growth-awaiting"><svg class="growth-test-card" viewBox="0 0 180 126" aria-hidden="true"><rect x="12" y="8" width="156" height="110"/><path d="M12 35H168M12 91H168M38 8V35M64 8V35M90 8V35M116 8V35M142 8V35M12 104H168M12 111H168"/><path class="test-card-band" d="M12 8H38V35H12ZM64 8H90V35H64ZM116 8H142V35H116Z"/><circle cx="90" cy="63" r="24"/><path d="M54 63H126M90 37V89"/></svg><span>等待第一段生长影像</span></div>`:`<img class="growth-picture ${content.photo?'is-photo':''}" src="${photo}" alt="${content.photo?'植物近况照片':plant.name+'的图鉴画面'}"><span class="growth-image-caption">${content.photo?'生长照片':'图鉴画面'}</span>`}<span class="growth-viewfinder-date">${escape(content.date||plant.no)}</span></div><article class="growth-observation"><span class="growth-date">${escape(content.date||'尚未录入')}</span><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p><button class="tv-story-action" data-tv-action="${content.action}">${content.actionLabel}<span>↗</span></button></article></div>${content.total>1?'<nav class="growth-record-strip growth-pages" aria-label="翻阅近况"><button data-tv-action="previous" aria-label="上一张近况">上一张</button><button data-tv-action="next" aria-label="下一张近况">下一张</button></nav>':''}</section>`;
+  return `<section class="growth-program"><header class="growth-program-head"><h1 data-type>${plant.name}的近况</h1><span class="growth-count">${content.record?`TAPE ${String(content.record).padStart(2,'0')} / ${String(content.total).padStart(2,'0')}`:'NO TAPE'}</span></header><div class="growth-layout"><div class="growth-viewfinder"><span class="growth-rec">${content.photo||content.videoId?'● REC':'▷ PLAY'}</span><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i><i class="viewfinder-corner"></i>${content.empty?`<div class="growth-awaiting"><svg class="growth-test-card" viewBox="0 0 180 126" aria-hidden="true"><rect x="12" y="8" width="156" height="110"/><path d="M12 35H168M12 91H168M38 8V35M64 8V35M90 8V35M116 8V35M142 8V35M12 104H168M12 111H168"/><path class="test-card-band" d="M12 8H38V35H12ZM64 8H90V35H64ZM116 8H142V35H116Z"/><circle cx="90" cy="63" r="24"/><path d="M54 63H126M90 37V89"/></svg><span>等待第一段生长影像</span></div>`:`${content.videoId?`<video class="growth-picture is-photo" data-record-video="${escape(content.videoId)}" controls playsinline preload="metadata" aria-label="${plant.name}的近况视频"></video>`:`<img class="growth-picture ${content.photo?'is-photo':''}" src="${photo}" alt="${content.photo?'植物近况照片':plant.name+'的图鉴画面'}">`}<span class="growth-image-caption">${content.videoId?'生长视频':content.photo?'生长照片':'图鉴画面'}</span>`}<span class="growth-viewfinder-date">${escape(content.date||plant.no)}</span></div><article class="growth-observation"><div class="growth-observation-meta"><span class="growth-date">${escape(content.date||'尚未录入')}</span>${content.editable?'<button class="growth-adjust-action" data-tv-action="edit-record" aria-label="调整这段近况">调整记录 ↗</button>':''}</div><h2 data-type>${escape(content.title)}</h2><p data-type>${escape(content.text)}</p><div class="growth-action-row"><div class="growth-record-actions"><button class="tv-story-action" data-tv-action="${content.action}">${content.actionLabel}<span>↗</span></button></div>${content.total>1?'<nav class="growth-pages" aria-label="翻阅近况"><button data-tv-action="previous" aria-label="上一段近况">上一段</button><button data-tv-action="next" aria-label="下一段近况">下一段</button></nav>':''}</div></article></div></section>`;
  }
  function archiveMarkup(plant){return `<section class="tv-dossier"><header><span>FIELD FILE / ${plant.no}</span><span>农科村植物资料</span></header><div class="tv-dossier-body"><figure class="tv-dossier-plate"><div class="tv-dossier-art"><img src="./assets/${plant.art}" alt="${plant.name}植物插画"></div><figcaption class="tv-dossier-name"><h1 data-type>${plant.name}</h1><i data-type>${plant.latin}</i></figcaption></figure><article><p data-type>${plant.intro}</p><dl><div><dt>光照</dt><dd data-type>${plant.light}</dd></div><div><dt>难度</dt><dd>${plant.level}</dd></div><div><dt>来源</dt><dd>${plant.source.replace(' · 演示','')}</dd></div></dl><button class="tv-story-action" data-tv-action="archive">打开完整档案 <span>↗</span></button></article></div></section>`;}
  function updateControls(){
@@ -135,10 +193,46 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   root.querySelector('.album-live').textContent=`${selected().name}，${modes[channel]}${channel==='care'?'，'+topicLabels(selected())[film]:''}`;
  }
  function paint(textOnly=false){
+  releaseRecordVideos();
   const items=frames();film=((film%items.length)+items.length)%items.length;content=items[film];const plant=selected();
   if(textOnly&&program.querySelector('.care-copy')){program.querySelector('.care-copy').innerHTML=copyMarkup();program.querySelector('.care-stage').innerHTML=careScene(plant,film)+``;}
   else program.innerHTML=channel==='care'?careMarkup(plant):channel==='growth'?growthMarkup(plant):archiveMarkup(plant);
-  renderKey=`${channel}:${chosenId}`;updateControls();fitSceneArt();
+  renderKey=`${channel}:${chosenId}`;updateControls();fitSceneArt();hydrateRecordVideos(program);
+ }
+ function closeRecordEditor(immediate=false){
+  if(!recordDialog)return;
+  const dialog=recordDialog,sheet=dialog.querySelector('.growth-editor'),focus=recordFocus,previousOverflow=bodyOverflow;
+  recordDialog=null;recordFocus=null;document.body.style.overflow=previousOverflow;
+  if(recordPreviewUrl){URL.revokeObjectURL(recordPreviewUrl);recordPreviewUrl='';}
+  if(immediate||reduced()){dialog.remove();focus?.focus({preventScroll:true});return;}
+  const curtain=dialog.animate([{backgroundColor:'rgba(21,46,39,.76)'},{backgroundColor:'rgba(21,46,39,0)'}],{duration:460,easing:'ease-in',fill:'forwards'});
+  const departure=sheet.animate([{transform:'translateY(0)'},{transform:'translateY(105%)'}],{duration:460,easing:'cubic-bezier(.55,0,.85,.55)',fill:'forwards'});
+  Promise.allSettled([curtain.finished,departure.finished]).then(()=>{dialog.remove();focus?.focus({preventScroll:true})});
+ }
+ function openRecordEditor(edit=false){
+  if(recordDialog)return;
+  const plant=selected(),existing=edit&&content.editable?getData().postcards.find(item=>item.id===content.recordId&&!item.demo):null;
+  recordFocus=document.activeElement;bodyOverflow=document.body.style.overflow;
+  recordDialog=document.createElement('div');recordDialog.className='growth-editor-overlay';
+  recordDialog.innerHTML=`<section class="growth-editor" role="dialog" aria-modal="true" aria-labelledby="growth-editor-title"><header class="growth-editor-topline"><span>FIELD RECORDER</span><button type="button" data-editor-close aria-label="关闭记录"></button></header><div class="growth-editor-heading"><span>${existing?'REVISIT / 调整记录':'NEW TAPE / 记录近况'}</span><h2 id="growth-editor-title">${escape(plant.name)}的近况</h2><p>${existing?'沿着这枝的生长轨迹，补上新的观察':'把今天看到的变化，留在这枝的生长手记里'}</p></div><form><div class="growth-editor-field"><label id="growth-status-label"><span class="growth-editor-index">01 /</span><span>生长状态</span></label><input id="growth-edit-status" name="status" type="hidden" value="${escape(existing?.status||'抽出新芽')}"><button class="growth-status-trigger" type="button" aria-labelledby="growth-status-label growth-status-value" aria-controls="growth-status-options" aria-expanded="false"><span id="growth-status-value">${escape(existing?.status||'抽出新芽')}</span><span class="growth-status-indicator" aria-hidden="true"></span></button><div class="growth-status-options" id="growth-status-options" role="group" aria-label="选择生长状态" aria-hidden="true" inert><div class="growth-status-options-inner">${['抽出新芽','正在生根','成功生根','暂未生根','枯萎了','其他变化'].map((label,index)=>`<button type="button" class="growth-status-option" data-status="${label}" aria-pressed="${(existing?.status||'抽出新芽')===label}"><span class="growth-status-option-index">0${index+1}</span><span class="growth-status-option-label">${label}</span></button>`).join('')}</div></div></div><div class="growth-editor-field growth-editor-writing"><label for="growth-edit-text"><span class="growth-editor-index">02 /</span><span>今天的观察</span><small>最多 180 字</small></label><textarea id="growth-edit-text" name="text" maxlength="180" placeholder="这一枝，今天有了什么变化？" required></textarea></div><div class="growth-editor-media-row"><span class="growth-editor-field-label"><span class="growth-editor-index">03 /</span><span>照片或视频</span><small>可选</small></span><label class="growth-editor-upload" for="growth-edit-media"><span>＋ ${existing?'更换影像':'添加影像'}</span><input id="growth-edit-media" type="file" accept="image/*,video/*"></label></div><div class="growth-editor-preview" hidden></div><p class="growth-editor-error" role="alert" hidden></p><div class="growth-editor-footer">${existing?'<button class="growth-editor-delete" type="button" data-editor-delete>删除这段</button>':'<span class="growth-editor-hint">留下一段生长</span>'}<button class="growth-editor-submit" type="submit">${existing?'保存修改':'保存近况'} <span>↗</span></button></div></form></section>`;
+  document.body.append(recordDialog);document.body.style.overflow='hidden';
+  const form=recordDialog.querySelector('form'),input=form.querySelector('input[type="file"]'),preview=form.querySelector('.growth-editor-preview'),error=form.querySelector('.growth-editor-error'),submit=form.querySelector('.growth-editor-submit');
+  let removeMedia=false,confirmDelete=false;
+  if(existing)form.elements.text.value=existing.text;
+  const statusTrigger=form.querySelector('.growth-status-trigger'),statusOptions=form.querySelector('.growth-status-options');
+  const setStatusOpen=open=>{statusOptions.classList.toggle('is-open',open);statusOptions.inert=!open;statusOptions.setAttribute('aria-hidden',String(!open));statusTrigger.setAttribute('aria-expanded',String(open));};
+  const closeStatus=()=>setStatusOpen(false);
+  statusTrigger.addEventListener('click',()=>setStatusOpen(!statusOptions.classList.contains('is-open')));
+  statusOptions.addEventListener('click',event=>{const option=event.target.closest('[data-status]');if(!option)return;form.elements.status.value=option.dataset.status;form.querySelector('#growth-status-value').textContent=option.dataset.status;statusOptions.querySelectorAll('[data-status]').forEach(button=>button.setAttribute('aria-pressed',String(button===option)));closeStatus();statusTrigger.focus({preventScroll:true});});
+  recordDialog.addEventListener('keydown',event=>{if(event.key==='Escape'&&statusOptions.classList.contains('is-open')){event.stopPropagation();closeStatus();statusTrigger.focus({preventScroll:true});}});
+  const showPreview=(file)=>{preview.replaceChildren();preview.hidden=true;if(!file&&!existing)return;if(file){recordPreviewUrl=URL.createObjectURL(file);const media=document.createElement(file.type.startsWith('video/')?'video':'img');media.src=recordPreviewUrl;media.className='growth-editor-media';if(media.tagName==='VIDEO'){media.controls=true;media.playsInline=true;media.preload='metadata';}preview.append(media);const name=document.createElement('span');name.textContent=file.name;preview.append(name);}else if(!removeMedia&&(existing.photo||existing.videoId)){if(existing.photo){const image=document.createElement('img');image.className='growth-editor-media';image.src=existing.photo;image.alt='已保存的照片';preview.append(image);}const name=document.createElement('span');name.textContent=existing.videoId?'已保存的视频':'已保存的照片';preview.append(name);}if(preview.childNodes.length){preview.hidden=false;const remove=document.createElement('button');remove.type='button';remove.className='growth-editor-remove-media';remove.textContent='移除影像';remove.addEventListener('click',()=>{removeMedia=true;input.value='';if(recordPreviewUrl){URL.revokeObjectURL(recordPreviewUrl);recordPreviewUrl='';}preview.replaceChildren();preview.hidden=true;});preview.append(remove);}};
+  showPreview();
+  recordDialog.addEventListener('click',event=>{if(event.target===recordDialog||event.target.closest('[data-editor-close]'))closeRecordEditor()});
+  input.addEventListener('change',()=>{if(recordPreviewUrl){URL.revokeObjectURL(recordPreviewUrl);recordPreviewUrl='';}const file=input.files?.[0];if(!file){showPreview();return;}if(!file.type.startsWith('image/')&&!file.type.startsWith('video/')){error.textContent='请选择照片或视频文件。';error.hidden=false;input.value='';showPreview();return;}removeMedia=false;error.hidden=true;showPreview(file);});
+  form.querySelector('[data-editor-delete]')?.addEventListener('click',async event=>{const button=event.currentTarget;if(!confirmDelete){confirmDelete=true;button.textContent='确认删除这段';button.classList.add('is-confirming');return;}button.disabled=true;try{await onDeleteGrowth({plantId:plant.id,recordId:existing.id});film=Math.max(0,film-1);closeRecordEditor();paint();typeText(root);root.querySelector('.album-live').textContent=`已删除${plant.name}的这段近况`;}catch(cause){error.textContent=cause?.message||'删除失败，请稍后再试。';error.hidden=false;button.disabled=false;}});
+  form.addEventListener('submit',async event=>{event.preventDefault();const text=form.elements.text.value.trim();if(!text){error.textContent='请写下一句观察。';error.hidden=false;form.elements.text.focus();return;}submit.disabled=true;error.hidden=true;try{const saved=await onSaveGrowth({plantId:plant.id,recordId:existing?.id,status:form.elements.status.value,text,input,removeMedia});const items=getData().postcards.filter(record=>record.plantId===plant.id);film=Math.max(0,items.findIndex(record=>record.id===saved.id));closeRecordEditor();paint();typeText(root);root.querySelector('.album-live').textContent=`已保存${plant.name}的近况`;}catch(cause){error.textContent=cause?.message||'保存失败，请稍后再试。';error.hidden=false;submit.disabled=false;}});
+  if(!reduced()){recordDialog.animate([{backgroundColor:'rgba(21,46,39,0)'},{backgroundColor:'rgba(21,46,39,.76)'}],{duration:520,easing:'ease-out',fill:'forwards'});recordDialog.querySelector('.growth-editor').animate([{transform:'translateY(105%)'},{transform:'translateY(0)'}],{duration:620,easing:'cubic-bezier(.18,.82,.21,1)',fill:'forwards'});}
+  form.elements.text.focus({preventScroll:true});
  }
  const clearMotion=()=>{reveals.forEach(finish=>finish());reveals.clear();animations.forEach(animation=>animation.cancel());animations.clear();};
  function stopWarp(){cancelAnimationFrame(warpFrame);warpFrame=0;root.querySelector('.tv-warp-map').setAttribute('scale','0');root.querySelectorAll('.is-signal-bending').forEach(element=>element.classList.remove('is-signal-bending'));}
@@ -184,7 +278,7 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
   const action=event.target.closest('[data-tv-action]')?.dataset.tvAction;
   if(action==='next'||action==='previous'){film+=action==='next'?1:-1;switchProgram();return;}
   if(root.classList.contains('is-tuning'))return;
-  if(action==='growth')onGrowth(chosenId);if(action==='claim')onClaim(chosenId);if(action==='archive')onArchive(chosenId);
+  if(action==='record')openRecordEditor();if(action==='edit-record')openRecordEditor(true);if(action==='claim')onClaim(chosenId);if(action==='archive')onArchive(chosenId);
  },{signal});
  root.querySelector('.tv-program-keys').addEventListener('keydown',event=>{
   if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();
@@ -200,10 +294,11 @@ export function mountAlbumDesk({plants,getData,onClaim,onGrowth,onArchive}){
  shell.addEventListener('pointerdown',event=>{if(event.button===0&&!event.target.closest('button,select'))swipe={id:event.pointerId,x:event.clientX,y:event.clientY};},{signal});
  window.addEventListener('pointerup',event=>{if(!swipe||event.pointerId!==swipe.id)return;const dx=event.clientX-swipe.x,dy=event.clientY-swipe.y;swipe=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)selectPlant(plants[wrap(selectedIndex()+(dx<0?1:-1))].id);},{signal});
  window.addEventListener('pointercancel',()=>swipe=null,{signal});
+ window.addEventListener('keydown',event=>{if(recordDialog&&event.key==='Escape')closeRecordEditor()},{signal});
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{operation++;stopWarp();clearMotion();tunerAnimation?.cancel();paint();drawDial();root.classList.remove('is-tuning');},{signal});
  if(!matchMedia('(max-width:799px), (pointer:coarse)').matches)crtLens().ready.then(()=>{if(!signal.aborted)root.classList.add('is-curved');}).catch(()=>{});
  paint();drawDial();
  root.addEventListener('chapter:revealed',()=>{typeText(root);drawScene();},{signal,once:true});
- dispose=()=>{controller.abort();sceneSizer.disconnect();operation++;stopWarp();clearMotion();tunerAnimation?.cancel();};
+ dispose=()=>{closeRecordEditor(true);controller.abort();sceneSizer.disconnect();operation++;stopWarp();clearMotion();tunerAnimation?.cancel();};
 }
 

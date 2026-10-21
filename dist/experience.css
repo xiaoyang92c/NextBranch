@@ -36,9 +36,10 @@ html,body,.album-stamps,.postcard-track{scrollbar-width:none;-ms-overflow-style:
 .home-scene{--scene-stamp-width:min(60vw,35svh,340px);--scene-stamp-height:calc(var(--scene-stamp-width)*300/220);--scene-center:50%;--scene-type:clamp(48px,15vw,76px);--scene-gap:clamp(26px,6svh,65px);height:100svh;min-height:0;overflow:clip;background:var(--scene-bg);isolation:isolate;transition:background .85s ease,color .85s ease}
 .home-scene::before{inset:0;z-index:20;background-image:radial-gradient(ellipse at 50% 46%,rgba(255,252,221,.09) 0%,transparent 54%,rgba(49,81,64,.065) 100%);opacity:1;box-shadow:inset 0 0 9vw rgba(35,73,58,.045);pointer-events:none}
 .home-scene::after{content:'';position:absolute;inset:-8%;z-index:21;pointer-events:none;opacity:.11;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='144' height='144'%3E%3Cfilter id='film'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23film)'/%3E%3C/svg%3E");background-size:144px 144px;animation:scene-film-grain .75s steps(6,end) infinite;will-change:transform}
-.home-scene::before,.home-scene::after{transition:opacity 1.1s ease}
+.home-scene::before,.home-scene::after{transition:opacity 1.25s cubic-bezier(.42,0,.58,1)}
 .home-scene.is-background-bridging::before,.home-scene.is-background-bridging::after,.home-scene.is-background-arriving::before,.home-scene.is-background-arriving::after{opacity:0}
 .home-scene.is-film-arriving::after{opacity:0}
+.home-scene.is-background-arriving::before,.home-scene.is-background-arriving::after,.home-scene.is-film-arriving::after{transition:none}
 .scene-optical-defs{position:absolute;pointer-events:none}
 .scene-optics{position:absolute;inset:0;isolation:isolate}
 .home-scene.has-lens .scene-optics{filter:url(#home-fisheye)}
@@ -128,6 +129,9 @@ html,body,.album-stamps,.postcard-track{scrollbar-width:none;-ms-overflow-style:
 .postcard{width:min(82vw,360px);flex:0 0 min(82vw,360px);height:410px}
 .postcard-face{padding:14px;background:#fff9e8;border-color:#51735b;box-shadow:9px 14px 2px rgba(48,67,46,.2)}
 .postcard-front .photo{height:310px;background:#b5d0af}
+.postcard-front .photo video{display:block;width:100%;height:100%;object-fit:contain;background:#223d32}
+.upload-box .upload-preview{display:block;max-width:100%;max-height:180px;margin:0 auto 9px;object-fit:contain}
+.upload-box:has(video) video{position:relative;z-index:1;pointer-events:auto}
 .postcard-back{padding:24px;background:repeating-linear-gradient(0deg,#fff9e8 0,#fff9e8 33px,#cad1bf 34px,#fff9e8 35px)}
 .postcard-back .mini-stamp{aspect-ratio:220/300;height:auto}
 .postcard-back h3{margin-top:67px;font-size:23px}
@@ -279,14 +283,16 @@ body[data-view] .main-nav{background:none;box-shadow:none;backdrop-filter:none;b
 .news-fold-face.is-back{transform:rotateX(180deg);background:var(--archive-paper);box-shadow:inset 0 -1px 0 #24452b10}
 .news-fold-print{position:absolute}.news-fold-print .archive-paper{max-width:none}
 /* The reverse stays inside the folded upper half, clear of the chapter tabs. */
-.news-fold-reverse{height:100%;box-sizing:border-box;padding:clamp(76px,12svh,100px) 24px 18px;display:grid;place-items:center;color:var(--archive-ink)}
-.news-reverse-vignette{width:min(80%,380px);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center}
-.news-reverse-top-rule,.news-reverse-bottom-rule{display:block;width:min(68%,240px);height:1px;background:var(--archive-rule);opacity:.7}
-.news-reverse-top-rule{margin-bottom:12px}.news-reverse-bottom-rule{margin-top:12px}
-.news-reverse-vignette img{display:block;width:min(45%,150px);height:min(22svh,160px);object-fit:contain;filter:grayscale(1);mix-blend-mode:multiply;opacity:.7}
-.news-reverse-divider{width:54px;border-top:1px solid var(--archive-rule)}
-.news-reverse-vignette p{margin:0;font:400 clamp(11px,2.4vw,14px)/1.5 var(--serif);letter-spacing:.06em}
-@media(max-height:560px){.news-fold-reverse{padding-top:68px}.news-reverse-vignette{gap:5px}.news-reverse-top-rule{margin-bottom:3px}.news-reverse-bottom-rule{margin-top:3px}}
+.news-fold-reverse{height:100%;box-sizing:border-box;padding:clamp(80px,11svh,112px) var(--nav-edge) 20px;color:var(--archive-ink)}
+.news-reverse-sheet{width:min(100%,500px);height:100%;margin:auto;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.news-reverse-index{display:flex;justify-content:space-between;gap:16px;padding-bottom:9px;border-bottom:1px solid var(--archive-rule);font:600 11px/1.5 var(--sans);letter-spacing:.08em}
+.news-reverse-plate{position:relative;min-height:0;overflow:clip}
+.news-reverse-plate img{position:absolute;left:50%;top:50%;display:block;width:min(48vw,205px);height:calc(100% - 40px);max-height:215px;object-fit:contain;transform:translate(-50%,-50%);filter:saturate(.56) contrast(.95);mix-blend-mode:multiply;opacity:.86}
+.news-reverse-caption{display:flex;align-items:end;justify-content:space-between;gap:18px;padding-top:12px;border-top:1px solid var(--archive-rule)}
+.news-reverse-caption strong{display:block;font:700 clamp(26px,6.5vw,36px)/1.15 var(--serif);letter-spacing:.04em}
+.news-reverse-caption em{display:block;margin-top:5px;font:italic 12px/1.35 Georgia,var(--serif)}
+.news-reverse-caption p{margin:0 0 2px;text-align:right;white-space:nowrap;font:500 12px/1.55 var(--serif);letter-spacing:.04em}
+@media(max-height:560px){.news-fold-reverse{padding-top:68px;padding-bottom:12px}.news-reverse-caption{padding-top:8px}.news-reverse-caption strong{font-size:25px}}
 @media(prefers-reduced-motion:reduce){.chapter-news-fold{display:none}}
 /* A drawn ink mask writes each large character without shifting its baseline. */
 .scene-ink-letter{position:relative}

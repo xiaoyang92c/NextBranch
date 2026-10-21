@@ -12,6 +12,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-entry{width:min(84vw,380px);margin:0;flex:none;position:relative}
 .mailbox-ink-frame{position:relative;box-sizing:border-box;width:calc(100% + 80px);margin:-18px 0 0 -40px;padding:18px 40px 0}
 .mailbox-letter{user-select:none;display:block;width:100%;aspect-ratio:.91;border:0;padding:0;background:none;color:inherit;text-align:left;cursor:pointer;outline-offset:9px;-webkit-tap-highlight-color:transparent}
+.mailbox-letter:active{scale:1}
 .mailbox-letter:focus-visible{outline:1px solid #77927d;border-radius:2px}
 .garden-letter{display:block;width:100%;height:100%;position:relative;container-type:inline-size;isolation:isolate;color:#426353}
 .garden-botanical{position:absolute;left:-9%;top:-1%;width:60%;height:69%;object-fit:contain;object-position:center bottom;pointer-events:none;z-index:0;filter:saturate(.8) contrast(.96);user-select:none}
@@ -42,7 +43,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .letter-mailbox.is-reading .mailbox-well,.letter-mailbox.is-reading .mailbox-toolbar{pointer-events:none}.letter-mailbox.is-searching .mailbox-stack{pointer-events:none}
 .mailbox-empty{position:absolute;inset:15% 5% 20%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px}.mailbox-empty p{font:500 23px var(--serif)}.mailbox-empty button{border:0;border-bottom:1px solid currentColor;padding:10px 0;background:none;color:inherit;font-size:16px}
 .mail-opening-stage{position:fixed;z-index:114;pointer-events:none;color:#426353;--sans:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif;--serif:'Songti SC','Noto Serif SC',Georgia,serif}
-.mail-opening-stage .garden-letter>:not(.garden-letter-paper){visibility:hidden}
+.mail-opening-stage .garden-letter>:not(.garden-letter-paper):not(.garden-envelope-pocket):not(.garden-envelope-address){visibility:hidden}
 .mail-opening-stage.is-flower-right .garden-botanical{left:auto;right:-8%;width:62%}
 .mail-opening-stage .garden-letter-paper{translate:0 0;transition:none}
 @media(min-width:800px){.mailbox-stack{padding-top:140px;gap:76px}.mailbox-entry{width:390px}.mailbox-toolbar{bottom:25px}.mailbox-search{bottom:93px;left:auto;right:calc((100% - min(650px,100% - 36px))/2)}}
@@ -50,7 +51,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 @media(prefers-reduced-motion:reduce){.letter-mailbox *,.letter-mailbox *::before,.letter-mailbox *::after{transition:none!important;animation:none!important}}
 
 /* The unfolded page remains attached to its envelope through the opening. */
-.letter-overlay.mailbox-reader{background:#f1f3ebdf;backdrop-filter:none;padding:16px}
+.letter-overlay.mailbox-reader{background:transparent;backdrop-filter:none;padding:16px}
 .mailbox-reader .letter-sheet.postal-sheet{color:#426e5c;background:#fff6df;box-shadow:0 6px 20px #345c4133;border-color:#c4bf9f;border-radius:0;gap:16px;height:min(820px,calc(100svh - 32px));padding:24px}
 .mailbox-reader .postal-sheet h2{font-family:var(--serif);font-size:28px;line-height:1.45;letter-spacing:0;padding-right:52px;margin:4px 0 8px}.mailbox-reader .postal-sheet-head{font:600 15px/1.5 var(--sans)}.mailbox-reader .postal-sheet-head small{font-size:12px}.mailbox-reader .postal-sheet-postage{rotate:0deg;width:38px;top:89px;right:24px}.mailbox-reader .postal-question{font-size:18px;line-height:2}.mailbox-reader .postal-reader-tabs button{font-size:15px;min-height:44px}.mailbox-reader .postal-reply-form button{font-size:14px;background:#648e76;padding:10px}.mailbox-reader .postal-reply-form label{font-size:15px}.mailbox-reader .postal-response p{font-size:17px;line-height:1.9}.mailbox-reader .postal-response header{font-size:13px}.mailbox-reader .postal-response header i{font-size:12px}.mailbox-reader .postal-demo-note{font-size:12px}.mailbox-reader .postal-sheet-bottom{display:none}.mailbox-reader .postal-reply-status{font-size:12px;min-height:0}.mailbox-reader .letter-close{width:44px;height:44px}.mailbox-reader .postal-question-photo{rotate:0deg}
 .postal-salutation,.postal-signature{font:400 17px/1.9 var(--serif);letter-spacing:.04em}.postal-salutation{margin:8px 0 18px}.postal-signature{text-align:right;margin:22px 0 14px}.postal-signature span{display:block;margin-top:5px;font-size:14px;color:#7a826d}.mailbox-reader .postal-question{text-indent:2em;font-weight:400}.mailbox-reader .letter-sheet.postal-sheet{background:linear-gradient(105deg,#fffdf6,#faf8ee);color:#426353}.mailbox-reader .postal-response{background:#f2f3e9}.mailbox-reader .postal-response.is-gardener{background:#eaf0e4}
@@ -105,13 +106,23 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-reader .postal-reply-status{font-size:11px;color:#758172;min-height:13px}
 /* One continuous print unfurls below the envelope's visible top panel. */
 .postal-fold-stage{position:fixed;z-index:5;pointer-events:none;overflow:hidden;will-change:clip-path;color:var(--letter-ink)}
-.postal-fold-print{box-shadow:none!important;max-width:none!important;max-height:none!important;min-height:0!important;transform:none!important;pointer-events:none!important}
+.postal-fold-print{box-shadow:none!important;max-width:none!important;max-height:none!important;min-height:0!important;transform:none!important;animation:none!important;pointer-events:none!important}
 .postal-fold-print *{pointer-events:none!important}
 .mailbox-reader .letter-sheet.postal-sheet.has-envelope-topfold{width:min(620px,calc(100vw - 32px));height:min(1080px,calc(100svh - 32px));padding:0 23px 17px;gap:10px;grid-template-rows:var(--postal-top-height) auto minmax(0,1fr) auto;background:#fbf8ee}
 .mailbox-reader .letter-sheet.postal-sheet.has-envelope-topfold::before{display:none}
 .mailbox-reader .postal-reader-topfold{position:relative;width:calc(100% + 46px);height:var(--postal-top-height);margin-left:-23px;overflow:hidden;isolation:isolate}
 .mailbox-reader .postal-reader-topfold .garden-letter-paper{transform:none!important;translate:0 0!important}
-.mailbox-reader .has-envelope-topfold .letter-close{position:absolute;z-index:4;top:16px;right:16px;background:#fbf8eee8}
+.mailbox-reader .has-envelope-topfold .letter-close{position:absolute;z-index:4;top:0;right:auto;width:24px;height:24px;padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;color:#756b5d;font-size:0!important;line-height:0;opacity:1;transform:none!important;transition:color .18s ease}
+.mailbox-reader .has-envelope-topfold .letter-close::before,.mailbox-reader .has-envelope-topfold .letter-close::after{content:'';position:absolute;top:50%;left:50%;width:16px;height:1px;background:currentColor;opacity:0;clip-path:inset(0 100% 0 0);filter:blur(1px);transform-origin:center}
+.mailbox-reader .has-envelope-topfold .letter-close::before{transform:translate(-50%,-50%) rotate(45deg)}
+.mailbox-reader .has-envelope-topfold .letter-close::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.mailbox-reader.is-opened .has-envelope-topfold .letter-close::before{animation:postal-close-ink-in .46s cubic-bezier(.2,.7,.2,1) both}
+.mailbox-reader.is-opened .has-envelope-topfold .letter-close::after{animation:postal-close-ink-in .46s cubic-bezier(.2,.7,.2,1) .08s both}
+.mailbox-reader.is-closing .has-envelope-topfold .letter-close::before{animation:postal-close-ink-out .35s cubic-bezier(.4,0,.7,1) both}
+.mailbox-reader.is-closing .has-envelope-topfold .letter-close::after{animation:postal-close-ink-out .35s cubic-bezier(.4,0,.7,1) .06s both}
+@keyframes postal-close-ink-in{0%{opacity:.18;clip-path:inset(0 100% 0 0);filter:blur(2px)}55%{opacity:1;clip-path:inset(0 24% 0 0);filter:blur(.5px)}100%{opacity:1;clip-path:inset(0);filter:none}}
+@keyframes postal-close-ink-out{0%{opacity:1;clip-path:inset(0);filter:none}45%{opacity:.8;clip-path:inset(0 0 0 36%);filter:blur(.4px)}100%{opacity:0;clip-path:inset(0 0 0 100%);filter:blur(1.5px)}}
+@media(prefers-reduced-motion:reduce){.mailbox-reader .has-envelope-topfold .letter-close::before,.mailbox-reader .has-envelope-topfold .letter-close::after{animation:none!important;opacity:1;clip-path:inset(0);filter:none}.mailbox-reader.is-closing .has-envelope-topfold .letter-close::before,.mailbox-reader.is-closing .has-envelope-topfold .letter-close::after{opacity:0}}
 .postal-fold-print .letter-close{visibility:hidden}
 .postal-fold-leaf[data-panel='0']>.postal-fold-slice{background:#fbf8ee}
 @media(max-width:799px){.mailbox-reader .letter-sheet.postal-sheet{padding:23px 23px 17px;gap:10px}.mailbox-reader .postal-sheet h2{font-size:27px;padding-right:50px}.mailbox-reader .postal-sheet-postage{right:23px;top:85px}.mailbox-reader .postal-question{font-size:16px}.mailbox-reader .postal-reply-form>div{grid-template-columns:minmax(0,1fr) auto}.mailbox-reader .postal-reply-form button{font-size:12px}}
@@ -147,30 +158,42 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-search h2{font-family:var(--letter-face,'Songti SC','Noto Serif SC',Georgia,serif);font-size:25px;font-weight:500}
 .mailbox-filters legend{font-family:var(--letter-face,'Songti SC','Noto Serif SC',Georgia,serif);font-size:14px;color:#657466}
 .mailbox-filters button{font-family:var(--letter-face,'Songti SC','Noto Serif SC',Georgia,serif);font-size:14px;border-radius:10px}
-.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){position:relative;padding-left:15px;background:color-mix(in srgb,var(--filter-color) 16%,#f8faf3);border-color:color-mix(in srgb,var(--filter-ink) 22%,#dde3d5);color:var(--filter-ink)}
-.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])::before{content:'';position:absolute;left:9px;top:50%;width:5px;height:5px;border-radius:50%;background:var(--filter-ink);transform:translateY(-50%);opacity:.6}
+.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){position:relative;padding-left:23px;background:color-mix(in srgb,var(--filter-color) 16%,#f8faf3);border-color:color-mix(in srgb,var(--filter-ink) 22%,#dde3d5);color:var(--filter-ink)}
+.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])::before{content:'';position:absolute;left:14px;top:50%;width:5px;height:5px;border-radius:50%;background:var(--filter-ink);transform:translateY(-50%);opacity:.6}
 .mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])[aria-pressed="true"]{background:color-mix(in srgb,var(--filter-color) 58%,#f8faf3);border-color:var(--filter-ink)}
 .mailbox-filters .mailbox-status button[aria-pressed="true"],.mailbox-plants button[data-mail-plant=""][aria-pressed="true"]{background:#e8eee4;border-color:#879c82;color:#375344}
 .mailbox-filter-done{background:#426353}
-@media(max-width:360px){.mailbox-toolbar{grid-template-columns:minmax(0,1fr) 39px 44px}.mailbox-search{max-height:calc(100svh - 145px)}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){padding-left:13px;font-size:12px}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])::before{left:6px}}
+@media(max-width:360px){.mailbox-toolbar{grid-template-columns:minmax(0,1fr) 39px 44px}.mailbox-search{max-height:calc(100svh - 145px)}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){padding-left:19px;font-size:12px}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])::before{left:11px}}
+.mailbox-origin{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mailbox-toolbar{box-sizing:border-box;min-width:0;overflow:visible}
+.mailbox-query{overflow:visible;min-width:0}
+.mailbox-query input{box-sizing:border-box;display:block;min-width:0;width:100%;height:46px;line-height:1.5;overflow:visible;text-overflow:clip;white-space:nowrap;-webkit-appearance:none;appearance:none}
+.mailbox-query input::-webkit-search-decoration,.mailbox-query input::-webkit-search-cancel-button{display:none}
 .outgoing-letter{--letter-face:'Songti SC','Noto Serif SC',Georgia,serif;--letter-ink:#42584e;--letter-rule:#c9bfaa;--letter-wine:#6f4c59}
 .outgoing-letter .garden-letter-paper{transition:transform .45s cubic-bezier(.22,.7,.24,1)}
 .outgoing-letter.is-sealed .garden-letter-paper{transform:translateY(24%)}
 
 /* The whole opened letter grows with its writing; the overlay scrolls as one page. */
 .garden-paper-brand{justify-content:flex-start;gap:6px;padding-right:35px}
-.letter-overlay.mailbox-reader{display:block;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;padding:16px}
+.letter-overlay.mailbox-reader{display:block;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;padding:var(--mail-reader-top,110px) 16px 24px;isolation:isolate}
+body[data-view='letters']:has(#letter-overlay.mailbox-reader) nav.main-nav{z-index:120}
+.letter-overlay.mailbox-reader::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 43%,#f9faf4f7 0%,#f1f3ebed 68%,#f1f3ebdf 100%);opacity:0;transition:opacity .65s cubic-bezier(.2,.65,.25,1)}
+.letter-overlay.mailbox-reader.is-washed::before{opacity:1}
+.letter-overlay.mailbox-reader.is-closing::before{transition:opacity .76s cubic-bezier(.36,0,.4,1)}
+.mailbox-reader .letter-sheet.postal-sheet{z-index:1}
+@media(prefers-reduced-motion:reduce){.letter-overlay.mailbox-reader::before{transition:none}}
 .letter-overlay.mailbox-reader::-webkit-scrollbar{display:none}
 .mailbox-reader .letter-sheet.postal-sheet.has-envelope-topfold{width:min(620px,100%);height:auto;min-height:0;max-height:none;margin:0 auto;padding:0 23px 22px;grid-template-rows:var(--postal-top-height) auto auto auto;overflow:visible;row-gap:0}
-.mailbox-reader .letter-sheet.postal-sheet.has-envelope-topfold::before{display:block;inset:12px;border:1px solid #c9bfaa80;z-index:3}
+.mailbox-reader .letter-sheet.postal-sheet.has-envelope-topfold::before{display:block;inset:var(--postal-outline-inset,12px);border:1px solid #c9bfaa80;z-index:3}
 .mailbox-reader .postal-reader-topfold .garden-letter-paper{border-color:transparent;background:transparent}
 .mailbox-reader .postal-reader-topfold .garden-letter-paper::before{display:none}
 .mailbox-reader .postal-reader-body{overflow:visible;min-height:0;padding:15px 12px 8px}
 .mailbox-reader .postal-reader-body.is-awaiting{min-height:200px}
 .mailbox-reader .postal-reader-tabs{margin:12px 12px 0}
 .mailbox-reader .postal-reply-form{margin:10px 12px 8px}
-.mailbox-reader .has-envelope-topfold .letter-close{top:24px;right:27px;width:28px;height:28px;padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;color:#756b5d;font:300 25px/1 var(--letter-face);opacity:.82;transition:opacity .2s,transform .2s}
-.mailbox-reader .has-envelope-topfold .letter-close:hover{opacity:1;transform:rotate(90deg)}
+.mailbox-reader .has-envelope-topfold .letter-close:hover{color:#42584e}
+.mail-opening-stage .garden-letter-paper{border-bottom:0}
+.mail-opening-stage .garden-letter-paper::before{inset:6px 6px 0;border-bottom:0}
 
 /* An unaddressed search reads like a small piece of stationery, not an error. */
 .mailbox-empty{gap:0;text-align:center;color:#426353}
@@ -185,4 +208,27 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-empty-actions button{display:flex;align-items:center;justify-content:space-between;min-height:43px;padding:8px 12px;border:1px solid #a9baaa;background:transparent;color:#426353;font:500 14px/1.5 var(--letter-face);text-align:left}
 .mailbox-empty-actions button:first-child{background:#e4ebe1;border-color:#d5e0d2}
 .mailbox-empty-actions button span{font-size:18px;line-height:1}
-@media(max-height:680px){.mailbox-empty-mark{margin:12px 0 16px}.mailbox-empty-actions{margin-top:17px}.mailbox-empty p{margin-top:7px}}
+@media(max-height:680px){.mailbox-empty-actions{margin-top:17px}.mailbox-empty p{margin-top:7px}}
+
+/* A compact, fully visible search sheet. Each plant swatch belongs to its label. */
+.mailbox-search{max-height:none;overflow:visible;padding:17px 18px 16px}
+.mailbox-search-close{font-family:var(--letter-face)}
+.mailbox-filters{gap:14px;margin-top:15px}
+.mailbox-filters legend{margin-bottom:7px;font-size:13px}
+.mailbox-plants{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mailbox-plants button[data-mail-plant=""]{grid-column:span 2}
+.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 2px;font-size:13px;white-space:nowrap}
+.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""])::before{position:static;flex:none;transform:none}
+.mailbox-filters button{min-height:39px}
+.mailbox-status,.mailbox-origin{gap:6px}
+.mailbox-search footer{margin-top:15px;padding-top:12px}
+.mailbox-reset,.mailbox-filter-done{font-family:var(--letter-face)}
+.mailbox-empty{inset:14% 7% 19%;max-width:380px;margin:auto}
+.mailbox-empty-kicker{font:500 12px/1.5 var(--letter-face);letter-spacing:.12em}
+.mailbox-empty-rule{width:42px;height:1px;margin:17px 0 23px;background:#aab9aa}
+.mailbox-empty h2{font-size:clamp(25px,6vw,33px);letter-spacing:.02em}
+.mailbox-empty p{max-width:260px;margin-top:15px;font-size:15px;line-height:1.85}
+.mailbox-empty-actions{width:min(260px,100%);margin-top:29px;gap:8px}
+.mailbox-empty-actions button{min-height:46px;padding-inline:14px}
+@media(max-width:360px){.mailbox-search{padding:14px 13px}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){padding:4px 1px;font-size:12px;gap:3px}.mailbox-filters{gap:11px;margin-top:11px}.mailbox-filters legend{margin-bottom:5px;font-size:12px}.mailbox-filters button{min-height:35px}.mailbox-search footer{margin-top:11px;padding-top:8px}}
+@media(max-height:700px){.mailbox-search{padding-block:12px}.mailbox-filters{gap:10px;margin-top:9px}.mailbox-filters legend{margin-bottom:4px}.mailbox-filters button{min-height:35px}.mailbox-search footer{margin-top:10px;padding-top:8px}.mailbox-empty-rule{margin:11px 0 16px}.mailbox-empty-actions{margin-top:18px}}

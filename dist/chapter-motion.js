@@ -38,17 +38,19 @@ function beam(opening){
   {transform:'scaleX(.015)',opacity:0}
  ],opening?1140:720,0,'cubic-bezier(.4,0,.3,1)');
 }
-function powerOff(page){
- // Crop the raster in place: neither its typography nor its paper is squashed.
- const box=page.getBoundingClientRect(),cy=innerHeight/2-box.top;
- const aperture=(height,width=0,radius=12)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
- tween(page,[
-  {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)'},
-  {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)',offset:.2},
-  {clipPath:aperture(6,2),filter:'brightness(.99) saturate(.98)',offset:.7},
-  {clipPath:aperture(2,30),filter:'brightness(.98) saturate(.96)',offset:.89},
-  {clipPath:aperture(0,50),filter:'brightness(.98) saturate(.96)'}
- ],720,0,'cubic-bezier(.5,0,.3,1)');
+function powerOff(page,cover){
+ // Crop both the chapter and any opened letter in place as one TV picture.
+ for(const element of [page,cover].filter(Boolean)){
+  const box=element.getBoundingClientRect(),cy=innerHeight/2-box.top;
+  const aperture=(height,width=0,radius=12)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
+  tween(element,[
+   {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)'},
+   {clipPath:aperture(innerHeight,0,0),filter:'brightness(1) saturate(1)',offset:.2},
+   {clipPath:aperture(6,2),filter:'brightness(.99) saturate(.98)',offset:.7},
+   {clipPath:aperture(2,30),filter:'brightness(.98) saturate(.96)',offset:.89},
+   {clipPath:aperture(0,50),filter:'brightness(.98) saturate(.96)'}
+  ],720,0,'cubic-bezier(.5,0,.3,1)');
+ }
  beam(false);
 }
 function writeHomeGlyph(glyph,duration,delay,reverse=false){
@@ -137,10 +139,10 @@ export function rememberArchivePosition(page){
 }
 function newspaperReverse(page,half){
  const plant=plants.find(plant=>plant.id===page.dataset.plant),reverse=document.createElement('article');reverse.className='news-fold-reverse';reverse.style.setProperty('--reverse-height',`${half}px`);
- reverse.innerHTML=`<div class="news-reverse-vignette"><span class="news-reverse-top-rule" aria-hidden="true"></span><img src="./assets/${plant.art}" alt=""><span class="news-reverse-divider" aria-hidden="true"></span><p>${plant.name} · 给下一枝一个位置</p><span class="news-reverse-bottom-rule" aria-hidden="true"></span></div>`;
+  reverse.innerHTML=`<div class="news-reverse-sheet"><div class="news-reverse-index"><span>植物图版</span><span>${plant.no}</span></div><div class="news-reverse-plate"><img src="./assets/${plant.art}" alt=""></div><div class="news-reverse-caption"><div><strong>${plant.name}</strong><em>${plant.latin}</em></div><p>给下一枝<br>一个位置</p></div></div>`;
  return reverse;
 }
-function newspaperModel(page){
+function newspaperModel(page,{settled=false}={}){
  // Fold the complete camera frame, including the paper behind the transparent
  // navigation. A nav-height crop cut through the visible newspaper on both trips.
  const top=0,width=innerWidth,height=innerHeight,half=height/2,box=page.getBoundingClientRect(),style=getComputedStyle(page);
@@ -149,7 +151,7 @@ function newspaperModel(page){
  root.style.backgroundColor=style.backgroundColor;
  const pack=document.createElement('div');pack.className='news-fold-pack';Object.assign(pack.style,{left:'0',top:`${top}px`,width:`${width}px`,height:`${height}px`});root.append(pack);
  const original=page.cloneNode(true),sources=[...page.querySelectorAll('.archive-glyph')],copies=[...original.querySelectorAll('.archive-glyph')];
- copies.forEach((el,i)=>{const state=getComputedStyle(sources[i]);Object.assign(el.style,{opacity:state.opacity,filter:state.filter,transform:state.transform,transition:'none',animation:'none'});});
+ copies.forEach((el,i)=>{const state=getComputedStyle(sources[i]);Object.assign(el.style,{opacity:settled?'1':state.opacity,filter:settled?'none':state.filter,transform:settled?'none':state.transform,transition:'none',animation:'none'});});
  original.querySelectorAll('*').forEach(el=>{el.style.animation='none';el.style.transition='none';});
  function face(y,back=false){
   const element=document.createElement('div');element.className=`news-fold-face${back?' is-back':''}`;
@@ -179,16 +181,15 @@ async function foldNewspaper(page,nextBackground){
 export async function unfoldNewspaper(page,outgoing){
  if(!page){outgoing?.remove();return;}
  const y=archiveReturnPosition(page.dataset.plant);window.scrollTo({top:y,behavior:'instant'});
- // This article was read before opening the printer. Settle every layer,
- // including below-the-fold glyphs, rules and masked line drawings.
+ // The visible fold must be complete, while unseen drawings retain their
+ // path reveal for the next time they enter the viewport.
  page.classList.add('is-archive-awake');
- page.classList.remove('is-archive-staged','is-archive-dispersing','is-branch-arriving');
+ page.classList.remove('is-archive-dispersing','is-branch-arriving');
  page.querySelectorAll('.archive-ink-ready,.archive-draw-rule,.archive-draw-graphic').forEach(el=>el.classList.add('is-ink-visible'));
- page.querySelectorAll('.archive-glyph').forEach(g=>Object.assign(g.style,{opacity:'1',filter:'none',transform:'none',transition:'none'}));
- page.querySelectorAll('.archive-care-diagram,.archive-journey svg').forEach(svg=>svg.querySelectorAll('[mask]').forEach(g=>g.removeAttribute('mask')));
+ page.dispatchEvent(new Event('archive:settle-visible-sketches'));
  page.inert=true;
  if(reducedMotion()){outgoing?.remove();page.inert=false;return;}
- const {root,pack,lower,half}=newspaperModel(page);
+ const {root,pack,lower,half}=newspaperModel(page,{settled:true});
  root.dataset.foldStage='return';
  pack.style.transform=`translateY(${-half-32}px)`;
  lower.style.transform='rotateX(180deg)';
@@ -281,7 +282,7 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
   document.body.style.backgroundColor=background;
  });
 }
-export async function leaveChapter(page,view,{nextBackground,nextView}={}){
+export async function leaveChapter(page,view,{nextBackground,nextView,cover}={}){
  stopChapterMotion();signalCarry=null;if(!page||reducedMotion())return;
  const version=generation;
  retainCompleted=true;const find=selector=>page.querySelector(selector);
@@ -296,7 +297,7 @@ export async function leaveChapter(page,view,{nextBackground,nextView}={}){
    const search=find('.mailbox-search');
    if(search&&!search.hidden)tween(search,[{translate:'0 0'},{translate:`0 ${innerHeight-search.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
   }
-  powerOff(page);
+  powerOff(page,cover);
  }else{
   if((view==='home'||view==='letters')&&(nextView==='home'||nextView==='letters'))page.classList.add('is-background-bridging');
   if(nextBackground&&!(view==='detail'&&nextView==='claim')&&!(view==='write-letter'&&nextView==='letters'&&page.classList.contains('is-over-mailbox')))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
