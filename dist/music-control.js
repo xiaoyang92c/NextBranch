@@ -9,7 +9,7 @@ const wave = waves[0];
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const restingRing = wave.getAttribute('d');
 const radii = Array(48).fill(18);
-const inkForView = () => document.body.dataset.view === 'letters' ? '#315b45' : '#fff7df';
+const inkForView = () => ['letters', 'write-letter'].includes(document.body.dataset.view) ? '#315b45' : '#fff7df';
 let currentInk = inkForView();
 let inkAnimation;
 let baseInkAnimation;

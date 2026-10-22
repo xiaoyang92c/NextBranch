@@ -61,8 +61,8 @@ html,body,.album-stamps,.postcard-track{scrollbar-width:none;-ms-overflow-style:
 .scene-stamp.is-stamp-pressed>.stamp{transition-duration:.15s}
 .home-scene .scene-stamp>.stamp>.stamp-inner::after{opacity:0}
 .home-scene .stamp.has-paper-surface>.stamp-inner,.home-scene .stamp.has-paper-surface>.stamp-teeth{visibility:hidden}
-.stamp-paper-backing{position:absolute;inset:0;z-index:0;isolation:isolate;pointer-events:none}
-.stamp-paper-backing>.stamp-teeth{z-index:0;fill:var(--stamp-bg)}
+.stamp-paper-backing{position:absolute;inset:0;z-index:0;pointer-events:none;transform-style:preserve-3d}
+.stamp-paper-fill{position:absolute;inset:5.8% 7.2%;z-index:1;background:var(--stamp-bg)}
 .stamp-paper-surface{position:absolute;inset:0;z-index:1;pointer-events:none;perspective:700px;perspective-origin:50% 50%;transform-style:preserve-3d}
 .stamp-grain-overlay{position:absolute;inset:5.8% 7.2%;z-index:2;pointer-events:none;transition:opacity .25s ease}
 .home-scene .stamp.has-paper-surface>.stamp-grain-overlay{visibility:hidden}
@@ -275,13 +275,13 @@ body[data-view] .main-nav{background:none;box-shadow:none;backdrop-filter:none;b
 .album-desk.is-chapter-entering [data-type],.album-desk.is-chapter-entering .broadcast-diagram{visibility:hidden}
 .album-desk.is-chapter-entering.is-screen-ready [data-type],.album-desk.is-chapter-entering.is-screen-ready .broadcast-diagram{visibility:visible}
 @media(prefers-reduced-motion:reduce){.chapter-power-line{display:none}}
-/* One full-canvas horizontal fold carries the paper into the press scene. */
+/* A paper-width horizontal fold carries the newspaper into the press scene. */
 .chapter-news-fold{position:fixed;inset:0;z-index:70;overflow:clip;pointer-events:none;isolation:isolate;color:var(--archive-ink)}
 .news-fold-pack{position:absolute;perspective:6000px;transform-style:preserve-3d;filter:drop-shadow(0 2px 3px #24452b0a)}
 .news-fold-panel{position:absolute;transform-style:preserve-3d}
 .news-fold-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;background:var(--archive-paper);outline:0}
 .news-fold-face.is-back{transform:rotateX(180deg);background:var(--archive-paper);box-shadow:inset 0 -1px 0 #24452b10}
-.news-fold-print{position:absolute}.news-fold-print .archive-paper{max-width:none}
+.news-fold-print{position:absolute}
 /* The reverse stays inside the folded upper half, clear of the chapter tabs. */
 .news-fold-reverse{height:100%;box-sizing:border-box;padding:clamp(80px,11svh,112px) var(--nav-edge) 20px;color:var(--archive-ink)}
 .news-reverse-sheet{width:min(100%,500px);height:100%;margin:auto;display:grid;grid-template-rows:auto minmax(0,1fr) auto}

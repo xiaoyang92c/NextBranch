@@ -1,4 +1,4 @@
-import {mountPaperSurface} from './stamp-paper.js?v=20261021-3';
+import {mountPaperSurface} from './stamp-paper.js?v=20261022-4';
 const interactive = stamp => {
   const scene=stamp.closest('.home-scene');
   return !scene||(stamp.closest('.scene-stamp')?.classList.contains('current')&&!scene.matches('.is-dragging,.is-switching'));

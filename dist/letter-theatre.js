@@ -1,6 +1,9 @@
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const MAIL_TITLE_LIMIT=30;
+const envelopeTitle=value=>{const chars=Array.from(String(value??''));return chars.length>MAIL_TITLE_LIMIT?`${chars.slice(0,MAIL_TITLE_LIMIT-1).join('')}…`:chars.join('');};
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 const searchIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>';
+let mailBrushId=0;
 
 export function renderLetterTheatre(){
  return `<main class="page letters-page post-office letter-mailbox" aria-label="枝友来信"><h1 class="office-live">枝友来信</h1>
@@ -9,7 +12,7 @@ export function renderLetterTheatre(){
  <section class="mailbox-search" id="mailbox-search" aria-label="筛选来信" hidden><header><h2>找一封来信</h2><button class="mailbox-search-close" aria-label="收起筛选">×</button></header><div class="mailbox-filters"><fieldset><legend>关于哪一枝</legend><div class="mailbox-plants" role="group" aria-label="按植物筛选来信"></div></fieldset><fieldset><legend>回信状态</legend><div class="mailbox-status" role="group" aria-label="回信状态"><button data-mail-filter="" aria-pressed="true">全部</button><button data-mail-filter="answered" aria-pressed="false">有回信</button><button data-mail-filter="waiting" aria-pressed="false">待回信</button></div></fieldset><fieldset><legend>来信来源</legend><div class="mailbox-origin" role="group" aria-label="按来信来源筛选"><button data-mail-origin="" aria-pressed="true">全部来信</button><button data-mail-origin="mine" aria-pressed="false">我写的信</button></div></fieldset></div><footer><button class="mailbox-reset" data-mail-action="reset">清除条件</button><button class="mailbox-filter-done">查看 <span></span> 封来信 ↗</button></footer></section><span class="office-live mailbox-live" role="status" aria-live="polite"></span></main>`;
 }
 
-export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,freshId,onReader}){
+export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,onDelete,filter,freshId,freshAnchorId,onReader}){
  const root=document.querySelector('.letter-mailbox');if(!root)return;
  const controller=new AbortController(),signal=controller.signal,P=Object.fromEntries(plants.map(p=>[p.id,p]));
  const compact=matchMedia('(max-width:799px), (pointer:coarse)').matches,cycleCount=compact?3:5,centerCycle=(cycleCount-1)/2;
@@ -17,6 +20,20 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  const animations=new Set();let stage=null,items=[],plantFilter=filter||'',statusFilter='',originFilter='',term='',opening=false,centering=false,activeId=freshId||null,needsRefresh=false,period=0,looping=true;
  let scrollFrame=0,scrollTarget=null,scrollPosition=0,lastFrame=0,drag=null,suppressClickUntil=0,searchExpanded=false,panelAnimation=null,panelVersion=0;
  const limitScroll=value=>Math.max(0,Math.min(well.scrollHeight-well.clientHeight,value));
+ function paint(element,{enter=true,delay=0,duration=600}={}){
+  if(!element||reduced())return Promise.resolve();
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),defs=document.createElementNS(ns,'defs'),mask=document.createElementNS(ns,'mask'),brush=document.createElementNS(ns,'path'),id=`mail-paint-${++mailBrushId}`;
+  svg.setAttribute('width','0');svg.setAttribute('height','0');svg.setAttribute('aria-hidden','true');
+  for(const [key,value] of Object.entries({id,maskUnits:'objectBoundingBox',maskContentUnits:'objectBoundingBox',x:'-.3',y:'-.2',width:'1.7',height:'1.6'}))mask.setAttribute(key,value);
+  const rows=Array.from({length:10},(_,index)=>{const y=-.08+index*.15,left=-.25,right=1.4;return `${index?'L':'M'}${index%2?right:left} ${y}L${index%2?left:right} ${y+.012}`;});
+  for(const [key,value] of Object.entries({d:rows.join(''),fill:'none',stroke:'white','stroke-width':'.18','stroke-linecap':'round',pathLength:'1','stroke-dasharray':'1 1','stroke-dashoffset':enter?'1':'0'}))brush.setAttribute(key,value);
+  mask.append(brush);defs.append(mask);svg.append(defs);root.append(svg);
+  const previousMask=element.style.maskImage,previousVisibility=element.style.visibility;
+  element.style.maskImage=`url("#${id}")`;
+  const animation=brush.animate([{strokeDashoffset:enter?1:0},{strokeDashoffset:enter?0:1}],{duration,delay,easing:'linear',fill:'both'});
+  animations.add(animation);
+  return animation.finished.then(()=>{element.style.visibility=enter?previousVisibility:'hidden';}).catch(()=>{}).finally(()=>{element.style.maskImage=previousMask;svg.remove();animation.cancel();animations.delete(animation);});
+ }
  function stopGlide(){cancelAnimationFrame(scrollFrame);scrollFrame=0;scrollTarget=null;lastFrame=0;}
  function recycle(){
   if(opening||centering||!period)return;
@@ -37,7 +54,7 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  function glideTo(target){scrollTarget=limitScroll(target);if(!scrollFrame){scrollPosition=well.scrollTop;lastFrame=0;scrollFrame=requestAnimationFrame(glide);}}
  function markup(letter){
   const plant=P[letter.plantId];
-  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art.replace(/\.webp$/,'-preview.webp')}" decoding="async" alt="" aria-hidden="true" draggable="false"><span class="garden-envelope-back" aria-hidden="true"></span><span class="garden-envelope-flap" aria-hidden="true"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(letter.title)}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket" aria-hidden="true"><img src="./assets/letter-pocket-paper.webp" decoding="async" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>${letter.replies?.length?`${letter.replies.length} 封回信`:'等一封回信'}</span></span></span>`;
+  return `<span class="garden-letter"><img class="garden-botanical" src="./assets/${plant.art.replace(/\.webp$/,'-preview.webp')}" decoding="async" alt="" aria-hidden="true" draggable="false"><span class="garden-envelope-back" aria-hidden="true"></span><span class="garden-envelope-flap" aria-hidden="true"></span><span class="garden-letter-paper"><span class="garden-paper-brand">下一枝 <small>NEXT BRANCH</small></span><span class="garden-letter-topic">${plant.name} · ${esc(letter.category)}<small>${esc(letter.date)}</small></span><span class="garden-salutation">亲爱的枝友：</span><strong class="garden-letter-subject">${esc(envelopeTitle(letter.title))}</strong><span class="garden-letter-foot">一封寄给枝友的信 <small>枝条手记</small></span></span><span class="garden-envelope-pocket" aria-hidden="true"><img src="./assets/letter-pocket-paper.webp" decoding="async" alt="" draggable="false"></span><span class="garden-envelope-address">致，每一位枝友<span>${letter.replies?.length?`${letter.replies.length} 封回信`:'等一封回信'}</span></span></span>`;
  }
  function markActive(id,button){activeId=id;const matches=[...stack.querySelectorAll(`[data-id="${id}"]`)],distance=b=>Math.abs(b.getBoundingClientRect().top+b.offsetHeight/2-innerHeight/2),selected=button||matches.sort((a,b)=>distance(a)-distance(b))[0];stack.querySelectorAll('.mailbox-letter').forEach(b=>b.setAttribute('aria-current',String(b===selected)));}
  function measurePeriod(){
@@ -50,10 +67,12 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   stopGlide();drag=null;
   const previousTop=well.scrollTop,wasLooping=looping,phase=keep&&period?previousTop%period:0;
   items=getLetters().filter(l=>P[l.plantId]&&(!plantFilter||l.plantId===plantFilter)&&(statusFilter==='waiting'?!l.replies?.length:statusFilter==='answered'?Boolean(l.replies?.length):true)&&(!originFilter||l.mine===true||/^L-\d+$/.test(l.id))&&(!term||`${P[l.plantId].name} ${l.title} ${l.text}`.toLocaleLowerCase().includes(term.toLocaleLowerCase())));
+  if(freshId&&freshAnchorId){const index=items.findIndex(letter=>letter.id===freshId);if(index>=0&&items.some(letter=>letter.id===freshAnchorId)){const [fresh]=items.splice(index,1);items.splice(items.findIndex(letter=>letter.id===freshAnchorId),0,fresh);}}
   looping=!plantFilter&&!statusFilter&&!originFilter&&!term;
   // The complete archive repeats; a chosen plant, state, or search result is finite.
-  const nodes=Array.from({length:looping?cycleCount:1},()=>items.map((letter,index)=>{const item=document.createElement('article');item.className=`mailbox-entry${plants.findIndex(p=>p.id===letter.plantId)%2?' is-flower-right':''}`;item.setAttribute('role','listitem');item.setAttribute('aria-posinset',index+1);item.setAttribute('aria-setsize',items.length);const button=document.createElement('button');button.type='button';button.className='mailbox-letter';button.dataset.id=letter.id;button.setAttribute('aria-label',`抽出查看：${letter.title}`);button.innerHTML=markup(letter);const frame=document.createElement('div');frame.className='mailbox-ink-frame';frame.append(button);item.append(frame);return item;})).flat();stack.replaceChildren(...nodes);
+  const nodes=Array.from({length:looping?cycleCount:1},()=>items.map((letter,index)=>{const item=document.createElement('article');item.className=`mailbox-entry${plants.findIndex(p=>p.id===letter.plantId)%2?' is-flower-right':''}`;item.setAttribute('role','listitem');item.setAttribute('aria-posinset',index+1);item.setAttribute('aria-setsize',items.length);const button=document.createElement('button');button.type='button';button.className='mailbox-letter';button.dataset.id=letter.id;button.setAttribute('aria-label',`抽出查看：${letter.title}`);button.innerHTML=markup(letter);const frame=document.createElement('div');frame.className='mailbox-ink-frame';frame.append(button);item.append(frame);if(letter.mine===true||/^L-\d+$/.test(letter.id)){const remove=document.createElement('button');remove.type='button';remove.className='mailbox-delete';remove.dataset.deleteLetter=letter.id;remove.setAttribute('aria-label',`删除我写的信：${letter.title}`);remove.innerHTML=[...'删除这封信'].map(character=>`<span class="mailbox-delete-char" aria-hidden="true">${character}</span>`).join('')+'<span class="mailbox-delete-rule" aria-hidden="true"></span>';item.append(remove);}return item;})).flat();stack.replaceChildren(...nodes);
   if(looping){period=measurePeriod();well.scrollTop=period*centerCycle+phase;}else{period=0;stack.style.gap='';stack.style.paddingTop='';well.scrollTop=keep&&!wasLooping?previousTop:0;}
+  if(freshId){const index=items.findIndex(letter=>letter.id===freshId),target=index<0?null:stack.children[(looping?centerCycle*items.length:0)+index]?.querySelector('.mailbox-letter');if(target){const box=target.getBoundingClientRect(),view=well.getBoundingClientRect();well.scrollTop+=(box.top+box.bottom-view.top-view.bottom)/2+12;}}
   root.classList.toggle('is-filtered',!looping);markActive(items.some(l=>l.id===activeId)?activeId:items[0]?.id);root.querySelector('.mailbox-empty').hidden=Boolean(items.length);
   root.querySelectorAll('[data-mail-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailFilter===statusFilter)));
   root.querySelectorAll('[data-mail-origin]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mailOrigin===originFilter)));
@@ -149,10 +168,71 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   }catch{if(!signal.aborted&&stage){onReader({kind:'mailbox'},reset);onOpen(id);}else reset();}
  }
  root.querySelector('.mailbox-plants').innerHTML=`<button data-mail-plant="" aria-pressed="true">全部植物</button>${plants.map(p=>`<button data-mail-plant="${p.id}" aria-pressed="false" style="--filter-color:${p.bg};--filter-ink:${p.ink}">${p.name}</button>`).join('')}`;
+ async function deleteOwnLetter(button){
+  if(opening||centering||!onDelete)return;
+  const id=button.dataset.deleteLetter;
+  opening=true;stopGlide();
+  try{
+   if(!await onDelete(id))return;
+   const copies=[...stack.querySelectorAll('.mailbox-entry')].filter(entry=>entry.querySelector('.mailbox-letter')?.dataset.id===id);
+   if(!reduced()){
+    const visible=copies.filter(entry=>{const box=entry.getBoundingClientRect();return box.bottom>-40&&box.top<innerHeight+40;});
+    const lineMotions=copies.map(entry=>{const rule=entry.querySelector('.mailbox-delete-rule'),button=entry.querySelector('.mailbox-delete'),from=button.matches(':hover')?getComputedStyle(rule).clipPath:'inset(0)';entry.classList.add('is-deleting');const motion=rule.animate([{clipPath:from},{clipPath:'inset(0 100% 0 0)'}],{duration:320,easing:'cubic-bezier(.35,0,.65,1)',fill:'both'});animations.add(motion);return motion;});
+    await Promise.allSettled([...lineMotions.map(motion=>motion.finished),...visible.flatMap(entry=>[
+     paint(entry.querySelector('.mailbox-ink-frame'),{enter:false,duration:620}),
+     paint(entry.querySelector('.garden-botanical'),{enter:false,duration:570}),
+     ...[...entry.querySelectorAll('.mailbox-delete-char')].reverse().map((character,index)=>paint(character,{enter:false,delay:index*45,duration:280}))
+    ])]);
+    lineMotions.forEach(motion=>{motion.cancel();animations.delete(motion);});
+   }
+   if(signal.aborted)return;
+   const remaining=[...stack.children].filter(entry=>!copies.includes(entry));
+   const before=new Map(remaining.map(entry=>[entry,entry.getBoundingClientRect().top]));
+   const oldPeriod=period,oldScroll=well.scrollTop;
+   copies.forEach(entry=>entry.remove());
+   items=items.filter(letter=>letter.id!==id);
+   if(items.length&&looping){period=measurePeriod();well.scrollTop=oldScroll+(period-oldPeriod)*centerCycle;}
+   else{period=0;if(!items.length){looping=false;stack.style.gap='';stack.style.paddingTop='';}well.scrollTop=oldScroll;}
+   remaining.forEach((entry,index)=>{entry.setAttribute('aria-posinset',index%items.length+1);entry.setAttribute('aria-setsize',items.length);});
+   root.classList.toggle('is-filtered',!looping);
+   root.querySelector('.mailbox-empty').hidden=Boolean(items.length);
+   root.querySelector('.mailbox-filter-done span').textContent=items.length;
+   const nearest=[...stack.querySelectorAll('.mailbox-letter')].sort((a,b)=>Math.abs(a.getBoundingClientRect().top+a.offsetHeight/2-innerHeight/2)-Math.abs(b.getBoundingClientRect().top+b.offsetHeight/2-innerHeight/2))[0];
+   markActive(nearest?.dataset.id,nearest);
+   if(!reduced()){
+    const moves=remaining.flatMap(entry=>{const oldTop=before.get(entry),box=entry.getBoundingClientRect(),shift=oldTop-box.top;if(Math.abs(shift)<.5||box.bottom<-100||box.top>innerHeight+100)return [];const motion=entry.animate([{transform:`translateY(${shift}px)`},{transform:'translateY(0)'}],{duration:620,easing:'cubic-bezier(.2,.76,.22,1)',fill:'both'});animations.add(motion);return [motion];});
+    await Promise.allSettled(moves.map(motion=>motion.finished));
+    moves.forEach(motion=>{motion.cancel();animations.delete(motion);});
+   }
+   if(!signal.aborted)root.querySelector('.mailbox-live').textContent='已删除这封信';
+  }catch{if(!signal.aborted)root.querySelector('.mailbox-live').textContent='删除失败，请稍后再试';}
+  finally{opening=false;}
+ }
+ function revealFresh(){
+  const current=stack.querySelector('.mailbox-letter[aria-current="true"]')?.closest('.mailbox-entry');
+  if(!current||reduced())return;
+  opening=true;current.style.pointerEvents='none';
+  const center=current.getBoundingClientRect(),middle=(center.top+center.bottom)/2,following=current.nextElementSibling;
+  const matchedAnchor=following?.querySelector('.mailbox-letter')?.dataset.id===freshAnchorId;
+  const gap=matchedAnchor?following.getBoundingClientRect().top-center.top:Math.min(center.height*.65,innerHeight*.34);
+  const moving=[...stack.children].filter(entry=>entry!==current&&entry.getBoundingClientRect().bottom>-center.height&&entry.getBoundingClientRect().top<innerHeight+center.height);
+  const slides=moving.flatMap(entry=>{const box=entry.getBoundingClientRect(),isBelow=(box.top+box.bottom)/2>middle;if(matchedAnchor&&!isBelow)return [];const shift=matchedAnchor?-gap:isBelow?-gap:gap,motion=entry.animate([{transform:`translateY(${shift}px)`},{transform:'translateY(0)'}],{duration:650,delay:80,easing:'cubic-bezier(.2,.76,.22,1)',fill:'both'});animations.add(motion);return [motion];});
+  const reveal=[
+   paint(current.querySelector('.mailbox-ink-frame'),{delay:760,duration:960}),
+   paint(current.querySelector('.garden-botanical'),{delay:760,duration:960}),
+   ...[...current.querySelectorAll('.mailbox-delete-char')].map((character,index)=>paint(character,{delay:1780+index*75,duration:330}))
+  ];
+  Promise.allSettled([...slides.map(motion=>motion.finished),...reveal]).then(()=>{
+   slides.forEach(motion=>{motion.cancel();animations.delete(motion);});
+   if(signal.aborted)return;
+   current.style.pointerEvents='';opening=false;
+  });
+ }
  find.addEventListener('click',()=>searchOpen(!searchExpanded),{signal});root.querySelector('.mailbox-search-close').addEventListener('click',()=>searchOpen(false),{signal});
  root.querySelector('.mailbox-filter-done').addEventListener('click',()=>searchOpen(false),{signal});
  query.addEventListener('input',event=>{term=event.target.value.trim();load(false);},{signal});query.addEventListener('focus',()=>{if(!searchPanel.hidden)searchOpen(false,false);},{signal});
- root.addEventListener('click',event=>{
+ root.addEventListener('click',async event=>{
+  const deleteButton=event.target.closest('[data-delete-letter]');if(deleteButton){await deleteOwnLetter(deleteButton);return;}
   const p=event.target.closest('[data-mail-plant]');if(p){plantFilter=p.dataset.mailPlant;load(false);return;}
   const f=event.target.closest('[data-mail-filter]');if(f){statusFilter=f.dataset.mailFilter;load(false);return;}
   const o=event.target.closest('[data-mail-origin]');if(o){originFilter=o.dataset.mailOrigin;load(false);return;}
@@ -169,7 +249,7 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
   glideTo((scrollTarget??well.scrollTop)+delta);
  },{signal,passive:false});
  well.addEventListener('pointerdown',event=>{
-  stopGlide();drag=null;if(event.pointerType==='touch'||event.button!==0||opening||searchExpanded)return;
+  stopGlide();drag=null;if(event.target.closest('.mailbox-delete')||event.pointerType==='touch'||event.button!==0||opening||searchExpanded)return;
   drag={pointer:event.pointerId,y:event.clientY,scroll:well.scrollTop,lastY:event.clientY,time:performance.now(),velocity:0,moved:false};
  },{signal});
  well.addEventListener('pointerleave',()=>{if(drag&&!drag.moved)drag=null;},{signal});
@@ -192,6 +272,6 @@ export function mountLetterTheatre({plants,getLetters,onOpen,onWrite,filter,fres
  well.addEventListener('keydown',event=>{if(opening||!items.length||!['ArrowUp','ArrowDown','PageUp','PageDown','Home','End'].includes(event.key))return;stopGlide();event.preventDefault();const buttons=[...stack.querySelectorAll('.mailbox-letter')],current=Math.max(0,buttons.indexOf(document.activeElement)),index=event.key==='Home'?0:event.key==='End'?items.length-1:Math.max(0,Math.min(buttons.length-1,current+(['ArrowUp','PageUp'].includes(event.key)?-1:1))),b=buttons[index];markActive(b.dataset.id,b);b.focus({preventScroll:true});b.scrollIntoView({block:'center',behavior:reduced()?'instant':'smooth'});},{signal});
  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&!searchPanel.hidden){event.preventDefault();event.stopPropagation();searchOpen(false);}},{signal});
  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',()=>{stopGlide();animations.forEach(a=>a.cancel());animations.clear();panelVersion++;panelAnimation=null;searchPanel.hidden=!searchExpanded;},{signal});
- load(false);if(freshId)requestAnimationFrame(()=>{if(!signal.aborted)stack.querySelector('[aria-current="true"]')?.scrollIntoView({block:'center',behavior:'instant'});});
+ load(false);if(freshId)revealFresh();
  return {refresh(){if(opening)needsRefresh=true;else load();},dispose(){controller.abort();stopGlide();resizeObserver.disconnect();animations.forEach(a=>a.cancel());animations.clear();stage?.remove();}};
 }

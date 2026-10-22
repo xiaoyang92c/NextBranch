@@ -59,8 +59,6 @@
 .office-writing-selects{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:end}.office-writing-selects label{font:700 10px var(--sans);display:flex;flex-direction:column;gap:5px}.office-writing-selects select{font:600 15px/1.3 var(--sans);color:inherit;background:none;border:0;border-bottom:1px solid #b7c3a6;padding:3px 0;border-radius:0;max-width:100%;min-width:0}
 .office-writing-label{font:700 10px var(--sans);align-self:end}.office-writing-paper input[type="text"]{font:500 16px/1.5 var(--serif);color:inherit;padding:4px 0;border:0;border-bottom:1px solid #b7c3a6;background:none;border-radius:0;min-width:0}.office-writing-paper textarea{font:500 16px/1.8 var(--serif);color:inherit;background:repeating-linear-gradient(0deg,transparent 0,transparent 27.8px,#c8cfb34d 28.8px,transparent 29.8px);border:0;padding:0;resize:none;min-height:0;width:100%;border-radius:0;scrollbar-width:none}
 .office-writing-bottom{display:flex;align-items:center;gap:10px;min-width:0}.office-photo-label{position:relative;display:flex;align-items:center;gap:8px;max-width:48%;font:700 10px var(--sans);white-space:nowrap;cursor:pointer}.office-photo-label input{position:absolute;width:100%;height:100%;inset:0;opacity:0;cursor:pointer}.office-photo-preview{height:30px;width:28px;object-fit:cover;border:2px solid #fff8e1;rotate:5deg}.office-remove-photo{background:none;border:0;padding:2px;color:#ac7b68;font-size:8px}.office-send{margin-left:auto;border:1px solid #829d8c;background:#829f8b;color:#fff7df;padding:11px 14px;font:800 11px var(--sans);white-space:nowrap}.office-send:disabled{opacity:.5;cursor:wait}.office-writing-status{font-size:9px;margin:0;color:#85917a;line-height:1.4}
-.office-delivery-seal{position:absolute;left:0;right:0;top:40%;margin:auto;width:max-content;z-index:8;border:3px double #b17a66;color:#b17a66;background:#fff3d9;font:900 36px/1.2 var(--serif);padding:14px 18px;rotate:-12deg;opacity:0}.office-delivery-seal small{display:block;font:700 9px var(--sans);margin-top:7px;letter-spacing:.05em}.office-compose.is-posted .office-writing-paper{opacity:0;pointer-events:none}.office-compose.is-posted .office-delivery-seal{opacity:1}
-.office-letter-flight{position:fixed;left:0;top:0;z-index:125;pointer-events:none;will-change:transform}
 @media(min-width:800px){.mail-gallery{--mail-gap:4svh}.mail-heading h1{font-size:clamp(44px,5vw,70px)}.mail-tools{left:10%;right:10%}}
 @media(max-width:799px){
   .mail-heading p{font-size:12px;margin-bottom:9px}.mail-heading h1{font-size:clamp(31px,8.2vw,48px)}.mail-caption{gap:9px}.mail-paging{gap:12px}.mail-position{font-size:13px}.mail-tools{font-size:12px}
@@ -69,13 +67,7 @@
 }
 @media(max-height:690px) and (orientation:portrait){.mail-gallery{--mail-gap:5svh;--mail-center:52%}.mail-heading h1{font-size:31px}.mail-heading p{font-size:10px;margin-bottom:6px}.mail-caption{top:calc(var(--mail-center) + var(--mail-height)/2 + 4svh);gap:5px}.mail-tools{bottom:4svh}.mail-topic{font-size:11px}.office-compose .office-back{top:83px}.office-writing-room{top:120px;bottom:22px}.office-writing-paper{padding:16px}.office-writing-paper fieldset{grid-template-rows:43px 42px 10px 29px 10px minmax(40px,1fr) 34px 22px;gap:6px}.office-writing-heading{font-size:23px}.office-writing-heading small{font-size:9px;margin-top:7px}.office-writing-postage{width:28px}.office-writing-status{font-size:7px}.office-send{font-size:9px;padding:9px 8px}.office-photo-label{font-size:8px}}
 @media(max-height:620px) and (orientation:landscape){.mail-gallery{--mail-width:48svh;--mail-center:54%;--mail-gap:12px}.mail-heading{left:0;right:auto;bottom:auto;top:44%;width:30%}.mail-heading h1{font-size:26px;max-width:7em;margin:0 auto}.mail-heading p{font-size:8px}.mail-caption{left:auto;right:3%;top:45%;width:27%}.mail-topic{font-size:11px}.mail-tools{bottom:4%;font-size:11px}.office-compose .office-back{top:78px;left:4%;font-size:11px}.office-writing-room{inset:94px 24% 18px}.office-writing-paper{padding:15px 20px}.office-writing-paper fieldset{grid-template-rows:34px 34px 10px 24px 10px minmax(30px,1fr) 30px 12px;gap:3px}.office-writing-heading{font-size:21px}.office-writing-heading small{font-size:8px;margin-top:4px}.office-writing-status{font-size:6px}.office-writing-postage{width:28px}.office-writing-selects label{font-size:8px}.office-writing-selects select{font-size:13px}.office-send{padding:6px 8px;font-size:9px}.office-photo-label{font-size:8px}.postal-reader .letter-sheet.postal-sheet{gap:6px;padding:14px 22px;grid-template-rows:auto auto auto minmax(0,1fr) auto}.postal-reader .postal-sheet h2{font-size:21px;margin:0}.postal-sheet-bottom{display:none}.postal-reply-form{padding-top:6px}.postal-reply-form label{display:none}}
-@media(prefers-reduced-motion:reduce){.mail-envelope,.mail-envelope-flap,.mail-paper-slip,.mail-card{transition:none!important;will-change:auto}.mail-card.is-current:hover .mail-envelope{transform:none}}/* A newly written note folds shut before taking its short flight. */
-.outgoing-letter .mail-envelope-flap{transform:rotateX(178deg);z-index:0}
-.outgoing-letter .mail-paper-slip{translate:0 -20%;opacity:1}
-.outgoing-letter.is-sealed .mail-envelope-flap{transform:rotateX(0);z-index:2}
-.outgoing-letter.is-sealed .mail-paper-slip{translate:0 0;opacity:0}
-.outgoing-letter.is-sealed .mail-postage{animation:mail-affix .3s cubic-bezier(.2,.8,.2,1) both}
-@keyframes mail-affix{from{scale:1.6;rotate:16deg;opacity:0}to{scale:1;rotate:5deg;opacity:1}}
+@media(prefers-reduced-motion:reduce){.mail-envelope,.mail-envelope-flap,.mail-paper-slip,.mail-card{transition:none!important;will-change:auto}.mail-card.is-current:hover .mail-envelope{transform:none}}
 
 /* An upright correspondence sheet with readable, ordinary writing tools. */
 .page.office-compose{--mail-sky:#a5cbb8;--mail-ink:#426e5c;height:auto;min-height:100svh;overflow:visible;padding:calc(var(--nav-edge) + 88px) 18px 24px!important;background:var(--mail-sky);color:var(--mail-ink)}
@@ -87,7 +79,7 @@
 .office-compose .office-writing-selects{gap:20px;padding:17px 0;border-block:1px solid #426e5c40;margin-bottom:24px;grid-template-columns:1.2fr 1fr;align-items:start}.office-compose .office-writing-selects label{font:500 14px/1.5 var(--sans);gap:4px}.office-compose .office-writing-selects select{font:600 18px/1.5 var(--serif);padding:5px 0;border:0;min-height:38px;width:100%}
 .office-compose .office-writing-label{font:600 14px/1.5 var(--sans);align-self:start;margin-bottom:8px}.office-compose .office-writing-paper input[type='text']{font:600 20px/1.7 var(--serif);padding:3px 0 9px;margin-bottom:23px;width:100%;border-color:#426e5c44}.office-compose .office-writing-paper textarea{font:400 18px/34px var(--serif);min-height:204px;height:clamp(204px,26svh,300px);background:repeating-linear-gradient(to bottom,transparent 0 33px,#426e5c20 33px 34px);padding:0;resize:vertical;scrollbar-width:thin}.office-compose textarea::placeholder,.office-compose input::placeholder{color:#788870;opacity:1}
 .office-writing-sign{font:400 16px/1.9 var(--serif);margin:24px 0 25px}.office-writing-sign>span{display:block;text-align:right;font-size:15px}
-.office-compose .office-writing-bottom{padding-top:18px;border-top:1px solid #426e5c40;gap:8px;flex-wrap:wrap}.office-compose .office-photo-label{font:500 14px var(--sans);min-height:44px;gap:6px;max-width:100%}.office-compose .office-photo-preview{rotate:0deg;height:38px;width:30px}.office-compose .office-remove-photo{font-size:14px;min-height:44px}.office-compose .office-send{font:600 15px/1.4 var(--sans);padding:13px 16px;min-height:46px;background:#426e5c;border-color:#426e5c}.office-compose .office-writing-status{font:400 12px/1.6 var(--sans);margin-top:15px;color:#6d7d65}.office-compose .office-delivery-seal{rotate:0deg}.office-compose .office-delivery-seal small{font-size:13px}
+.office-compose .office-writing-bottom{padding-top:18px;border-top:1px solid #426e5c40;gap:8px;flex-wrap:wrap}.office-compose .office-photo-label{font:500 14px var(--sans);min-height:44px;gap:6px;max-width:100%}.office-compose .office-photo-preview{rotate:0deg;height:38px;width:30px}.office-compose .office-remove-photo{font-size:14px;min-height:44px}.office-compose .office-send{font:600 15px/1.4 var(--sans);padding:13px 16px;min-height:46px;background:#426e5c;border-color:#426e5c}.office-compose .office-writing-status{font:400 12px/1.6 var(--sans);margin-top:15px;color:#6d7d65}
 @media(max-width:360px){.page.office-compose{padding-inline:12px!important}.office-compose .office-writing-paper{padding:22px 18px 18px}.office-compose .office-writing-heading{font-size:27px}.office-compose .office-writing-selects{gap:10px}.office-compose .office-writing-selects select{font-size:17px}.office-compose .office-writing-bottom{gap:4px}.office-compose .office-send{padding:12px 10px;font-size:14px}.office-compose .office-photo-label{font-size:13px}}
 
 /* One quiet sheet from the same archive, rising over the same background. */
@@ -98,21 +90,23 @@ body[data-view='write-letter'] nav.main-nav{color:#426353}
 .office-compose .office-writing-room{position:relative;inset:auto;width:min(100%,620px);max-width:620px;margin:0 auto}
 .office-compose .office-writing-paper{position:relative;display:flex;flex-direction:column;height:calc(100svh - var(--nav-edge) - 128px);min-height:680px;padding:28px 34px 24px;rotate:0deg;background:#faf7ed;border:1px solid #bfb49e;box-shadow:none;color:var(--mail-ink)}
 .office-compose .office-writing-paper::before{content:'';position:absolute;inset:9px;border:1px solid #c9bfaa80;pointer-events:none}
-.office-compose .office-writing-paper fieldset{position:relative;flex:1;height:auto;min-height:0;display:flex;flex-direction:column;gap:0;border:0;padding:0;margin:0}
+.office-compose .office-writing-paper fieldset{position:static;flex:1;height:auto;min-height:0;display:flex;flex-direction:column;gap:0;border:0;padding:0;margin:0}
 .office-compose .office-writing-paper :is(input,textarea,select,button,label){font-family:var(--letter-face)}
-.office-compose .office-compose-close{position:absolute;right:-4px;top:-4px;width:36px;height:36px;z-index:3;display:grid;place-items:center;border:1px solid #c9bfaa;border-radius:50%;background:transparent;color:#42584e;font:400 22px/1 var(--letter-face);cursor:pointer}
+.office-compose .office-compose-close{position:absolute;right:40px;top:19px;width:28px;height:28px;padding:0;z-index:3;border:0;background:transparent;color:#42584e;font-size:0;cursor:pointer}
+.office-compose .office-compose-close::before,.office-compose .office-compose-close::after{content:'';position:absolute;left:22px;top:50%;width:12px;height:1px;background:currentColor;transform:translate(-50%,-50%) rotate(45deg)}
+.office-compose .office-compose-close::after{transform:translate(-50%,-50%) rotate(-45deg)}
 .office-compose .office-writing-heading{position:relative;min-height:108px;margin:0 0 23px;padding:0 82px 0 0;font-family:var(--letter-face);font-weight:400}
 .office-writing-intro{display:flex;flex-direction:column;align-items:flex-start}
-.office-writing-kicker{font:400 11px/1.4 var(--letter-face);letter-spacing:.13em;color:#887c6f;margin-bottom:15px}
+.office-writing-kicker{font:400 11px/1.4 var(--letter-face);letter-spacing:.13em;color:#887c6f;margin-bottom:10px}
 .office-compose .office-writing-intro strong{font:600 clamp(27px,5vw,34px)/1.35 var(--letter-face);letter-spacing:.02em;color:#394e43}
-.office-compose .office-writing-heading small{font:400 15px/1.6 var(--letter-face);margin-top:5px;letter-spacing:.03em;color:#607367}
+.office-compose .office-writing-heading small{font:400 15px/1.6 var(--letter-face);margin-top:2px;letter-spacing:.03em;color:#607367}
 .office-compose .office-writing-postage{right:0;top:48px;width:35px;rotate:0deg}
 .office-compose .office-writing-postage .stamp{filter:none!important}
 .office-compose .office-writing-selects{display:grid;grid-template-columns:1fr 1fr;gap:23px;align-items:start;padding:17px 0 18px;margin:0 0 23px;border-block:1px solid #c9bfaa}
 .office-compose .office-writing-selects label{display:flex;flex-direction:column;gap:5px;font:400 13px/1.5 var(--letter-face);color:#6f7668}
 .office-compose .office-writing-selects select{appearance:none;width:100%;min-width:0;min-height:37px;padding:4px 22px 4px 0;border:0;border-radius:0;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='m1 1 6 6 6-6' fill='none' stroke='%236b7569' stroke-width='1.2'/%3E%3C/svg%3E") right center/12px auto no-repeat;color:#42584e;font:500 18px/1.4 var(--letter-face)}
-.office-compose .office-writing-label{font:400 13px/1.4 var(--letter-face);color:#6f7668;margin:0 0 8px}
-.office-compose .office-writing-paper input[type='text']{width:100%;min-width:0;margin:0 0 22px;padding:5px 0 10px;border:0;border-bottom:1px solid #c9bfaa;border-radius:0;background:transparent;color:#42584e;font:500 20px/1.55 var(--letter-face)}
+.office-compose .office-writing-label{font:400 13px/1.4 var(--letter-face);color:#6f7668;margin:0 0 5px}
+.office-compose .office-writing-paper input[type='text']{width:100%;min-width:0;margin:0 0 17px;padding:4px 0 8px;border:0;border-bottom:1px solid #c9bfaa;border-radius:0;background:transparent;color:#42584e;font:500 20px/1.55 var(--letter-face)}
 .office-compose .office-writing-paper textarea{flex:1;width:100%;min-height:200px;height:auto;padding:0 1px;resize:vertical;border:0;border-radius:0;background:repeating-linear-gradient(to bottom,transparent 0 32px,#c9bfaa80 32px 33px);color:#42584e;font:400 17px/33px var(--letter-face);scrollbar-width:thin}
 .office-compose :is(input,textarea)::placeholder{color:#9b9c8c;opacity:1}
 .office-compose .office-writing-paper :is(input[type='text'],textarea,select):focus-visible{outline:1px solid #8c806d!important;outline-offset:3px;box-shadow:none!important}
@@ -126,7 +120,7 @@ body[data-view='write-letter'] nav.main-nav{color:#426353}
 .office-compose .office-send{margin-left:auto;min-height:42px;padding:9px 14px;border:1px solid #4b6656;background:#4b6656;color:#fff9e8;font:500 13px/1.4 var(--letter-face)}
 .office-compose .office-writing-status{min-height:0;margin:8px 0 0;color:#766b5e;font:400 12px/1.5 var(--letter-face)}
 .office-compose .office-writing-status:empty{display:none}
-.office-compose .office-delivery-seal{background:#faf7ed;border-color:#9c7567;color:#8d6258;box-shadow:none}
+
 @media(max-width:799px){.page.office-compose{padding:calc(var(--nav-edge) + 78px) 16px 32px!important}.office-compose .office-writing-paper{padding:25px 23px 21px}.office-compose .office-writing-heading{padding-right:60px;min-height:106px}.office-compose .office-writing-postage{top:51px;width:31px}.office-compose .office-writing-selects{gap:15px}.office-compose .office-writing-paper textarea{min-height:190px}}
 @media(max-width:380px){.page.office-compose{padding-inline:12px!important}.office-compose .office-writing-paper{padding:23px 18px 20px}.office-compose .office-writing-intro strong{font-size:25px}.office-compose .office-writing-selects{gap:9px}.office-compose .office-writing-selects select{font-size:16px}.office-compose .office-writing-paper input[type='text']{font-size:18px}.office-compose .office-writing-paper textarea{font-size:16px}.office-compose .office-send{padding:8px 10px}}
 @media(max-height:920px){.office-compose .office-writing-paper{height:auto;min-height:0}.office-compose .office-writing-paper textarea{flex:none;height:220px}}
@@ -135,4 +129,53 @@ body[data-view='write-letter'] nav.main-nav{color:#426353}
 #app>.letter-mailbox.is-compose-underlay{position:fixed;inset:0;z-index:0;pointer-events:none}
 #app>.office-compose.is-over-mailbox{position:relative;z-index:1;background:transparent}
 #app>.office-compose.is-over-mailbox::before{display:none}
+
+/* Paper menus replace the OS picker. */
+.office-compose .office-writing-heading{min-height:0;padding-right:42px;margin-bottom:13px}
+.office-compose .office-writing-selects{gap:18px;padding:12px 0 13px;margin-bottom:17px}
+.office-compose .office-choice{position:relative;min-width:0;font-family:var(--letter-face)}
+.office-compose .office-choice-label{display:block;margin-bottom:5px;color:#74796b;font:400 13px/1.4 var(--letter-face)}
+.office-compose .office-choice details{position:relative}
+.office-compose .office-choice summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:5px 10px 5px 0;border-bottom:1px solid #c9bfaa;list-style:none;color:#42584e;font:500 20px/1.4 var(--letter-face);cursor:pointer}
+.office-compose .office-choice summary::-webkit-details-marker{display:none}
+.office-compose .office-choice summary:focus-visible,.office-compose .office-choice-options button:focus-visible{outline:1px solid #8c806d;outline-offset:2px}
+.office-compose .office-choice-chevron{width:10px;height:10px;flex:none;border-right:1px solid currentColor;border-bottom:1px solid currentColor;transform:translateY(-3px) rotate(45deg);transition:transform .2s ease}
+.office-compose .office-choice details[open] .office-choice-chevron{transform:translateY(3px) rotate(225deg)}
+.office-compose .office-choice-options{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:15;display:grid;gap:2px;max-height:232px;overflow:auto;padding:5px;background:#fbf8ef;border:1px solid #c9bfaa;box-shadow:none;scrollbar-width:thin}
+.office-compose .office-choice-options button{width:100%;min-height:38px;padding:7px 10px;border:0;background:transparent;color:#42584e;text-align:left;font:400 17px/1.4 var(--letter-face);cursor:pointer}
+.office-compose .office-choice-options button[aria-selected='true'],.office-compose .office-choice-options button:hover{background:#e8ecdf}
+.office-compose .office-choice[data-choice='plant'] .office-choice-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.office-compose .office-writing-paper{overflow:visible}
+@media(min-width:800px){.office-compose .office-writing-room{width:min(100%,680px);max-width:680px}.office-compose .office-writing-heading{padding-right:42px}}
+@media(max-width:799px){.office-compose .office-writing-heading{padding-right:42px}.office-compose .office-writing-selects{gap:13px}.office-compose .office-choice summary{font-size:18px}.office-compose .office-choice-options{box-sizing:border-box;width:calc(200% + 13px);max-height:min(250px,45svh);grid-template-columns:repeat(2,minmax(0,1fr))}.office-compose .office-choice[data-choice='plant'] .office-choice-options{left:0;right:auto}.office-compose .office-choice[data-choice='category'] .office-choice-options{left:auto;right:0}.office-compose .office-choice-options button{font-size:16px}}
+@media(max-width:380px){.office-compose .office-writing-heading{padding-right:38px}.office-compose .office-choice summary{font-size:16px}.office-compose .office-choice-options button{font-size:15px}}
+.office-compose .office-choice-options::-webkit-scrollbar{width:5px}
+.office-compose .office-choice-options::-webkit-scrollbar-thumb{background:#b9c2ae;border-radius:5px}
+
+/* The form follows the reading order of a letter. Keep metadata quiet and
+   use one consistent text rhythm for the subject, body and signature. */
+.office-compose .office-writing-paper{height:auto;min-height:0;padding:24px 40px 27px}
+.office-compose .office-writing-paper fieldset{flex:none}
+.office-compose .office-writing-heading{min-height:0;margin:0 0 12px;padding-right:42px}
+.office-compose .office-writing-kicker{display:block;margin:0;font:400 12px/1.5 var(--letter-face);letter-spacing:.11em;color:#887c6f}
+.office-compose .office-writing-selects{gap:24px;min-height:80px;padding:0;margin:0 0 23px;box-sizing:border-box;align-items:center}
+.office-compose .office-choice-label{margin-bottom:3px;font:400 12px/1.5 var(--letter-face)}
+.office-compose .office-choice summary{min-height:32px;padding:2px 5px 2px 0;border-bottom:0;font:500 17px/1.5 var(--letter-face)}
+.office-compose .office-writing-label{margin:0 0 4px;font:400 12px/1.5 var(--letter-face)}
+.office-compose .office-writing-paper input[type='text']{margin:0 0 22px;padding:4px 0 8px;font:500 20px/1.5 var(--letter-face)}
+.office-compose .office-writing-salutation{margin:0 0 11px;color:#394e43;font:500 21px/1.55 var(--letter-face)}
+.office-compose .office-writing-body-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.office-compose .office-writing-paper textarea{position:relative;z-index:1;flex:none;height:clamp(210px,26svh,285px);min-height:210px;padding:0 1px;background:repeating-linear-gradient(to bottom,transparent 0 35.5px,#c9bfaa80 35.5px 36px);background-attachment:local;font:400 17px/36px var(--letter-face);text-indent:2em;cursor:text;resize:none;scrollbar-width:none;-ms-overflow-style:none}
+.office-compose .office-writing-paper textarea::-webkit-scrollbar{display:none}
+.office-compose .office-writing-paper :is(input[type='text'],textarea):is(:focus,:focus-visible){outline:none!important;box-shadow:none!important}
+.office-compose .office-writing-paper input[type='text']:focus{border-bottom-color:#8c806d}
+.office-compose .office-writing-sign{margin:20px 0 22px;text-align:right;font:400 16px/1.7 var(--letter-face)}
+.office-compose .office-writing-sign>span{width:100%;margin:4px 0 0;text-align:right;font:400 16px/1.7 var(--letter-face)}
+.office-compose .office-writing-signature-field{box-sizing:border-box;display:flex;align-items:center;gap:5px;width:max-content;max-width:100%;margin:5px 0 0 auto;padding-bottom:2px;border-bottom:1px solid #c9bfaa80;cursor:text}
+.office-compose .office-writing-signature-field svg{flex:none;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.2;opacity:.7}
+.office-compose .office-writing-paper input.office-writing-signature{box-sizing:border-box;display:block;field-sizing:content;width:auto;min-width:1em;max-width:8em;margin:0;padding:0;border:0;background:transparent;color:inherit;text-align:right;font:400 16px/1.7 var(--letter-face);cursor:text}
+@supports not (field-sizing:content){.office-compose .office-writing-paper input.office-writing-signature{width:8em}}
+.office-compose .office-writing-bottom{padding-top:15px}
+@media(max-width:799px){.office-compose .office-writing-paper{padding:25px 32px 22px}.office-compose .office-compose-close{right:32px;top:20px}.office-compose .office-writing-heading{margin-bottom:13px}.office-compose .office-writing-selects{gap:14px}.office-compose .office-choice summary{font-size:17px}.office-compose .office-writing-paper textarea{height:clamp(215px,26svh,285px)}}
+@media(max-width:380px){.office-compose .office-writing-paper{padding:23px 21px 20px}.office-compose .office-compose-close{right:21px;top:18px}.office-compose .office-writing-heading{margin-bottom:11px}.office-compose .office-choice summary{font-size:16px}.office-compose .office-writing-paper input[type='text']{font-size:18px}.office-compose .office-writing-salutation{font-size:19px}.office-compose .office-writing-paper textarea{font-size:16px}}
 

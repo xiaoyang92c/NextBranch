@@ -1,6 +1,10 @@
 let navigation=null,observer=null,lastInk=null,inkTimer=null;
 function paintInk(section){
  const nextInk=section==='letters'?'rgb(66, 99, 83)':'rgb(255, 247, 223)';
+ // The writing sheet can finish sliding before the mailbox has finished its
+ // exit. Keep the destination ink on the persistent nav throughout both
+ // stages, including after the per-character paint class is removed.
+ navigation.style.color=nextInk;
  navigation?.querySelector('.nav-cursor')?.style.setProperty('color',nextInk);
  if(lastInk&&lastInk!==nextInk&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
   clearTimeout(inkTimer);

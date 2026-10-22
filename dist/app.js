@@ -1,19 +1,19 @@
-import {mountNavigation,selectNavigation} from './navigation.js';
+import {mountNavigation,selectNavigation} from './navigation.js?v=20261022-1';
 import {plants} from './plants.js';
 import {renderHome, mountHome, cleanupScene, letterMarkup, homeBackground,selectHomePlant} from './scenes.js?v=20261021-4';
-import {mountStampEffects} from './stamp-motion.js?v=20261021-3';
-import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261022-4';
+import {mountStampEffects} from './stamp-motion.js?v=20261022-4';
+import {renderArchive,mountArchive,cleanupArchive,enterArchive,cancelArchiveEntry,returnArchive} from './plant-archive.js?v=20261022-5';
 import {createClaimFlow} from './claim-flow.js?v=20261021-7';
-import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper,paintInitialInterface} from './chapter-motion.js?v=20261021-7';
+import {enterChapter,leaveChapter,stopChapterMotion,rememberArchivePosition,unfoldNewspaper,paintInitialInterface} from './chapter-motion.js?v=20261022-5';
 import {renderAlbumDesk,mountAlbumDesk,cleanupAlbumDesk,albumBackground} from './album-desk.js?v=20261021-20';
 import {saveRecordVideo,removeRecordVideo,releaseRecordVideos} from './record-media.js';
-import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261021-1';
+import {renderPostOffice,mountPostOffice,cleanupPostOffice,refreshPostOffice,showPostLetter,closePostLetter,renderPostCompose,mountPostCompose} from './post-office.js?v=20261022-14';
 
 const P = Object.fromEntries(plants.map(x=>[x.id,x]));
 const initial = {saved:['podocarpus','osmanthus'],claims:[{id:'DEMO-2026-01',plantId:'crape',nick:'演示访客',place:'阳台',light:'充足日照',form:'已生根幼苗',status:'claimed',date:'2026.08.18',demo:true}],postcards:[{id:'demo-post',plantId:'crape',date:'2026.09.03',status:'抽出新芽',text:'第十七天，枝条顶端有了小小的绿点。先继续耐心等根。',photo:'',demo:true}],letters:[],unread:true};
 const DATA_KEY='next-branch-demo-v2';
 const load=()=>{try{const x=JSON.parse(localStorage.getItem(DATA_KEY)||localStorage.getItem('next-branch-demo'));if(!x||!Array.isArray(x.claims))return structuredClone(initial);const known=id=>Boolean(P[id]);return {...structuredClone(initial),...x,saved:(x.saved||[]).filter(known),claims:x.claims.filter(c=>known(c.plantId)),postcards:(x.postcards||[]).filter(c=>known(c.plantId)),letters:(x.letters||[]).filter(c=>known(c.plantId))};}catch{return structuredClone(initial)}};
-let data=load(),openLetterId=null,originView='home',letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:''},mailboxComposeState=null;
+let data=load(),openLetterId=null,originView='home',letterForm={plantId:'podocarpus',category:'扦插',title:'',text:'',photo:'',signature:'一位养植物的枝友'},mailboxComposeState=null;
 const app=document.querySelector('#app');
 const persist=()=>localStorage.setItem(DATA_KEY,JSON.stringify(data));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -49,7 +49,7 @@ function nav(current){const section=navigationSection(current);return `<nav clas
 function header(){return ''}
 const hashParts=()=>{let [view,id]=location.hash.replace(/^#/,'').split('/');if(view==='story'){history.replaceState(null,'',`#detail/${P[id]?id:plants[0].id}`);return ['detail',P[id]?id:plants[0].id];}if(view==='claim-list'){history.replaceState(null,'','#home');return ['home'];}if(view==='growth'){history.replaceState(null,'','#album');return ['album'];}if(id&&!P[id]){const next=view==='letters'?'#letters':'#home';history.replaceState(null,'',next);return [view==='letters'?'letters':'home'];}return [view||'home',id]};
 function go(view,id){selectNavigation(navigationSection(view));cancelArchiveEntry(view==='detail'?id:null);openLetterId=null;const next=`#${view}${id?'/'+id:''}`;if(location.hash===next){render();window.scrollTo(0,0)}else location.hash=next}
-function render(){releaseRecordVideos();const [view,id]=hashParts();let body=view==='home'?home():view==='detail'?detail(id):view==='claim'?claim(id):view==='album'?album():view==='letters'?letters(id):view==='write-letter'?writeLetter():home();stopChapterMotion();cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();app.innerHTML=header()+body;document.body.dataset.view=view;mountNavigation(nav(view),navigationSection(view));bind();if(view==='home')mountHome(plants,(id,el)=>openArchive(id,el));if(view==='album')mountAlbumDesk({plants,getData:()=>data,onClaim:id=>go('claim',id),onSaveGrowth:saveAlbumGrowth,onDeleteGrowth:deleteAlbumGrowth,onArchive:id=>openArchive(id,null)});if(view==='letters')mountPostOffice({plants,stamp,getLetters:allLetters,onOpen:openLetter,onWrite:plantId=>{if(plantId)letterForm.plantId=plantId;go('write-letter');},filter:id});if(view==='write-letter')mountPostCompose({plants,stamp,draft:letterForm,readPhoto:readFile,onSend:draft=>{const letter={id:`L-${Date.now()}`,date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),...draft,mine:true,replies:[]};data.letters.unshift(letter);try{persist();}catch(error){data.letters.shift();throw error;}letterForm={plantId:draft.plantId,category:'扦插',title:'',text:'',photo:''};return letter;},onComplete:letter=>go('letters',letter.plantId)});mountStampEffects(app);mountArchive();}
+function render(){releaseRecordVideos();const [view,id]=hashParts();let body=view==='home'?home():view==='detail'?detail(id):view==='claim'?claim(id):view==='album'?album():view==='letters'?letters(id):view==='write-letter'?writeLetter():home();stopChapterMotion();cleanupScene();cleanupAlbumDesk();cleanupPostOffice();cleanupArchive();claimFlow.cleanup();app.innerHTML=header()+body;document.body.dataset.view=view;mountNavigation(nav(view),navigationSection(view));bind();if(view==='home')mountHome(plants,(id,el)=>openArchive(id,el));if(view==='album')mountAlbumDesk({plants,getData:()=>data,onClaim:id=>go('claim',id),onSaveGrowth:saveAlbumGrowth,onDeleteGrowth:deleteAlbumGrowth,onArchive:id=>openArchive(id,null)});if(view==='letters')mountPostOffice({plants,stamp,getLetters:allLetters,onOpen:openLetter,onDelete:deleteOwnLetter,onWrite:plantId=>{if(plantId)letterForm.plantId=plantId;go('write-letter');},filter:id});if(view==='write-letter')mountPostCompose({plants,stamp,draft:letterForm,readPhoto:readFile,onSend:draft=>{const letter={id:`L-${Date.now()}`,date:new Date().toLocaleDateString('zh-CN').replaceAll('/','.'),...draft,mine:true,replies:[]};data.letters.unshift(letter);try{persist();}catch(error){data.letters.shift();throw error;}letterForm={plantId:draft.plantId,category:'扦插',title:'',text:'',photo:'',signature:'一位养植物的枝友'};return letter;},onComplete:letter=>{mailboxComposeState=null;go('letters');}});mountStampEffects(app);mountArchive();}
 function home(){return renderHome(plants,stamp)}
 function detail(id){const p=P[id]||plants[0],records=[...(publicStories[p.id]||[]).map(r=>({date:r[0],title:r[1],text:r[2],demo:true})),...data.postcards.filter(r=>r.plantId===p.id).map(r=>({date:r.date,title:r.status,text:r.text,photo:r.photo,demo:Boolean(r.demo)}))],stories=[...new Map(records.map(r=>[`${r.date}-${r.title}`,r])).values()].sort((a,b)=>a.date.localeCompare(b.date)).slice(-3);return renderArchive(p,originView,stories)}
 function claim(id){return claimFlow.render(id)}
@@ -73,6 +73,12 @@ const sampleLetters=[
  {id:'n10',plantId:'pomegranate',category:'其他',title:'石榴开了一朵红花',date:'2026.07.29',text:'枝头刚出现一朵朱红的小花，花萼像一顶小冠冕。今天先拍照存档，继续照顾好阳光和排水。',replies:[]}
 ];
 const allLetters=()=>[...data.letters,...sampleLetters.map(l=>({...l,replies:[...l.replies,...(data.sampleReplies?.[l.id]||[])]}))];
+function deleteOwnLetter(id){
+ const index=data.letters.findIndex(letter=>letter.id===id&&(letter.mine===true||/^L-\d+$/.test(letter.id)));
+ if(index<0)return false;
+ const [letter]=data.letters.splice(index,1);
+ try{persist();return true;}catch(error){data.letters.splice(index,0,letter);throw error;}
+}
 function letters(filter){return renderPostOffice(plants,filter)}
 function writeLetter(){return renderPostCompose(plants,stamp,letterForm)}
 function openArchive(id,source){const p=P[id];if(!p)return;const from=hashParts()[0];if(['home','album','growth'].includes(from))originView=from==='growth'?'album':from;enterArchive(p,source,()=>go('detail',id));}
@@ -251,8 +257,22 @@ window.addEventListener('hashchange',async()=>{
   if(finishedClaimChapterExit&&(next==='home'||next==='letters')){
     await blendClaimBackground(nextBackground);
     if(version!==routeVersion)return;
-  }else if(nextBackground)document.body.style.backgroundColor=nextBackground;
-  if(previous!==next&&!viaStamp&&!finishedClaimChapterExit)await leaveChapter(page,previous,{nextBackground,nextView:next,cover:closingReader});
+  }else if(nextBackground&&!(previous==='write-letter'&&next==='home'))document.body.style.backgroundColor=nextBackground;
+  if(previous!==next&&!viaStamp&&!finishedClaimChapterExit){
+    await leaveChapter(page,previous,{nextBackground,nextView:next,cover:closingReader});
+    if(version!==routeVersion)return;
+    if(previous==='write-letter'&&next==='home'){
+      const mailbox=app.querySelector('.letter-mailbox.is-compose-underlay');
+      if(mailbox){
+        // Reveal the retained mailbox only after the letter has slid away,
+        // then give it the same exit used by the letters chapter.
+        const visibility=page.style.visibility;
+        page.style.visibility='hidden';
+        await leaveChapter(mailbox,'letters',{nextBackground,nextView:next});
+        if(version!==routeVersion){if(page.isConnected)page.style.visibility=visibility;return;}
+      }
+    }
+  }
   closingReader?.remove();
   if(version!==routeVersion)return;
   if(next==='claim')window.scrollTo({top:0,behavior:'instant'});

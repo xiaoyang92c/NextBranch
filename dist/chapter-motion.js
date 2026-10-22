@@ -39,7 +39,7 @@ function beam(opening){
  ],opening?1140:720,0,'cubic-bezier(.4,0,.3,1)');
 }
 function powerOff(page,cover){
- // Crop both the chapter and any opened letter in place as one TV picture.
+ // Crop the supplied scene as one TV picture, including any layered paper.
  for(const element of [page,cover].filter(Boolean)){
   const box=element.getBoundingClientRect(),cy=innerHeight/2-box.top;
   const aperture=(height,width=0,radius=12)=>`inset(${cy-height/2}px ${width}% ${box.height-cy-height/2}px ${width}% round ${radius}px)`;
@@ -148,21 +148,23 @@ function newspaperReverse(page,half){
  return reverse;
 }
 function newspaperModel(page,{settled=false}={}){
- // Fold the complete camera frame, including the paper behind the transparent
- // navigation. A nav-height crop cut through the visible newspaper on both trips.
- const top=0,width=innerWidth,height=innerHeight,half=height/2,box=page.getBoundingClientRect(),style=getComputedStyle(page);
+ // Keep the viewport-sized print aligned while only the actual paper column folds.
+ const top=0,height=innerHeight,half=height/2,box=page.getBoundingClientRect(),style=getComputedStyle(page);
+ const paper=page.querySelector('.archive-paper')?.getBoundingClientRect();
+ const width=innerWidth>=800&&paper?.width?Math.min(innerWidth,paper.width):innerWidth;
+ const left=(innerWidth-width)/2;
  const root=document.createElement('div');root.className='chapter-news-fold';root.setAttribute('aria-hidden','true');root.inert=true;
  for(const name of ['--archive-paper','--archive-ink','--archive-muted','--archive-tint','--archive-rule'])root.style.setProperty(name,style.getPropertyValue(name));
  root.style.backgroundColor=style.backgroundColor;
- const pack=document.createElement('div');pack.className='news-fold-pack';Object.assign(pack.style,{left:'0',top:`${top}px`,width:`${width}px`,height:`${height}px`});root.append(pack);
+ const pack=document.createElement('div');pack.className='news-fold-pack';Object.assign(pack.style,{left:`${left}px`,top:`${top}px`,width:`${width}px`,height:`${height}px`});root.append(pack);
  const original=page.cloneNode(true),sources=[...page.querySelectorAll('.archive-glyph')],copies=[...original.querySelectorAll('.archive-glyph')];
  copies.forEach((el,i)=>{const state=getComputedStyle(sources[i]);Object.assign(el.style,{opacity:settled?'1':state.opacity,filter:settled?'none':state.filter,transform:settled?'none':state.transform,transition:'none',animation:'none'});});
  original.querySelectorAll('*').forEach(el=>{el.style.animation='none';el.style.transition='none';});
  function face(y,back=false){
   const element=document.createElement('div');element.className=`news-fold-face${back?' is-back':''}`;
   if(back){element.append(newspaperReverse(page,half));return element;}
-  const print=document.createElement('div');print.className='news-fold-print';Object.assign(print.style,{width:`${width}px`,left:'0',top:`${box.top-top-y}px`});
-  const clone=original.cloneNode(true);Object.assign(clone.style,{width:`${width}px`,maxWidth:'none',margin:'0'});
+  const print=document.createElement('div');print.className='news-fold-print';Object.assign(print.style,{width:`${innerWidth}px`,left:`${-left}px`,top:`${box.top-top-y}px`});
+  const clone=original.cloneNode(true);Object.assign(clone.style,{width:`${innerWidth}px`,maxWidth:'none',margin:'0'});
   print.append(clone);element.append(print);return element;
  }
  function panel(y){const panel=document.createElement('div');panel.className='news-fold-panel';Object.assign(panel.style,{left:'0',top:`${y}px`,width:`${width}px`,height:`${half}px`});panel.append(face(y),face(0,true));return panel;}
@@ -175,7 +177,7 @@ async function foldNewspaper(page,nextBackground){
  const version=generation,{root,pack,lower,top,half,background}=newspaperModel(page);
  root.dataset.foldStage='fold';
  try{
-  // One full-width horizontal hinge; no miniature sheet or scale change.
+  // The hinge follows the paper column without scaling its printed content.
   await tween(lower,[{transform:'rotateX(0deg)'},{transform:'rotateX(180deg)'}],1120,0,'cubic-bezier(.34,.05,.24,1)').finished;
   if(version!==generation||!root.isConnected||reducedMotion())return;
   root.dataset.foldStage='exit';
@@ -268,6 +270,7 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
    .forEach((entry,index)=>{
     paintStroke(entry.querySelector('.mailbox-ink-frame'),{delay:index*150,duration:1210,holder:page});
     paintStroke(entry.querySelector('.garden-botanical'),{delay:index*150,duration:1210,holder:page});
+    entry.querySelectorAll('.mailbox-delete-char').forEach((character,charIndex)=>paintStroke(character,{delay:index*150+950+charIndex*65,duration:310,holder:page}));
    });
   const toolbar=find('.mailbox-toolbar'),distance=toolbar&&innerHeight-toolbar.getBoundingClientRect().top+24;
   if(toolbar)tween(toolbar,[{translate:`0 ${distance}px`},{translate:'0 0'}],760,170,'cubic-bezier(.18,.76,.22,1)');
@@ -289,6 +292,7 @@ export function enterChapter(page,view,{initial=false,fromView=null}={}){
 }
 export async function leaveChapter(page,view,{nextBackground,nextView,cover}={}){
  stopChapterMotion();signalCarry=null;if(!page||reducedMotion())return;
+ if(view==='write-letter'&&nextView==='letters'&&page.classList.contains('is-sent'))return;
  const version=generation;
  retainCompleted=true;const find=selector=>page.querySelector(selector);
  if(nextView==='album'||view==='album'){
@@ -306,10 +310,12 @@ export async function leaveChapter(page,view,{nextBackground,nextView,cover}={})
    const search=find('.mailbox-search');
    if(search&&!search.hidden)tween(search,[{translate:'0 0'},{translate:`0 ${innerHeight-search.getBoundingClientRect().top+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
   }
-  powerOff(page,cover);
+  // The writing sheet sits over a retained mailbox. Crop their shared parent
+  // so the complete screen closes together instead of only the sheet.
+  powerOff(view==='write-letter'&&nextView==='album'?page.closest('#app')||page:page,cover);
  }else{
   if((view==='home'||view==='letters')&&(nextView==='home'||nextView==='letters'))page.classList.add('is-background-bridging');
-  if(nextBackground&&!(view==='detail'&&nextView==='claim')&&!(view==='write-letter'&&nextView==='letters'&&page.classList.contains('is-over-mailbox')))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
+  if(nextBackground&&!(view==='detail'&&nextView==='claim')&&!(view==='write-letter'&&(nextView==='letters'||nextView==='home')&&page.classList.contains('is-over-mailbox')))tween(page,[{backgroundColor:getComputedStyle(page).backgroundColor},{backgroundColor:nextBackground}],view==='home'||view==='letters'?1220:340,view==='home'&&nextView==='letters'?240:0,view==='home'||view==='letters'?'cubic-bezier(.42,0,.58,1)':ease);
   if(view==='home'){
    homeLetters(page,false,true);
    // Retire the continuously transformed paper strips before masking the stamp.
@@ -328,8 +334,8 @@ export async function leaveChapter(page,view,{nextBackground,nextView,cover}={})
    });
   }else if(view==='detail'&&nextView==='claim'){
    await foldNewspaper(page,nextBackground);
-  }else if(view==='write-letter'&&nextView==='letters'){
-   tween(find('.office-writing-paper'),[{translate:'0 0'},{translate:`0 ${innerHeight+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
+  }else if(view==='write-letter'&&(nextView==='letters'||nextView==='home')){
+   if(!page.classList.contains('is-sent'))tween(find('.office-writing-paper'),[{translate:'0 0'},{translate:`0 ${innerHeight+24}px`}],650,0,'cubic-bezier(.45,0,.3,1)');
   }else if(view==='letters'){
    const well=find('.mailbox-well'),bounds=well.getBoundingClientRect(),top=Math.max(0,bounds.top),bottom=Math.min(innerHeight,bounds.bottom);
    let visibleIndex=0;
@@ -341,6 +347,7 @@ export async function leaveChapter(page,view,{nextBackground,nextView,cover}={})
     // Clear the sprig before its paper edge, so no isolated leaves linger
     // after the envelope has been painted away.
     paintStroke(entry.querySelector('.garden-botanical'),{opening:false,delay,duration:610,holder:page});
+    [...entry.querySelectorAll('.mailbox-delete-char')].reverse().forEach((character,charIndex)=>paintStroke(character,{opening:false,delay:delay+charIndex*45,duration:280,holder:page}));
    });
    const toolbar=find('.mailbox-toolbar'),distance=toolbar&&innerHeight-toolbar.getBoundingClientRect().top+24;
    if(toolbar)tween(toolbar,[{translate:'0 0'},{translate:`0 ${distance}px`}],650,0,'cubic-bezier(.45,0,.3,1)');

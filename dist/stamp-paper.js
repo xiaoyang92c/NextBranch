@@ -3,7 +3,7 @@
 export function mountPaperSurface(stamp,card){
   const scene=card.closest('.home-scene'),motion=matchMedia('(prefers-reduced-motion: reduce)'),compact=matchMedia('(max-width: 799px)');
   const stripCount=()=>compact.matches?6:12;
-  let surface=null,strips=[],frame=0,epoch=0,width=stamp.offsetWidth,disposed=false,held=false,lastFlat=false,lastPaint=0;
+  let surface=null,backing=null,strips=[],frame=0,epoch=0,width=stamp.offsetWidth,disposed=false,held=false,lastFlat=false,lastPaint=0;
   const stock=getComputedStyle(stamp.querySelector('.stamp-inner'),'::after'),grain=document.createElement('div');
   grain.className='stamp-grain-overlay';grain.setAttribute('aria-hidden','true');grain.inert=true;
   Object.assign(grain.style,{backgroundImage:stock.backgroundImage,backgroundSize:stock.backgroundSize,opacity:'.4',mixBlendMode:stock.mixBlendMode});
@@ -34,13 +34,16 @@ export function mountPaperSurface(stamp,card){
     draw(progress);frame=requestAnimationFrame(tick);
   }
   function flatten(){
-    cancelAnimationFrame(frame);frame=0;surface?.remove();surface=null;strips=[];lastFlat=false;stamp.classList.remove('has-paper-surface');
+    cancelAnimationFrame(frame);frame=0;surface?.remove();backing?.remove();surface=null;backing=null;strips=[];lastFlat=false;stamp.classList.remove('has-paper-surface');
   }
   function sync(){
     if(disposed||motion.matches||!card.classList.contains('current')){flatten();return;}
     if(surface)return;
     const count=stripCount();
-    width=stamp.offsetWidth;surface=document.createElement('div');surface.className='stamp-paper-surface';surface.setAttribute('aria-hidden','true');surface.inert=true;
+    width=stamp.offsetWidth;
+    backing=document.createElement('div');backing.className='stamp-paper-backing';backing.setAttribute('aria-hidden','true');backing.inert=true;
+    const fill=document.createElement('div');fill.className='stamp-paper-fill';backing.append(fill);
+    surface=document.createElement('div');surface.className='stamp-paper-surface';surface.setAttribute('aria-hidden','true');surface.inert=true;
     surface.style.setProperty('--paper-width',`${width}px`);
     for(let i=0;i<count;i++){
       const strip=document.createElement('div');strip.className='paper-strip';strip.style.left=`${i/count*100}%`;strip.style.width=`calc(${100/count}% + 1.6px)`;strip.style.zIndex=String(i+1);
@@ -48,7 +51,10 @@ export function mountPaperSurface(stamp,card){
       print.querySelectorAll('[id]').forEach(element=>element.removeAttribute('id'));
       strip.append(print);surface.append(strip);strips.push(strip);
     }
-    stamp.append(surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held&&!document.hidden)frame=requestAnimationFrame(tick);
+    // Only the inner paper color follows the hover tilt beneath the moving
+    // strips. The perforated edge belongs to the strips alone, so it cannot
+    // appear twice when the paper lifts.
+    stamp.append(backing,surface);stamp.classList.add('has-paper-surface');epoch=performance.now();lastFlat=false;lastPaint=0;draw();if(!held&&!document.hidden)frame=requestAnimationFrame(tick);
   }
   function hold(){if(disposed)return;held=true;sync();cancelAnimationFrame(frame);frame=0;draw();}
   function resume(){if(disposed)return;held=false;sync();epoch=performance.now();draw();if(surface&&!frame&&!document.hidden)frame=requestAnimationFrame(tick);}

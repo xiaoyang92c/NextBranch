@@ -13,7 +13,7 @@
   box-shadow:none;
   color:#315b45;
 }
-body[data-view]:not([data-view="letters"]) .music-toggle{color:#fff7df}
+body[data-view]:not([data-view="letters"]):not([data-view="write-letter"]) .music-toggle{color:#fff7df}
 .music-toggle-ring{
   position:relative;
   display:block;
@@ -42,8 +42,7 @@ body.is-initial-entrance .music-toggle{visibility:hidden}
 @keyframes music-ring-pulse{to{transform:scale(.76);opacity:.45}}
 @media(max-width:799px){
   .music-toggle{right:calc(8px + env(safe-area-inset-right));bottom:calc(clamp(32px,4.2svh,48px) + 6px + env(safe-area-inset-bottom))}
-  body[data-view="letters"] .mailbox-toolbar{left:auto;right:calc(58px + env(safe-area-inset-right));width:min(650px,calc(100% - 76px));max-width:none;margin:0}
-  body[data-view="write-letter"] .office-writing-sign>span{padding-right:28px}
+  body[data-view="letters"] .mailbox-toolbar,body[data-view="write-letter"] .is-compose-underlay .mailbox-toolbar{left:auto;right:calc(58px + env(safe-area-inset-right));width:min(650px,calc(100% - 76px));max-width:none;margin:0}
 }
-@media(max-width:360px){body[data-view="letters"] .mailbox-toolbar{width:calc(100% - 70px)}}
+@media(max-width:360px){body[data-view="letters"] .mailbox-toolbar,body[data-view="write-letter"] .is-compose-underlay .mailbox-toolbar{width:calc(100% - 70px)}}
 @media(prefers-reduced-motion:reduce){.music-toggle.is-playing .music-toggle-ring::before,.music-toggle.is-playing .music-toggle-wave{animation:none}body.is-initial-entrance .music-toggle{visibility:visible}}

@@ -14,6 +14,13 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-letter{user-select:none;display:block;width:100%;aspect-ratio:.91;border:0;padding:0;background:none;color:inherit;text-align:left;cursor:pointer;outline-offset:9px;-webkit-tap-highlight-color:transparent}
 .mailbox-letter:active{scale:1}
 .mailbox-letter:focus-visible{outline:1px solid #77927d;border-radius:2px}
+.mailbox-delete{position:absolute;right:2%;bottom:-24px;z-index:5;display:inline-flex;align-items:center;min-height:30px;padding:4px 0;border:0;background:transparent;color:#806d60;font:400 12px/1.4 var(--sans);letter-spacing:.04em;cursor:pointer}
+.mailbox-delete-char{display:inline-block}
+.mailbox-delete-rule{position:absolute;left:0;right:0;bottom:2px;height:0;border-top:1px solid currentColor;clip-path:inset(0 100% 0 0);transition:clip-path .32s cubic-bezier(.25,.7,.25,1);pointer-events:none}
+.mailbox-delete:is(:hover,:focus-visible) .mailbox-delete-rule{clip-path:inset(0)}
+.mailbox-entry.is-deleting .mailbox-delete-rule{clip-path:inset(0 100% 0 0)}
+.mailbox-delete:focus-visible{outline:1px solid #806d60;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.mailbox-delete-rule{transition:none}}
 .garden-letter{display:block;width:100%;height:100%;position:relative;container-type:inline-size;isolation:isolate;color:#426353}
 .garden-botanical{position:absolute;left:-9%;top:-1%;width:60%;height:69%;object-fit:contain;object-position:center bottom;pointer-events:none;z-index:0;filter:saturate(.8) contrast(.96);user-select:none}
 .mailbox-entry.is-flower-right .garden-botanical{left:auto;right:-8%;width:62%}
@@ -23,7 +30,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .garden-letter-paper::after{content:'';position:absolute;inset:0;opacity:.1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='.55'/%3E%3C/svg%3E")}
 .garden-letter-topic{display:block;font:400 max(12px,3.5cqw)/1.5 var(--sans);color:#7a826c;margin-bottom:15px;letter-spacing:.07em}
 .garden-salutation{display:block;font:400 max(15px,4.5cqw)/1.5 var(--serif);margin-bottom:10px;letter-spacing:.04em}
-.garden-letter-subject{display:block;font:400 max(19px,5.9cqw)/1.7 var(--serif);letter-spacing:.035em;text-wrap:balance;overflow-wrap:anywhere}
+.garden-letter-subject{position:relative;display:block;flex:none;font:400 max(19px,5.9cqw)/1.7 var(--serif);letter-spacing:.035em;text-wrap:balance;overflow-wrap:anywhere}
 
 .garden-envelope-pocket{position:absolute;left:0;right:0;top:50%;bottom:3.5%;overflow:hidden;z-index:3;pointer-events:none}
 .garden-envelope-pocket>img{position:absolute;width:107.8%;height:120.4%;max-width:none;left:-3.93%;top:-10.87%;object-fit:fill;user-select:none;pointer-events:none}
@@ -84,6 +91,7 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-reader .postal-reader-tabs button[aria-pressed='true']{color:var(--letter-ink)}
 .mailbox-reader .postal-reader-tabs button[aria-pressed='true']::after{height:1px;background:var(--letter-wine)}
 .mailbox-reader .postal-reader-body{padding:10px 2px 12px}
+.mailbox-reader .postal-reader-full-title{margin:2px 0 18px;font:500 17px/1.65 var(--letter-face,var(--serif));overflow-wrap:anywhere}
 .mailbox-reader .postal-salutation,.mailbox-reader .postal-signature{font-size:16px;line-height:1.9;letter-spacing:.03em}
 .mailbox-reader .postal-question{font-size:17px;line-height:1.9;font-weight:400;text-indent:2em;color:#465c51}
 .mailbox-reader .postal-signature{margin-top:22px}
@@ -169,9 +177,6 @@ body[data-view='letters'] nav.main-nav{color:#426353}
 .mailbox-query{overflow:visible;min-width:0}
 .mailbox-query input{box-sizing:border-box;display:block;min-width:0;width:100%;height:46px;line-height:1.5;overflow:visible;text-overflow:clip;white-space:nowrap;-webkit-appearance:none;appearance:none}
 .mailbox-query input::-webkit-search-decoration,.mailbox-query input::-webkit-search-cancel-button{display:none}
-.outgoing-letter{--letter-face:'Songti SC','Noto Serif SC',Georgia,serif;--letter-ink:#42584e;--letter-rule:#c9bfaa;--letter-wine:#6f4c59}
-.outgoing-letter .garden-letter-paper{transition:transform .45s cubic-bezier(.22,.7,.24,1)}
-.outgoing-letter.is-sealed .garden-letter-paper{transform:translateY(24%)}
 
 /* The whole opened letter grows with its writing; the overlay scrolls as one page. */
 .garden-paper-brand{justify-content:flex-start;gap:6px;padding-right:35px}
@@ -232,3 +237,15 @@ body[data-view='letters']:has(#letter-overlay.mailbox-reader) nav.main-nav{z-ind
 .mailbox-empty-actions button{min-height:46px;padding-inline:14px}
 @media(max-width:360px){.mailbox-search{padding:14px 13px}.mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){padding:4px 1px;font-size:12px;gap:3px}.mailbox-filters{gap:11px;margin-top:11px}.mailbox-filters legend{margin-bottom:5px;font-size:12px}.mailbox-filters button{min-height:35px}.mailbox-search footer{margin-top:11px;padding-top:8px}}
 @media(max-height:700px){.mailbox-search{padding-block:12px}.mailbox-filters{gap:10px;margin-top:9px}.mailbox-filters legend{margin-bottom:4px}.mailbox-filters button{min-height:35px}.mailbox-search footer{margin-top:10px;padding-top:8px}.mailbox-empty-rule{margin:11px 0 16px}.mailbox-empty-actions{margin-top:18px}}
+
+/* Give the desktop filter sheet the width of a proper letter, not a narrow strip. */
+@media(min-width:800px){
+  .mailbox-search{box-sizing:border-box;left:auto;right:max(24px,calc((100% - 650px)/2));width:min(590px,calc(100vw - 48px));max-width:none;max-height:calc(100svh - 126px);overflow-y:auto;padding:23px 27px 21px}
+  .mailbox-filters{gap:18px;margin-top:19px}
+  .mailbox-plants{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .mailbox-plants button[data-mail-plant=""]{grid-column:auto}
+  .mailbox-plants button[data-mail-plant]:not([data-mail-plant=""]){min-height:43px;font-size:14px}
+  .mailbox-status,.mailbox-origin{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .mailbox-search footer{margin-top:19px;padding-top:16px}
+}
+@media(min-width:800px) and (max-width:1050px){.mailbox-search{width:min(520px,calc(100vw - 48px))}.mailbox-plants{grid-template-columns:repeat(4,minmax(0,1fr))}}

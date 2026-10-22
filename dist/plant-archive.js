@@ -261,7 +261,7 @@ export async function returnArchive(plant,renderDestination){
   if(image.isConnected)image.style.visibility=originalVisibility;
   if(page.parentElement===document.body)page.remove();
   else if(page.isConnected){page.style.visibility='';page.inert=false;}
-  if(destination?.isConnected){destination.classList.remove('is-return-target');const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');if(live){live.style.opacity='';live.classList.remove('is-portal-flat-print','is-portal-landing','is-paper-ready');}if(shadow){shadow.style.opacity='';shadow.style.transform='';}live?.dispatchEvent(new Event('stamp:resume'));}
+  if(destination?.isConnected){destination.classList.remove('is-return-target');const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');if(live){live.style.opacity='';live.classList.remove('is-portal-flat-print');}if(shadow){shadow.style.opacity='';shadow.style.transform='';}live?.dispatchEvent(new Event('stamp:resume'));}
   floats.forEach(motion=>{if(motion.playState==='paused')motion.play();});
   if(lens?.isConnected&&!landed)lens.setAttribute('scale',lensScale);
   if(home?.isConnected)home.inert=false;
@@ -276,7 +276,7 @@ export async function returnArchive(plant,renderDestination){
   home=document.querySelector('.home-scene');destination=home?.querySelector('.scene-stamp.current');
   const stamp=destination?.querySelector('.stamp'),stampImage=stamp?.querySelector('.stamp-art');
   if(!stampImage)throw new Error('Return stamp is missing');
-  home.inert=true;destination.classList.add('is-return-target');stamp.classList.add('is-portal-landing');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
+  home.inert=true;destination.classList.add('is-return-target');stamp.dispatchEvent(new Event('stamp:hold'));floats=pauseFloat(stamp);
   // The travelling print stays flat and untextured. The live paper takes over
   // only after landing, so neither texture nor twelve paper copies are zoomed.
   lens=home.querySelector('.scene-lens-displacement');lensScale=lens?.getAttribute('scale');
@@ -304,14 +304,11 @@ export async function returnArchive(plant,renderDestination){
   const printReturn=animate(shell,[{transform:`scale(${zoom})`},{transform:'scale(1)'}],1320);
   const plantReturn=animate(flight,frames,1320);
   await Promise.all([paperClear.finished,printReturn.finished,plantReturn.finished]);if(state.cancelled)return;
-  // Swap in one paint. Overlapping the flight and live print for a fade makes
-  // their slightly different rasterisation read as a momentary full blur.
+  // Reveal the already-composited live print and its flat strips in one paint.
   const live=destination.querySelector('.stamp'),shadow=destination.querySelector('.stamp-shadow');
   if(shadow){shadow.style.opacity='0';shadow.style.transform='translate3d(0,0,0) scale(.92)';}
   destination.classList.remove('is-return-target');
   overlay.remove();flightOverlay.remove();
-  await new Promise(resolve=>requestAnimationFrame(resolve));
-  live.classList.add('is-paper-ready');
   const settles=[];
   if(shadow){const target=getComputedStyle(shadow);const offset=target.getPropertyValue('--shadow-offset').trim()||'22px',stretch=target.getPropertyValue('--shadow-stretch').trim()||'1',squash=target.getPropertyValue('--shadow-squash').trim()||'1',skewX=target.getPropertyValue('--shadow-skew-x').trim()||'0deg',skewY=target.getPropertyValue('--shadow-skew-y').trim()||'0deg';settles.push(animate(shadow,[{opacity:0,transform:'translate3d(0,0,0) scale(.92)'},{opacity:.27,transform:`translate3d(${offset},${offset},0) skew(${skewX},${skewY}) scale(${stretch},${squash})`}],650,'cubic-bezier(.2,.7,.25,1)').finished);}
   await Promise.all(settles);landed=true;
